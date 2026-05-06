@@ -20,7 +20,7 @@ export default function PlayersPage() {
         </p>
       </div>
 
-      <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-10 grid gap-6 md:grid-cols-3 lg:grid-cols-3">
         {players.map((p, i) => (
           <PlayerCard key={p.slug} player={p} index={i} />
         ))}
