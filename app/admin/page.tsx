@@ -2,6 +2,13 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import { Plus, FileText, Users, LogOut, Settings } from 'lucide-react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Admin Dashboard - Checkoutstrategi',
+  description: 'Hantera recensioner, spelare och blogginlägg.',
+  alternates: { canonical: '/admin' },
+};
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -2,6 +2,13 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import { Check, X, Trash2, Star, ExternalLink } from 'lucide-react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Hantera Recensioner - Admin Dashboard',
+  description: 'Godkänn eller ta bort recensioner från användare.',
+  alternates: { canonical: '/admin/reviews' },
+};
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
