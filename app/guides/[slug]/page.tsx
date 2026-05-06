@@ -113,6 +113,12 @@ export default function GuidePage({ params }: { params: { slug: string } }) {
   const g = guides[params.slug];
   if (!g) notFound();
 
+  const stats = [
+    { label: 'CRO-impact', value: '+18%', description: 'Genomsnittlig konverteringslyft vid byte av checkout' },
+    { label: 'Logistik', value: '+12%', description: 'Kassa-konvertering med smart leveransval' },
+    { label: 'Trust', value: '6/6', description: 'Aktörer analyserade med samma ramverk' },
+  ];
+
   return (
     <article className="container-prose py-12">
       <Link href="/guides" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-brand-600">
@@ -122,6 +128,19 @@ export default function GuidePage({ params }: { params: { slug: string } }) {
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">{g.title}</h1>
         <p className="mt-3 text-lg text-slate-600 dark:text-slate-400">{g.description}</p>
       </header>
+
+      {params.slug === 'checkout-analys-2026' && (
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
+          {stats.map((stat) => (
+            <div key={stat.label} className="rounded-xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{stat.label}</p>
+              <p className="mt-2 text-3xl font-bold text-brand-600">{stat.value}</p>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{stat.description}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="prose prose-slate dark:prose-invert mt-10 max-w-none">
         {g.body.map((p, i) => (
           <p key={i} dangerouslySetInnerHTML={{ __html: p.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') }} />
