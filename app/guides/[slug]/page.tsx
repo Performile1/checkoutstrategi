@@ -5,8 +5,8 @@ import { ArrowLeft } from 'lucide-react';
 
 const guides: Record<string, { title: string; description: string; body: string[] }> = {
   'cro-checkout': {
-    title: 'CRO i kassan – 12 spaks som lyfter konvertering',
-    description: 'Konkreta konverteringsspaks som bevisat fungerat i svenska kassaflöden.',
+    title: 'CRO i kassan – 12 spakar som lyfter konvertering',
+    description: 'Konkreta konverteringsspakar som bevisat fungerat i svenska kassaflöden.',
     body: [
       'Konvertering i kassan är sällan en enskild knapp – det är 12 små beslut i följd. I den här guiden bryter vi ned varje steg från varukorg till tack-sida.',
       '**1. Pre-fill så mycket som möjligt.** Postnummer, adress, telefonnummer – allt som kan hämtas från ID eller tidigare besök ska vara förifyllt.',

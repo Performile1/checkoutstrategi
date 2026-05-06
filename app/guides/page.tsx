@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 const guides = [
   {
     slug: 'cro-checkout',
-    title: 'CRO i kassan – 12 spaks som lyfter konvertering',
+    title: 'CRO i kassan – 12 spakar som lyfter konvertering',
     summary: 'Från fälten till BNPL-ordning. Vad som faktiskt rör nålen i svenska kassaflöden.',
     icon: TrendingUp,
   },

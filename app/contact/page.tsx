@@ -25,7 +25,7 @@ export default function ContactPage() {
             Vi erbjuder två typer av samtal:
           </p>
           <ul className="mt-6 space-y-4 text-sm">
-            <li className="card"><strong className="flex items-center gap-2"><Sparkles size={16} className="text-brand-500" /> Checkout-konsultation</strong><p className="mt-2 text-slate-600 dark:text-slate-400">30 minuter där vi går igenom din nuvarande kassa och identifierar top-3 konverteringsspaks.</p></li>
+            <li className="card"><strong className="flex items-center gap-2"><Sparkles size={16} className="text-brand-500" /> Checkout-konsultation</strong><p className="mt-2 text-slate-600 dark:text-slate-400">30 minuter där vi går igenom din nuvarande kassa och identifierar top-3 konverteringsspakar.</p></li>
             <li className="card"><strong className="flex items-center gap-2"><Globe size={16} className="text-brand-500" /> Köp domänen checkoutstrategi.se</strong><p className="mt-2 text-slate-600 dark:text-slate-400">Domän + site + trafikkälla i "high-intent fintech"-segmentet. Öppet för bud från verksamma aktörer eller byråer.</p></li>
           </ul>
 
