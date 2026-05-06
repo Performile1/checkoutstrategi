@@ -14,6 +14,8 @@ const players = [
   { slug: 'shopify', name: 'Shopify', color: '#059669' }, // emerald-600
   { slug: 'norce', name: 'Norce', color: '#4f46e5' }, // indigo-600
   { slug: 'abicart', name: 'Abicart', color: '#ea580c' }, // orange-600
+  { slug: 'webshipper', name: 'Webshipper', color: '#f97316' }, // orange-500
+  { slug: 'shipit', name: 'Shipit', color: '#6366f1' }, // indigo-500
 ];
 
 const logosDir = path.join(process.cwd(), 'public', 'logos');
