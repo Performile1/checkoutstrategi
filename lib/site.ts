@@ -7,6 +7,7 @@ export const siteConfig = {
   nav: [
     { href: '/players', label: 'Players' },
     { href: '/comparison', label: 'Jämförelse' },
+    { href: '/testcheckout', label: 'Checkout Lab' },
     { href: '/blog', label: 'Blogg' },
     { href: '/guides', label: 'Strategiguider' },
   ],

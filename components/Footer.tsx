@@ -22,9 +22,9 @@ export function Footer() {
           </div>
         </div>
 
-        <div>
+        <div className="md:col-span-2">
           <h4 className="text-sm font-semibold">Players</h4>
-          <ul className="mt-3 space-y-2 text-sm">
+          <ul className="mt-3 grid grid-cols-3 gap-x-6 gap-y-2 text-sm">
             {players.map((p) => (
               <li key={p.slug}>
                 <Link href={`/players/${p.slug}`} className="text-slate-600 hover:text-brand-600 dark:text-slate-400">
