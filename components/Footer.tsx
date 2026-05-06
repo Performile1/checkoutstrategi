@@ -7,9 +7,9 @@ export function Footer() {
   return (
     <footer className="border-t border-slate-200 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-950">
       <div className="container-prose py-14 grid gap-10 md:grid-cols-4">
-        <div className="md:col-span-2">
+        <div>
           <h3 className="text-base font-semibold">{siteConfig.name}</h3>
-          <p className="mt-3 text-sm text-slate-600 dark:text-slate-400 max-w-md">
+          <p className="mt-3 text-sm text-slate-600 dark:text-slate-400 max-w-xs">
             {siteConfig.description}
           </p>
           <div className="mt-4 flex gap-3">
