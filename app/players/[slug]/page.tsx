@@ -143,7 +143,15 @@ export default function PlayerPage({ params }: { params: { slug: string } }) {
 
           {player.reviews && player.reviews.length > 0 && (
             <section>
-              <h2 className="text-2xl font-bold tracking-tight">Recensioner</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold tracking-tight">Recensioner</h2>
+                <Link
+                  href={`/players/${player.slug}/review`}
+                  className="text-sm text-brand-600 hover:underline"
+                >
+                  Lämna en recension →
+                </Link>
+              </div>
               <div className="mt-4 space-y-4">
                 {player.reviews.map((review, index) => (
                   <div key={index} className="card">
