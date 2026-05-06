@@ -1,6 +1,15 @@
 export type Market = 'B2C' | 'B2B' | 'B2B/B2C';
 export type Category = 'Checkout' | 'Betallösning' | 'Plugin' | 'Transportör' | 'E-handelsplattform';
 
+export interface Review {
+  reviewerName: string;
+  reviewerCompany: string;
+  webshopUrl: string;
+  rating: number; // 1-5
+  title: string;
+  content: string;
+}
+
 export interface Player {
   slug: string;
   name: string;
@@ -20,6 +29,7 @@ export interface Player {
   affiliateUrl: string;
   description: string;
   faq: { q: string; a: string }[];
+  reviews?: Review[];
 }
 
 export const players: Player[] = [
@@ -60,6 +70,24 @@ export const players: Player[] = [
     faq: [
       { q: 'Är Klarna bäst för svensk e-handel?', a: 'Klarna har starkast igenkänning i Sverige men inte alltid bäst marginal. För högre AOV eller B2B-flöden kan Walley eller Qliro vara mer kostnadseffektivt.' },
       { q: 'Stödjer Klarna B2B?', a: 'Klarna har B2B-funktionalitet men det är mest moget för B2C. För renodlat B2B är Walley/Qliro starkare alternativ.' },
+    ],
+    reviews: [
+      {
+        reviewerName: 'Erik Lindström',
+        reviewerCompany: 'TechStore AB',
+        webshopUrl: 'https://techstore.se',
+        rating: 5,
+        title: 'Konverteringen ökade med 22%',
+        content: 'Efter byte till Klarna såg vi en direkt ökning i konvertering, särskilt på mobil. BNPL-funktionen är perfekt för vår målgrupp.',
+      },
+      {
+        reviewerName: 'Maria Andersson',
+        reviewerCompany: 'Fashion Nordic',
+        webshopUrl: 'https://fashionnordic.com',
+        rating: 4,
+        title: 'Starkt men kostsamt',
+        content: 'Klarna levererar på konvertering men marginalerna påverkas. Vi funderar på att testa Walley som alternativ.',
+      },
     ],
   },
   {

@@ -140,6 +140,57 @@ export default function PlayerPage({ params }: { params: { slug: string } }) {
               ))}
             </div>
           </section>
+
+          {player.reviews && player.reviews.length > 0 && (
+            <section>
+              <h2 className="text-2xl font-bold tracking-tight">Recensioner</h2>
+              <div className="mt-4 space-y-4">
+                {player.reviews.map((review, index) => (
+                  <div key={index} className="card">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                size={14}
+                                className={i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-slate-300'}
+                              />
+                            ))}
+                          </div>
+                          <span className="font-semibold">{review.title}</span>
+                        </div>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">{review.content}</p>
+                        <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+                          <span>{review.reviewerName}</span>
+                          {review.reviewerCompany && (
+                            <>
+                              <span>·</span>
+                              <span>{review.reviewerCompany}</span>
+                            </>
+                          )}
+                          {review.webshopUrl && (
+                            <>
+                              <span>·</span>
+                              <a
+                                href={review.webshopUrl}
+                                target="_blank"
+                                rel="noopener"
+                                className="text-brand-600 hover:underline"
+                              >
+                                {new URL(review.webshopUrl).hostname}
+                              </a>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
 
         <aside className="space-y-6">

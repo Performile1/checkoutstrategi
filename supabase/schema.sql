@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS players (
   logo_url TEXT NOT NULL,
   website_url TEXT NOT NULL,
   brand_color TEXT NOT NULL, -- tailwind class like 'bg-pink-500'
-  category TEXT NOT NULL CHECK (category IN ('Checkout', 'BNPL', 'Logistics', 'Post-purchase')),
+  category TEXT NOT NULL CHECK (category IN ('Checkout', 'Betallösning', 'Plugin', 'Transportör', 'E-handelsplattform')),
   target_market TEXT NOT NULL CHECK (target_market IN ('B2C', 'B2B', 'B2B/B2C')),
   conversion_impact INTEGER NOT NULL CHECK (conversion_impact >= 1 AND conversion_impact <= 10),
   trust_angle TEXT NOT NULL,
@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS reviews (
   player_id UUID NOT NULL REFERENCES players(id) ON DELETE CASCADE,
   reviewer_name TEXT NOT NULL,
   reviewer_company TEXT,
+  webshop_url TEXT,
   rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
   title TEXT NOT NULL,
   content TEXT NOT NULL,

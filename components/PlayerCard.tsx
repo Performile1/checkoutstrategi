@@ -4,7 +4,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowRight, ExternalLink, Shield, Star } from 'lucide-react';
-import type { Player } from '@/lib/players';
+import type { Player, Review } from '@/lib/players';
+
+function getAverageRating(reviews: Review[]): number {
+  if (reviews.length === 0) return 0;
+  return reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+}
 
 export function PlayerCard({ player, index = 0 }: { player: Player; index?: number }) {
   return (
@@ -40,6 +45,16 @@ export function PlayerCard({ player, index = 0 }: { player: Player; index?: numb
       <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
         <Shield size={14} /> <span>Trust angle: <strong className="text-slate-700 dark:text-slate-300">{player.trustAngle}</strong></span>
       </div>
+
+      {player.reviews && player.reviews.length > 0 && (
+        <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+          <Star size={14} className="fill-yellow-400 text-yellow-400" />
+          <span>
+            {player.reviews.length} recension{player.reviews.length > 1 ? 'er' : ''}
+            {' '}· {getAverageRating(player.reviews).toFixed(1)}/5
+          </span>
+        </div>
+      )}
 
       <div className="mt-5 flex flex-wrap gap-1.5">
         {player.keyFeatures.slice(0, 3).map((f) => (
