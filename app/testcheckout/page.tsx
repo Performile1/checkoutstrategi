@@ -83,6 +83,7 @@ export default function TestCheckoutPage() {
   const [activeTab, setActiveTab] = useState('settings');
   const [productName, setProductName] = useState('Premium Tröja');
   const [productPrice, setProductPrice] = useState(499);
+  const [shippingOrder, setShippingOrder] = useState<string[]>(['pickup', 'home']);
 
   const calculateConversionScore = () => {
     let score = 50; // Base score (lowered from 100 to show impact)
@@ -330,11 +331,21 @@ export default function TestCheckoutPage() {
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
 
-    const items = Array.from(layoutOrder);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
+    // Handle main section reordering
+    if (result.type === 'SECTION') {
+      const items = Array.from(layoutOrder);
+      const [reorderedItem] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, reorderedItem);
+      setLayoutOrder(items);
+    }
 
-    setLayoutOrder(items);
+    // Handle shipping option reordering within shipping section
+    if (result.type === 'SHIPPING_OPTION') {
+      const items = Array.from(shippingOrder);
+      const [reorderedItem] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, reorderedItem);
+      setShippingOrder(items);
+    }
   };
 
   const conversionScore = calculateConversionScore();
@@ -379,7 +390,7 @@ export default function TestCheckoutPage() {
               )}
 
               <DragDropContext onDragEnd={handleDragEnd}>
-                <Droppable droppableId="checkout-sections">
+                <Droppable droppableId="checkout-sections" type="SECTION">
                   {(provided) => (
                     <div {...provided.droppableProps} ref={provided.innerRef} className="p-6 space-y-4">
                       {layoutOrder.map((sectionId, index) => {
@@ -413,23 +424,39 @@ export default function TestCheckoutPage() {
                                       )}
                                       {sectionId === 'shipping' && (
                                         <>
-                                          {selectedDeliveryOptions.map((optId) => {
-                                            const opt = DELIVERY_OPTIONS.find(o => o.id === optId);
-                                            if (!opt) return null;
-                                            return (
-                                              <div key={opt.id} className="h-auto bg-slate-200 dark:bg-slate-600 rounded p-3">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                  <div className="w-4 h-4 rounded-full border-2 border-slate-400" />
-                                                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                                                    {opt.icon} {opt.name} - {opt.cost} kr
-                                                  </span>
-                                                </div>
-                                                <div className="text-xs text-slate-600 dark:text-slate-400 pl-6">
-                                                  {shippingTexts[optId] || ''}
-                                                </div>
+                                          <Droppable droppableId="shipping-options" type="SHIPPING_OPTION">
+                                            {(provided) => (
+                                              <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                                                {shippingOrder.map((optId, idx) => {
+                                                  const opt = DELIVERY_OPTIONS.find(o => o.id === optId);
+                                                  if (!opt) return null;
+                                                  return (
+                                                    <Draggable key={opt.id} draggableId={opt.id} index={idx}>
+                                                      {(provided) => (
+                                                        <div
+                                                          ref={provided.innerRef}
+                                                          {...provided.draggableProps}
+                                                          {...provided.dragHandleProps}
+                                                          className="h-auto bg-slate-200 dark:bg-slate-600 rounded p-3 cursor-move"
+                                                        >
+                                                          <div className="flex items-center gap-2 mb-1">
+                                                            <div className="w-4 h-4 rounded-full border-2 border-slate-400" />
+                                                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                                              {opt.icon} {opt.name} - {opt.cost} kr
+                                                            </span>
+                                                          </div>
+                                                          <div className="text-xs text-slate-600 dark:text-slate-400 pl-6">
+                                                            {shippingTexts[optId] || ''}
+                                                          </div>
+                                                        </div>
+                                                      )}
+                                                    </Draggable>
+                                                  );
+                                                })}
+                                                {provided.placeholder}
                                               </div>
-                                            );
-                                          })}
+                                            )}
+                                          </Droppable>
                                           {freeShippingThreshold > 0 && orderValue < freeShippingThreshold && (
                                             <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded text-xs text-green-800 dark:text-green-300">
                                               Köp för {freeShippingThreshold - orderValue} kr till för fri frakt!
@@ -683,9 +710,13 @@ export default function TestCheckoutPage() {
                               checked={selectedDeliveryOptions.includes(opt.id)}
                               onChange={(e) => {
                                 if (e.target.checked) {
-                                  setSelectedDeliveryOptions([...selectedDeliveryOptions, opt.id]);
+                                  const newSelected = [...selectedDeliveryOptions, opt.id];
+                                  setSelectedDeliveryOptions(newSelected);
+                                  setShippingOrder([...shippingOrder, opt.id]);
                                 } else {
-                                  setSelectedDeliveryOptions(selectedDeliveryOptions.filter(id => id !== opt.id));
+                                  const newSelected = selectedDeliveryOptions.filter(id => id !== opt.id);
+                                  setSelectedDeliveryOptions(newSelected);
+                                  setShippingOrder(shippingOrder.filter(id => id !== opt.id));
                                 }
                               }}
                               className="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
