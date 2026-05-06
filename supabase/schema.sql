@@ -70,10 +70,13 @@ CREATE TABLE IF NOT EXISTS reviews (
   player_id UUID NOT NULL REFERENCES players(id) ON DELETE CASCADE,
   reviewer_name TEXT NOT NULL,
   reviewer_company TEXT,
+  reviewer_email TEXT NOT NULL,
   webshop_url TEXT,
   rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
   title TEXT NOT NULL,
   content TEXT NOT NULL,
+  verified BOOLEAN NOT NULL DEFAULT false,
+  verification_token TEXT,
   approved BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

@@ -15,8 +15,16 @@ import {
   User, 
   Package,
   TrendingUp,
-  Settings
+  Settings,
+  ShoppingCart,
+  Home,
+  MapPin,
+  Zap,
+  DollarSign,
+  RefreshCw,
+  Globe
 } from 'lucide-react';
+import { players } from '@/lib/players';
 
 type CheckoutSection = {
   id: string;
@@ -24,6 +32,21 @@ type CheckoutSection = {
   icon: React.ReactNode;
   description: string;
 };
+
+type DeliveryOption = {
+  id: string;
+  name: string;
+  cost: number;
+  icon: React.ReactNode;
+};
+
+const DELIVERY_OPTIONS: DeliveryOption[] = [
+  { id: 'locker', name: 'Paketskåp', cost: 29, icon: <Package size={16} /> },
+  { id: 'pickup', name: 'Paketombud', cost: 49, icon: <MapPin size={16} /> },
+  { id: 'home', name: 'Hemleverans', cost: 79, icon: <Home size={16} /> },
+  { id: 'express', name: 'Expressleverans', cost: 149, icon: <Zap size={16} /> },
+  { id: 'split', name: 'Delleverans', cost: 99, icon: <RefreshCw size={16} /> },
+];
 
 const SECTIONS: CheckoutSection[] = [
   { id: 'customer', title: 'Kunduppgifter', icon: <User size={20} />, description: 'Namn, e-post, adress' },
@@ -39,13 +62,24 @@ export default function TestCheckoutPage() {
   const [hasUpsell, setHasUpsell] = useState(false);
   const [shippingDisplayedEarly, setShippingDisplayedEarly] = useState(true);
   const [hideHeaderFooter, setHideHeaderFooter] = useState(false);
+  const [orderValue, setOrderValue] = useState(500);
+  const [shippingCost, setShippingCost] = useState(49);
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(0);
+  const [selectedDeliveryOptions, setSelectedDeliveryOptions] = useState(['pickup', 'home']);
+  const [freeShipping, setFreeShipping] = useState(false);
+  const [freeHomeDelivery, setFreeHomeDelivery] = useState(false);
+  const [freeLockerDelivery, setFreeLockerDelivery] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState('klarna');
+  const [customerCountry, setCustomerCountry] = useState('SE');
 
   const calculateConversionScore = () => {
-    let score = 100; // Base score
+    let score = 50; // Base score (lowered from 100 to show impact)
 
     // Guest checkout impact (Baymard: forced account creation is top 3 reason for abandonment)
     if (!isGuestCheckout) {
       score -= 35;
+    } else {
+      score += 15; // Guest checkout helps conversion
     }
 
     // Autofill impact (reduces friction, especially on mobile)
@@ -56,6 +90,8 @@ export default function TestCheckoutPage() {
     // Hidden shipping costs (biggest reason for cart abandonment)
     if (!shippingDisplayedEarly) {
       score -= 48;
+    } else {
+      score += 8;
     }
 
     // No header/footer (reduces distractions)
@@ -65,17 +101,115 @@ export default function TestCheckoutPage() {
 
     // Post-purchase upsell (increases AOV without hurting conversion)
     if (hasUpsell) {
-      score += 5; // Small positive impact on conversion, +15% on AOV
+      score += 5;
+    }
+
+    // Free shipping threshold (increases AOV and conversion)
+    if (freeShippingThreshold > 0) {
+      score += 8;
+    }
+
+    // Free shipping on all orders
+    if (freeShipping) {
+      score += 12;
+    }
+
+    // Free home delivery
+    if (freeHomeDelivery) {
+      score += 7;
+    }
+
+    // Free locker delivery
+    if (freeLockerDelivery) {
+      score += 5;
+    }
+
+    // Multiple delivery options (gives customers choice)
+    if (selectedDeliveryOptions.length >= 3) {
+      score += 6;
+    } else if (selectedDeliveryOptions.length >= 2) {
+      score += 3;
+    }
+
+    // Shipping cost vs order value (high shipping cost relative to order value hurts conversion)
+    const shippingRatio = shippingCost / orderValue;
+    if (shippingRatio > 0.2) {
+      score -= 15; // Shipping cost is >20% of order value
+    } else if (shippingRatio > 0.1) {
+      score -= 5; // Shipping cost is 10-20% of order value
+    } else if (shippingRatio < 0.05) {
+      score += 5; // Low shipping cost helps
     }
 
     // Layout order impact (payment before shipping = bad UX)
     const paymentIndex = layoutOrder.indexOf('payment');
     const shippingIndex = layoutOrder.indexOf('shipping');
     if (paymentIndex < shippingIndex) {
-      score -= 5;
+      score -= 8; // Payment before shipping is confusing
+    }
+
+    // Field order impact (customer info first is standard and expected)
+    const customerIndex = layoutOrder.indexOf('customer');
+    if (customerIndex !== 0) {
+      score -= 3; // Starting with customer info is best practice
+    }
+
+    // Player trust/conversion impact
+    const player = players.find(p => p.slug === selectedPlayer);
+    if (player) {
+      score += (player.conversionImpact - 5) * 2; // Scale conversion impact (1-10) to score impact
+    }
+
+    // Country impact (Swedish customers have higher trust in local players)
+    if (customerCountry === 'SE' && player?.countries.includes('SE')) {
+      score += 8;
+    } else if (!player?.countries.includes(customerCountry)) {
+      score -= 10; // Player not available in customer's country
     }
 
     return Math.max(0, Math.min(100, score));
+  };
+
+  const calculateAOV = () => {
+    let aov = orderValue;
+
+    // Free shipping threshold increases AOV by 15-30% (customers add items to reach threshold)
+    if (freeShippingThreshold > 0) {
+      aov *= 1.2;
+    }
+
+    // Free shipping on all orders increases AOV by 10%
+    if (freeShipping) {
+      aov *= 1.1;
+    }
+
+    // Upsell increases AOV by 15%
+    if (hasUpsell) {
+      aov *= 1.15;
+    }
+
+    return Math.round(aov);
+  };
+
+  const calculateCLV = () => {
+    let clvMultiplier = 1;
+
+    // Guest checkout reduces CLV (no customer account for future marketing)
+    if (isGuestCheckout) {
+      clvMultiplier *= 0.6;
+    }
+
+    // Account creation enables future marketing, increases CLV
+    if (!isGuestCheckout) {
+      clvMultiplier *= 1.5;
+    }
+
+    // Multiple delivery options improves satisfaction, increases repeat purchases
+    if (selectedDeliveryOptions.length >= 3) {
+      clvMultiplier *= 1.2;
+    }
+
+    return Math.round(clvMultiplier * 1000); // Base CLV of 1000
   };
 
   const getConversionMetrics = () => {
@@ -84,12 +218,16 @@ export default function TestCheckoutPage() {
 
     if (!isGuestCheckout) {
       metrics.push({ label: 'Tvingat konto', impact: -35, source: 'Baymard Institute' });
+    } else {
+      metrics.push({ label: 'Gästutcheckning', impact: 15, source: 'Baymard Institute' });
     }
     if (hasAutofill) {
       metrics.push({ label: 'Autofill', impact: 12, source: 'Nielsen Norman Group' });
     }
     if (!shippingDisplayedEarly) {
       metrics.push({ label: 'Dolda fraktkostnader', impact: -48, source: 'Baymard Institute' });
+    } else {
+      metrics.push({ label: 'Visad frakt tidigt', impact: 8, source: 'CRO best practices' });
     }
     if (hideHeaderFooter) {
       metrics.push({ label: 'Minimal UI', impact: 10, source: 'CRO best practices' });
@@ -97,11 +235,58 @@ export default function TestCheckoutPage() {
     if (hasUpsell) {
       metrics.push({ label: 'Post-purchase upsell', impact: 5, source: 'E-commerce studies' });
     }
+    if (freeShippingThreshold > 0) {
+      metrics.push({ label: 'Fri frakt-gräns', impact: 8, source: 'Shopify/Baymard' });
+    }
+    if (freeShipping) {
+      metrics.push({ label: 'Fri frakt alltid', impact: 12, source: 'E-commerce studies' });
+    }
+    if (freeHomeDelivery) {
+      metrics.push({ label: 'Fri hemleverans', impact: 7, source: 'Delivery experience studies' });
+    }
+    if (freeLockerDelivery) {
+      metrics.push({ label: 'Fri skåpsleverans', impact: 5, source: 'Delivery experience studies' });
+    }
+    if (selectedDeliveryOptions.length >= 3) {
+      metrics.push({ label: 'Många leveransalternativ', impact: 6, source: 'Ingrid/nShift studies' });
+    } else if (selectedDeliveryOptions.length >= 2) {
+      metrics.push({ label: 'Flera leveransalternativ', impact: 3, source: 'Ingrid/nShift studies' });
+    }
+
+    const shippingRatio = shippingCost / orderValue;
+    if (shippingRatio > 0.2) {
+      metrics.push({ label: 'Hög fraktkostnad (>20%)', impact: -15, source: 'Baymard Institute' });
+    } else if (shippingRatio > 0.1) {
+      metrics.push({ label: 'Fraktkostnad 10-20%', impact: -5, source: 'Baymard Institute' });
+    } else if (shippingRatio < 0.05) {
+      metrics.push({ label: 'Låg fraktkostnad (<5%)', impact: 5, source: 'Baymard Institute' });
+    }
 
     const paymentIndex = layoutOrder.indexOf('payment');
     const shippingIndex = layoutOrder.indexOf('shipping');
     if (paymentIndex < shippingIndex) {
-      metrics.push({ label: 'Betaling innan leverans', impact: -5, source: 'UX best practices' });
+      metrics.push({ label: 'Betaling innan leverans', impact: -8, source: 'UX best practices' });
+    }
+
+    const customerIndex = layoutOrder.indexOf('customer');
+    if (customerIndex !== 0) {
+      metrics.push({ label: 'Kundinfo ej först', impact: -3, source: 'UX best practices' });
+    }
+
+    const player = players.find(p => p.slug === selectedPlayer);
+    if (player) {
+      const playerImpact = (player.conversionImpact - 5) * 2;
+      if (playerImpact > 0) {
+        metrics.push({ label: `${player.name} trust score`, impact: playerImpact, source: 'Performile analysis' });
+      } else if (playerImpact < 0) {
+        metrics.push({ label: `${player.name} trust score`, impact: playerImpact, source: 'Performile analysis' });
+      }
+    }
+
+    if (customerCountry === 'SE' && player?.countries.includes('SE')) {
+      metrics.push({ label: 'Lokal provider (SE)', impact: 8, source: 'Trust studies' });
+    } else if (!player?.countries.includes(customerCountry)) {
+      metrics.push({ label: 'Provider ej tillgängligt', impact: -10, source: 'Availability check' });
     }
 
     return metrics;
@@ -193,14 +378,18 @@ export default function TestCheckoutPage() {
                                       )}
                                       {sectionId === 'shipping' && (
                                         <>
-                                          <div className="h-8 bg-slate-200 dark:bg-slate-600 rounded flex items-center px-3">
-                                            <div className="w-4 h-4 rounded-full border-2 border-slate-400 mr-2" />
-                                            <span className="text-sm text-slate-600 dark:text-slate-300">PostNord - 49 kr</span>
-                                          </div>
-                                          <div className="h-8 bg-slate-200 dark:bg-slate-600 rounded flex items-center px-3">
-                                            <div className="w-4 h-4 rounded-full border-2 border-slate-400 mr-2" />
-                                            <span className="text-sm text-slate-600 dark:text-slate-300">DHL - 59 kr</span>
-                                          </div>
+                                          {selectedDeliveryOptions.map((optId) => {
+                                            const opt = DELIVERY_OPTIONS.find(o => o.id === optId);
+                                            if (!opt) return null;
+                                            return (
+                                              <div key={opt.id} className="h-8 bg-slate-200 dark:bg-slate-600 rounded flex items-center px-3">
+                                                <div className="w-4 h-4 rounded-full border-2 border-slate-400 mr-2" />
+                                                <span className="text-sm text-slate-600 dark:text-slate-300 flex items-center gap-1">
+                                                  {opt.icon} {opt.name} - {opt.cost} kr
+                                                </span>
+                                              </div>
+                                            );
+                                          })}
                                         </>
                                       )}
                                       {sectionId === 'payment' && (
@@ -361,6 +550,176 @@ export default function TestCheckoutPage() {
                   checked={hideHeaderFooter}
                   onChange={setHideHeaderFooter}
                 />
+                <Toggle
+                  label="Fri frakt alltid"
+                  description="Ingen fraktkostnad på alla order"
+                  checked={freeShipping}
+                  onChange={setFreeShipping}
+                />
+                <Toggle
+                  label="Fri hemleverans"
+                  description="Gratis hemleverans för kunder"
+                  checked={freeHomeDelivery}
+                  onChange={setFreeHomeDelivery}
+                />
+                <Toggle
+                  label="Fri skåpsleverans"
+                  description="Gratis leverans till paketskåp"
+                  checked={freeLockerDelivery}
+                  onChange={setFreeLockerDelivery}
+                />
+              </div>
+            </div>
+
+            {/* Order & Shipping */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                <ShoppingCart size={18} />
+                Order & Frakt
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Ordervärde (kr)
+                  </label>
+                  <input
+                    type="range"
+                    min="100"
+                    max="5000"
+                    step="50"
+                    value={orderValue}
+                    onChange={(e) => setOrderValue(Number(e.target.value))}
+                    className="w-full"
+                  />
+                  <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">{orderValue} kr</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Fraktkostnad (kr)
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="500"
+                    step="10"
+                    value={shippingCost}
+                    onChange={(e) => setShippingCost(Number(e.target.value))}
+                    className="w-full"
+                  />
+                  <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">{shippingCost} kr ({((shippingCost / orderValue) * 100).toFixed(1)}% av ordervärde)</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Fri frakt-gräns (kr) - 0 = ingen gräns
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="2000"
+                    step="100"
+                    value={freeShippingThreshold}
+                    onChange={(e) => setFreeShippingThreshold(Number(e.target.value))}
+                    className="w-full"
+                  />
+                  <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">{freeShippingThreshold === 0 ? 'Ingen gräns' : `${freeShippingThreshold} kr`}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Delivery Options */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                <Truck size={18} />
+                Leveransalternativ
+              </h3>
+              <div className="space-y-2">
+                {DELIVERY_OPTIONS.map((opt) => (
+                  <label key={opt.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedDeliveryOptions.includes(opt.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedDeliveryOptions([...selectedDeliveryOptions, opt.id]);
+                        } else {
+                          setSelectedDeliveryOptions(selectedDeliveryOptions.filter(id => id !== opt.id));
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                    />
+                    <div className="flex items-center gap-2 flex-1">
+                      {opt.icon}
+                      <span className="text-sm text-slate-700 dark:text-slate-300">{opt.name}</span>
+                      <span className="text-xs text-slate-500">{opt.cost} kr</span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Player & Country */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                <Globe size={18} />
+                Checkout Provider & Land
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Checkout Provider
+                  </label>
+                  <select
+                    value={selectedPlayer}
+                    onChange={(e) => setSelectedPlayer(e.target.value)}
+                    className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700"
+                  >
+                    {players.map((p) => (
+                      <option key={p.slug} value={p.slug}>
+                        {p.name} (Trust: {p.conversionImpact}/10)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Kundens land
+                  </label>
+                  <select
+                    value={customerCountry}
+                    onChange={(e) => setCustomerCountry(e.target.value)}
+                    className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700"
+                  >
+                    <option value="SE">Sverige</option>
+                    <option value="NO">Norge</option>
+                    <option value="DK">Danmark</option>
+                    <option value="FI">Finland</option>
+                    <option value="DE">Tyskland</option>
+                    <option value="UK">Storbritannien</option>
+                    <option value="US">USA</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* AOV & CLV Metrics */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                <DollarSign size={18} />
+                AOV & CLV
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                  <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">{calculateAOV()} kr</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">Beräknad AOV</div>
+                </div>
+                <div className="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                  <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">{calculateCLV()} kr</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">Beräknad CLV</div>
+                </div>
+              </div>
+              <div className="mt-4 text-xs text-slate-500 dark:text-slate-400">
+                <p><strong>AOV:</strong> Ökas av fri frakt-gräns (+20%), fri frakt (+10%), upsell (+15%)</p>
+                <p className="mt-1"><strong>CLV:</strong> Gästutcheckning sänker (-40%), konto ökar (+50%), många leveransalternativ ökar (+20%)</p>
               </div>
             </div>
           </div>
