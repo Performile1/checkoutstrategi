@@ -25,11 +25,17 @@ const guides: Record<string, { title: string; description: string; body: string[
   },
   'delivery-experience': {
     title: 'Delivery Experience: konvertering genom leverans',
-    description: 'Hur Ingrid och nShift flyttar konvertering och när du ska välja vilken.',
+    description: 'Hur Ingrid, nShift, Wetail, Fraktjakt, Shipmondo, PostNord, DHL och Bring flyttar konvertering och när du ska välja vilken.',
     body: [
       'Leverans är det sista steget där köpare tappas – och det första där de formar återköpsintentionen.',
       '**Ingrid** är vassast för konsument-UX: smart leveransval, branded tracking, miljödata. Passar D2C-brands och mid-market e-handel.',
       '**nShift** dominerar vid enterprise-skala och komplex multi-carrier. Bredaste carrier-nätverk i Norden.',
+      '**Wetail** fokuserar på logistik och leveransoptimering som integreras i befintlig checkout.',
+      '**Fraktjakt** erbjuder jämförelse och bokning av frakt med ett fullskaligt TMS-system.',
+      '**Shipmondo** är en fraktplattform med många integrationer till webshop-system.',
+      '**PostNord** är Nordens ledande logistikaktör med checkout-lösningar och fokus på leveransval.',
+      '**DHL** är en global logistikjätte med checkout-integrationer för internationell e-handel.',
+      '**Bring** är en nordisk logistikaktör med e-handelslösningar och leveransfokus.',
       '**Key takeaway:** En checkout utan optimerat leveranssteg lämnar 5–15% konvertering på bordet. Det är i praktiken den största enskilda CRO-spaken för fysisk-varor-e-handel idag.',
       'Kombinera gärna med Walley Engage eller motsvarande för post-purchase intäkt – då täcker du hela kedjan från varukorg till återköp.',
     ],
