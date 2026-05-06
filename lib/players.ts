@@ -480,7 +480,7 @@ export const players: Player[] = [
     slug: 'dhl',
     name: 'DHL',
     tagline: 'Global logistikjätte med checkout-integrationer.',
-    logoUrl: '/logos/dhl.svg',
+    logoUrl: '/logos/dhl.png',
     websiteUrl: 'https://www.dhl.com',
     brandColor: 'bg-red-500',
     category: 'Transportör',
