@@ -19,6 +19,15 @@ export function ComparisonTable({ initial }: { initial?: string[] }) {
     [selected]
   );
 
+  // Split players into groups of 4 to avoid horizontal scroll
+  const playerGroups = useMemo(() => {
+    const groups: Player[][] = [];
+    for (let i = 0; i < compared.length; i += 4) {
+      groups.push(compared.slice(i, i + 4));
+    }
+    return groups;
+  }, [compared]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-2">
@@ -40,112 +49,104 @@ export function ComparisonTable({ initial }: { initial?: string[] }) {
         })}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {/* Section 1: Översikt */}
-        <TableSection
-          title="Översikt"
-          compared={compared}
-          rows={[
-            { label: 'Trust angle', cells: compared.map((p) => p.trustAngle) },
-            { label: 'Kategori', cells: compared.map((p) => p.category) },
-            { label: 'Målmarknad', cells: compared.map((p) => p.targetMarket) },
-          ]}
-        />
+      {playerGroups.map((group, groupIndex) => (
+        <div key={groupIndex} className="space-y-4">
+          {playerGroups.length > 1 && (
+            <h3 className="font-semibold text-lg">Grupp {groupIndex + 1}</h3>
+          )}
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="p-4 text-left font-semibold w-40">Attribut</th>
+                  {group.map((p) => (
+                    <th key={p.slug} className="p-4 text-left font-semibold">{p.name}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                {/* Översikt */}
+                <tr>
+                  <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">Trust angle</td>
+                  {group.map((p) => (
+                    <td key={p.slug} className="p-4 align-top">{p.trustAngle}</td>
+                  ))}
+                </tr>
+                <tr>
+                  <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">Kategori</td>
+                  {group.map((p) => (
+                    <td key={p.slug} className="p-4 align-top">{p.category}</td>
+                  ))}
+                </tr>
+                <tr>
+                  <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">Målmarknad</td>
+                  {group.map((p) => (
+                    <td key={p.slug} className="p-4 align-top">{p.targetMarket}</td>
+                  ))}
+                </tr>
 
-        {/* Section 2: Konvertering & Pris */}
-        <TableSection
-          title="Konvertering & Pris"
-          compared={compared}
-          rows={[
-            {
-              label: 'Konverterings­impact',
-              cells: compared.map((p) => (
-                <span className="inline-flex items-center gap-2">
-                  <span className="font-semibold">{p.conversionImpact}/10</span>
-                  <span className="h-1.5 w-20 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                    <span className="block h-full bg-brand-500" style={{ width: `${p.conversionImpact * 10}%` }} />
-                  </span>
-                </span>
-              )),
-            },
-            { label: 'Pris', cells: compared.map((p) => p.pricing) },
-          ]}
-        />
+                {/* Konvertering & Pris */}
+                <tr>
+                  <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">Konverteringsimpact</td>
+                  {group.map((p) => (
+                    <td key={p.slug} className="p-4 align-top">
+                      <span className="inline-flex items-center gap-2">
+                        <span className="font-semibold">{p.conversionImpact}/10</span>
+                        <span className="h-1.5 w-20 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                          <span className="block h-full bg-brand-500" style={{ width: `${p.conversionImpact * 10}%` }} />
+                        </span>
+                      </span>
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">Pris</td>
+                  {group.map((p) => (
+                    <td key={p.slug} className="p-4 align-top">{p.pricing}</td>
+                  ))}
+                </tr>
 
-        {/* Section 3: Marknad */}
-        <TableSection
-          title="Marknad"
-          compared={compared}
-          rows={[
-            { label: 'Länder', cells: compared.map((p) => p.countries.join(', ')) },
-          ]}
-        />
+                {/* Marknad */}
+                <tr>
+                  <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">Länder</td>
+                  {group.map((p) => (
+                    <td key={p.slug} className="p-4 align-top">{p.countries.join(', ')}</td>
+                  ))}
+                </tr>
 
-        {/* Section 4: Funktioner */}
-        <TableSection
-          title="Nyckelfunktioner"
-          compared={compared}
-          rows={[
-            {
-              label: 'Funktioner',
-              cells: compared.map((p) => (
-                <ul className="list-disc pl-4 space-y-1 text-slate-600 dark:text-slate-400">
-                  {p.keyFeatures.slice(0, 4).map((f) => <li key={f}>{f}</li>)}
-                </ul>
-              )),
-            },
-          ]}
-        />
+                {/* Nyckelfunktioner */}
+                <tr>
+                  <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">Nyckelfunktioner</td>
+                  {group.map((p) => (
+                    <td key={p.slug} className="p-4 align-top">
+                      <ul className="list-disc pl-4 space-y-1 text-slate-600 dark:text-slate-400">
+                        {p.keyFeatures.slice(0, 4).map((f) => <li key={f}>{f}</li>)}
+                      </ul>
+                    </td>
+                  ))}
+                </tr>
 
-        {/* Section 5: Länkar */}
-        <TableSection
-          title="Länkar"
-          compared={compared}
-          rows={[
-            {
-              label: 'Affiliate',
-              cells: compared.map((p) => (
-                <a
-                  href={p.affiliateUrl}
-                  target="_blank"
-                  rel="sponsored noopener"
-                  className="inline-flex items-center gap-1 text-brand-600 hover:underline"
-                >
-                  Besök <ExternalLink size={12} />
-                </a>
-              )),
-            },
-          ]}
-        />
-      </div>
-    </div>
-  );
-}
-
-function TableSection({ title, compared, rows }: { title: string; compared: Player[]; rows: { label: string; cells: React.ReactNode[] }[] }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-      <div className="bg-slate-50 dark:bg-slate-900 px-4 py-3 font-semibold text-sm border-b border-slate-200 dark:border-slate-800">
-        {title}
-      </div>
-      <table className="w-full text-sm">
-        <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-          {rows.map((row, i) => (
-            <Row key={i} label={row.label} cells={row.cells} />
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function Row({ label, cells }: { label: string; cells: React.ReactNode[] }) {
-  return (
-    <tr>
-      <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40 w-40">{label}</td>
-      {cells.map((c, i) => (
-        <td key={i} className="p-4 align-top">{c}</td>
+                {/* Länkar */}
+                <tr>
+                  <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">Affiliate</td>
+                  {group.map((p) => (
+                    <td key={p.slug} className="p-4 align-top">
+                      <a
+                        href={p.affiliateUrl}
+                        target="_blank"
+                        rel="sponsored noopener"
+                        className="inline-flex items-center gap-1 text-brand-600 hover:underline"
+                      >
+                        Besök <ExternalLink size={12} />
+                      </a>
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       ))}
-    </tr>
+    </div>
   );
 }
