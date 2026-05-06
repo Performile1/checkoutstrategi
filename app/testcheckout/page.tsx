@@ -78,7 +78,11 @@ export default function TestCheckoutPage() {
     home: 'Hemleverans - Levereras Tis 29/6 mellan 08-17',
     point: 'Paketombud - Öppet 10-20',
     express: 'Expressleverans - Idag 10:00-11:30',
+    mailbox: 'Brevlåda - Levereras 1-3 dagar',
   });
+  const [activeTab, setActiveTab] = useState('settings');
+  const [productName, setProductName] = useState('Premium Tröja');
+  const [productPrice, setProductPrice] = useState(499);
 
   const calculateConversionScore = () => {
     let score = 50; // Base score (lowered from 100 to show impact)
@@ -413,14 +417,24 @@ export default function TestCheckoutPage() {
                                             const opt = DELIVERY_OPTIONS.find(o => o.id === optId);
                                             if (!opt) return null;
                                             return (
-                                              <div key={opt.id} className="h-8 bg-slate-200 dark:bg-slate-600 rounded flex items-center px-3">
-                                                <div className="w-4 h-4 rounded-full border-2 border-slate-400 mr-2" />
-                                                <span className="text-sm text-slate-600 dark:text-slate-300 flex items-center gap-1">
-                                                  {opt.icon} {opt.name} - {opt.cost} kr
-                                                </span>
+                                              <div key={opt.id} className="h-auto bg-slate-200 dark:bg-slate-600 rounded p-3">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                  <div className="w-4 h-4 rounded-full border-2 border-slate-400" />
+                                                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                                    {opt.icon} {opt.name} - {opt.cost} kr
+                                                  </span>
+                                                </div>
+                                                <div className="text-xs text-slate-600 dark:text-slate-400 pl-6">
+                                                  {shippingTexts[optId] || ''}
+                                                </div>
                                               </div>
                                             );
                                           })}
+                                          {freeShippingThreshold > 0 && orderValue < freeShippingThreshold && (
+                                            <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded text-xs text-green-800 dark:text-green-300">
+                                              Köp för {freeShippingThreshold - orderValue} kr till för fri frakt!
+                                            </div>
+                                          )}
                                         </>
                                       )}
                                       {sectionId === 'payment' && (
@@ -437,8 +451,18 @@ export default function TestCheckoutPage() {
                                       )}
                                       {sectionId === 'review' && (
                                         <>
-                                          <div className="h-4 bg-slate-200 dark:bg-slate-600 rounded w-3/4" />
-                                          <div className="h-4 bg-slate-200 dark:bg-slate-600 rounded w-1/2" />
+                                          <div className="flex items-start gap-3 p-3 bg-slate-100 dark:bg-slate-600 rounded">
+                                            <div className="w-16 h-16 bg-slate-300 dark:bg-slate-500 rounded flex-shrink-0 flex items-center justify-center">
+                                              <Package size={24} className="text-slate-400 dark:text-slate-400" />
+                                            </div>
+                                            <div className="flex-1">
+                                              <div className="font-medium text-slate-700 dark:text-slate-300 text-sm">{productName}</div>
+                                              <div className="text-sm text-slate-600 dark:text-slate-400">{productPrice} kr</div>
+                                              <div className="text-xs text-slate-500 dark:text-slate-500">Antal: 1</div>
+                                            </div>
+                                          </div>
+                                          <div className="h-4 bg-slate-200 dark:bg-slate-600 rounded w-3/4 mt-2" />
+                                          <div className="h-4 bg-slate-200 dark:bg-slate-600 rounded w-1/2 mt-1" />
                                         </>
                                       )}
                                     </div>
@@ -481,24 +505,22 @@ export default function TestCheckoutPage() {
             </div>
           </div>
 
-          {/* Right: Control Panel */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Strategy Dashboard</h2>
+          {/* Right: Control Panel with Tabs */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-2">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Control Panel</h2>
             </div>
 
-            {/* Conversion Score */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
-              <div className="flex items-center justify-between mb-4">
+            {/* Conversion Score - Always Visible */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Gauge size={20} className="text-brand-600 dark:text-brand-400" />
+                  <Gauge size={18} className="text-brand-600 dark:text-brand-400" />
                   <span className="font-semibold text-slate-900 dark:text-slate-100">Konverteringsscore</span>
                 </div>
-                <div className="text-4xl font-bold text-slate-900 dark:text-slate-100">{conversionScore}%</div>
+                <div className="text-3xl font-bold text-slate-900 dark:text-slate-100">{conversionScore}%</div>
               </div>
-
-              {/* Gauge Chart */}
-              <div className="relative h-4 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-4">
+              <div className="relative h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-2">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${conversionScore}%` }}
@@ -508,19 +530,271 @@ export default function TestCheckoutPage() {
                   }`}
                 />
               </div>
-
-              <div className="text-sm text-slate-600 dark:text-slate-400">
+              <div className="text-xs text-slate-600 dark:text-slate-400">
                 {conversionScore >= 70 ? 'Optimerad för hög konvertering' : conversionScore >= 40 ? 'Medel konvertering' : 'Låg konvertering - förbättringar behövs'}
               </div>
             </div>
 
+            {/* Tabs */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+              <div className="flex border-b border-slate-200 dark:border-slate-700">
+                <button
+                  onClick={() => setActiveTab('settings')}
+                  className={`flex-1 px-4 py-3 text-sm font-medium transition ${
+                    activeTab === 'settings'
+                      ? 'text-brand-600 border-b-2 border-brand-600 bg-brand-50 dark:bg-brand-950'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                  }`}
+                >
+                  Inställningar
+                </button>
+                <button
+                  onClick={() => setActiveTab('shipping')}
+                  className={`flex-1 px-4 py-3 text-sm font-medium transition ${
+                    activeTab === 'shipping'
+                      ? 'text-brand-600 border-b-2 border-brand-600 bg-brand-50 dark:bg-brand-950'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                  }`}
+                >
+                  Frakt & Logistik
+                </button>
+                <button
+                  onClick={() => setActiveTab('product')}
+                  className={`flex-1 px-4 py-3 text-sm font-medium transition ${
+                    activeTab === 'product'
+                      ? 'text-brand-600 border-b-2 border-brand-600 bg-brand-50 dark:bg-brand-950'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                  }`}
+                >
+                  Produkt
+                </button>
+              </div>
+
+              <div className="p-4 max-h-[500px] overflow-y-auto">
+                {activeTab === 'settings' && (
+                  <div className="space-y-3">
+                    <Toggle
+                      label="Gästutcheckning"
+                      description="Inget krav på att skapa konto"
+                      checked={isGuestCheckout}
+                      onChange={setIsGuestCheckout}
+                    />
+                    <Toggle
+                      label="Adress-autofill"
+                      description="Automatisk ifyllning av adresser"
+                      checked={hasAutofill}
+                      onChange={setHasAutofill}
+                    />
+                    <Toggle
+                      label="Visa frakt tidigt"
+                      description="Visa fraktkostnader direkt i kassan"
+                      checked={shippingDisplayedEarly}
+                      onChange={setShippingDisplayedEarly}
+                    />
+                    <Toggle
+                      label="Post-purchase upsell"
+                      description="Erbjud tilläggsprodukter efter köp"
+                      checked={hasUpsell}
+                      onChange={setHasUpsell}
+                    />
+                    <Toggle
+                      label="Dölj header/footer"
+                      description="Minimal UI för mindre distraktioner"
+                      checked={hideHeaderFooter}
+                      onChange={setHideHeaderFooter}
+                    />
+                    <Toggle
+                      label="Fri frakt alltid"
+                      description="Ingen fraktkostnad på alla order"
+                      checked={freeShipping}
+                      onChange={setFreeShipping}
+                    />
+                    <Toggle
+                      label="Fri hemleverans"
+                      description="Gratis hemleverans för kunder"
+                      checked={freeHomeDelivery}
+                      onChange={setFreeHomeDelivery}
+                    />
+                    <Toggle
+                      label="Fri skåpsleverans"
+                      description="Gratis leverans till paketskåp"
+                      checked={freeLockerDelivery}
+                      onChange={setFreeLockerDelivery}
+                    />
+                  </div>
+                )}
+
+                {activeTab === 'shipping' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Ordervärde (kr)
+                      </label>
+                      <input
+                        type="range"
+                        min="100"
+                        max="5000"
+                        step="50"
+                        value={orderValue}
+                        onChange={(e) => setOrderValue(Number(e.target.value))}
+                        className="w-full"
+                      />
+                      <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">{orderValue} kr</div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Fraktkostnad (kr)
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="500"
+                        step="10"
+                        value={shippingCost}
+                        onChange={(e) => setShippingCost(Number(e.target.value))}
+                        className="w-full"
+                      />
+                      <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">{shippingCost} kr ({((shippingCost / orderValue) * 100).toFixed(1)}% av ordervärde)</div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Fri frakt-gräns (kr) - 0 = ingen gräns
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="2000"
+                        step="100"
+                        value={freeShippingThreshold}
+                        onChange={(e) => setFreeShippingThreshold(Number(e.target.value))}
+                        className="w-full"
+                      />
+                      <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">{freeShippingThreshold === 0 ? 'Ingen gräns' : `${freeShippingThreshold} kr`}</div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Leveransalternativ
+                      </label>
+                      <div className="space-y-2">
+                        {DELIVERY_OPTIONS.map((opt) => (
+                          <label key={opt.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={selectedDeliveryOptions.includes(opt.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedDeliveryOptions([...selectedDeliveryOptions, opt.id]);
+                                } else {
+                                  setSelectedDeliveryOptions(selectedDeliveryOptions.filter(id => id !== opt.id));
+                                }
+                              }}
+                              className="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                            />
+                            <div className="flex items-center gap-2 flex-1">
+                              {opt.icon}
+                              <span className="text-sm text-slate-700 dark:text-slate-300">{opt.name}</span>
+                              <span className="text-xs text-slate-500">{opt.cost} kr</span>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Leveranstext (påverkar konvertering)
+                      </label>
+                      <div className="space-y-2">
+                        {selectedDeliveryOptions.map((optId) => {
+                          const opt = DELIVERY_OPTIONS.find(o => o.id === optId);
+                          if (!opt) return null;
+                          return (
+                            <div key={opt.id}>
+                              <label className="text-xs text-slate-500 mb-1 block">{opt.name}</label>
+                              <input
+                                type="text"
+                                value={shippingTexts[optId] || ''}
+                                onChange={(e) => setShippingTexts({ ...shippingTexts, [optId]: e.target.value })}
+                                className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 text-sm"
+                                placeholder="Ex: Tis 29/6 mellan 10:00-11:30"
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'product' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Produktnamn
+                      </label>
+                      <input
+                        type="text"
+                        value={productName}
+                        onChange={(e) => setProductName(e.target.value)}
+                        className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Produktpris (kr)
+                      </label>
+                      <input
+                        type="number"
+                        value={productPrice}
+                        onChange={(e) => setProductPrice(Number(e.target.value))}
+                        className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Checkout Provider
+                      </label>
+                      <select
+                        value={selectedPlayer}
+                        onChange={(e) => setSelectedPlayer(e.target.value)}
+                        className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700"
+                      >
+                        {players.map((p) => (
+                          <option key={p.slug} value={p.slug}>
+                            {p.name} (Trust: {p.conversionImpact}/10)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Kundens land
+                      </label>
+                      <select
+                        value={customerCountry}
+                        onChange={(e) => setCustomerCountry(e.target.value)}
+                        className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700"
+                      >
+                        <option value="SE">Sverige</option>
+                        <option value="NO">Norge</option>
+                        <option value="DK">Danmark</option>
+                        <option value="FI">Finland</option>
+                        <option value="DE">Tyskland</option>
+                        <option value="UK">Storbritannien</option>
+                        <option value="US">USA</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Metrics Breakdown */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                <Info size={18} />
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2 text-sm">
+                <Info size={16} />
                 Påverkansfaktorer
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-2 max-h-48 overflow-y-auto">
                 <AnimatePresence>
                   {metrics.map((metric, index) => (
                     <motion.div
@@ -528,8 +802,8 @@ export default function TestCheckoutPage() {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-700"
+                      transition={{ delay: index * 0.05 }}
+                      className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-700 text-xs"
                     >
                       <div className="flex-1">
                         <div className="font-medium text-slate-900 dark:text-slate-100">{metric.label}</div>
@@ -538,7 +812,7 @@ export default function TestCheckoutPage() {
                       <div className={`flex items-center gap-1 font-semibold ${
                         metric.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                       }`}>
-                        {metric.impact > 0 ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
+                        {metric.impact > 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
                         {Math.abs(metric.impact)}%
                       </div>
                     </motion.div>
@@ -547,210 +821,21 @@ export default function TestCheckoutPage() {
               </div>
             </div>
 
-            {/* Control Toggles */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-4">Inställningar</h3>
-              <div className="space-y-4">
-                <Toggle
-                  label="Gästutcheckning"
-                  description="Inget krav på att skapa konto"
-                  checked={isGuestCheckout}
-                  onChange={setIsGuestCheckout}
-                />
-                <Toggle
-                  label="Adress-autofill"
-                  description="Automatisk ifyllning av adresser"
-                  checked={hasAutofill}
-                  onChange={setHasAutofill}
-                />
-                <Toggle
-                  label="Visa frakt tidigt"
-                  description="Visa fraktkostnader direkt i kassan"
-                  checked={shippingDisplayedEarly}
-                  onChange={setShippingDisplayedEarly}
-                />
-                <Toggle
-                  label="Post-purchase upsell"
-                  description="Erbjud tilläggsprodukter efter köp"
-                  checked={hasUpsell}
-                  onChange={setHasUpsell}
-                />
-                <Toggle
-                  label="Dölj header/footer"
-                  description="Minimal UI för mindre distraktioner"
-                  checked={hideHeaderFooter}
-                  onChange={setHideHeaderFooter}
-                />
-                <Toggle
-                  label="Fri frakt alltid"
-                  description="Ingen fraktkostnad på alla order"
-                  checked={freeShipping}
-                  onChange={setFreeShipping}
-                />
-                <Toggle
-                  label="Fri hemleverans"
-                  description="Gratis hemleverans för kunder"
-                  checked={freeHomeDelivery}
-                  onChange={setFreeHomeDelivery}
-                />
-                <Toggle
-                  label="Fri skåpsleverans"
-                  description="Gratis leverans till paketskåp"
-                  checked={freeLockerDelivery}
-                  onChange={setFreeLockerDelivery}
-                />
-              </div>
-            </div>
-
-            {/* Order & Shipping */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                <ShoppingCart size={18} />
-                Order & Frakt
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    Ordervärde (kr)
-                  </label>
-                  <input
-                    type="range"
-                    min="100"
-                    max="5000"
-                    step="50"
-                    value={orderValue}
-                    onChange={(e) => setOrderValue(Number(e.target.value))}
-                    className="w-full"
-                  />
-                  <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">{orderValue} kr</div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    Fraktkostnad (kr)
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="500"
-                    step="10"
-                    value={shippingCost}
-                    onChange={(e) => setShippingCost(Number(e.target.value))}
-                    className="w-full"
-                  />
-                  <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">{shippingCost} kr ({((shippingCost / orderValue) * 100).toFixed(1)}% av ordervärde)</div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    Fri frakt-gräns (kr) - 0 = ingen gräns
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="2000"
-                    step="100"
-                    value={freeShippingThreshold}
-                    onChange={(e) => setFreeShippingThreshold(Number(e.target.value))}
-                    className="w-full"
-                  />
-                  <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">{freeShippingThreshold === 0 ? 'Ingen gräns' : `${freeShippingThreshold} kr`}</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Delivery Options */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                <Truck size={18} />
-                Leveransalternativ
-              </h3>
-              <div className="space-y-2">
-                {DELIVERY_OPTIONS.map((opt) => (
-                  <label key={opt.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedDeliveryOptions.includes(opt.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedDeliveryOptions([...selectedDeliveryOptions, opt.id]);
-                        } else {
-                          setSelectedDeliveryOptions(selectedDeliveryOptions.filter(id => id !== opt.id));
-                        }
-                      }}
-                      className="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
-                    />
-                    <div className="flex items-center gap-2 flex-1">
-                      {opt.icon}
-                      <span className="text-sm text-slate-700 dark:text-slate-300">{opt.name}</span>
-                      <span className="text-xs text-slate-500">{opt.cost} kr</span>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Player & Country */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                <Globe size={18} />
-                Checkout Provider & Land
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    Checkout Provider
-                  </label>
-                  <select
-                    value={selectedPlayer}
-                    onChange={(e) => setSelectedPlayer(e.target.value)}
-                    className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700"
-                  >
-                    {players.map((p) => (
-                      <option key={p.slug} value={p.slug}>
-                        {p.name} (Trust: {p.conversionImpact}/10)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    Kundens land
-                  </label>
-                  <select
-                    value={customerCountry}
-                    onChange={(e) => setCustomerCountry(e.target.value)}
-                    className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700"
-                  >
-                    <option value="SE">Sverige</option>
-                    <option value="NO">Norge</option>
-                    <option value="DK">Danmark</option>
-                    <option value="FI">Finland</option>
-                    <option value="DE">Tyskland</option>
-                    <option value="UK">Storbritannien</option>
-                    <option value="US">USA</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
             {/* AOV & CLV Metrics */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                <DollarSign size={18} />
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2 text-sm">
+                <DollarSign size={16} />
                 AOV & CLV
               </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                  <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">{calculateAOV()} kr</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="text-center p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                  <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{calculateAOV()} kr</div>
                   <div className="text-xs text-slate-500 dark:text-slate-400">Beräknad AOV</div>
                 </div>
-                <div className="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                  <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">{calculateCLV()} kr</div>
+                <div className="text-center p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                  <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{calculateCLV()} kr</div>
                   <div className="text-xs text-slate-500 dark:text-slate-400">Beräknad CLV</div>
                 </div>
-              </div>
-              <div className="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                <p><strong>AOV:</strong> Ökas av fri frakt-gräns (+20%), fri frakt (+10%), upsell (+15%)</p>
-                <p className="mt-1"><strong>CLV:</strong> Gästutcheckning sänker (-40%), konto ökar (+50%), många leveransalternativ ökar (+20%)</p>
               </div>
             </div>
           </div>
