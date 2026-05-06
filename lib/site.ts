@@ -6,7 +6,15 @@ export const siteConfig = {
   ogImage: '/og.png',
   nav: [
     { href: '/players', label: 'Players' },
-    { href: '/comparison', label: 'Jämförelse' },
+    { 
+      label: 'Jämförelser', 
+      items: [
+        { href: '/comparison', label: 'Alla jämförelser' },
+        { href: '/compare/klarna-vs-walley', label: 'Klarna vs Walley' },
+        { href: '/compare/klarna-vs-qliro', label: 'Klarna vs Qliro' },
+        { href: '/compare/walley-vs-qliro', label: 'Walley vs Qliro' },
+      ]
+    },
     { href: '/testcheckout', label: 'Checkout Lab' },
     { href: '/blog', label: 'Blogg' },
     { href: '/guides', label: 'Strategiguider' },
