@@ -41,11 +41,12 @@ type DeliveryOption = {
 };
 
 const DELIVERY_OPTIONS: DeliveryOption[] = [
-  { id: 'locker', name: 'Paketskåp', cost: 29, icon: <Package size={16} /> },
-  { id: 'pickup', name: 'Paketombud', cost: 49, icon: <MapPin size={16} /> },
-  { id: 'home', name: 'Hemleverans', cost: 79, icon: <Home size={16} /> },
-  { id: 'express', name: 'Expressleverans', cost: 149, icon: <Zap size={16} /> },
-  { id: 'split', name: 'Delleverans', cost: 99, icon: <RefreshCw size={16} /> },
+  { id: 'pickup', name: 'Hämtas i butik', cost: 0, icon: <Package size={18} /> },
+  { id: 'locker', name: 'Paketskåp', cost: 39, icon: <Home size={18} /> },
+  { id: 'point', name: 'Paketombud', cost: 29, icon: <MapPin size={18} /> },
+  { id: 'home', name: 'Hemleverans', cost: 79, icon: <Truck size={18} /> },
+  { id: 'mailbox', name: 'Brevlåda', cost: 19, icon: <Package size={18} /> },
+  { id: 'express', name: 'Expressleverans', cost: 149, icon: <Zap size={18} /> },
 ];
 
 const SECTIONS: CheckoutSection[] = [
@@ -71,6 +72,13 @@ export default function TestCheckoutPage() {
   const [freeLockerDelivery, setFreeLockerDelivery] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState('klarna');
   const [customerCountry, setCustomerCountry] = useState('SE');
+  const [shippingTexts, setShippingTexts] = useState<{ [key: string]: string }>({
+    pickup: 'Hämtas i butik',
+    locker: 'Paketskåp - Hämtas när som helst',
+    home: 'Hemleverans - Levereras Tis 29/6 mellan 08-17',
+    point: 'Paketombud - Öppet 10-20',
+    express: 'Expressleverans - Idag 10:00-11:30',
+  });
 
   const calculateConversionScore = () => {
     let score = 50; // Base score (lowered from 100 to show impact)
@@ -166,6 +174,19 @@ export default function TestCheckoutPage() {
     } else if (!player?.countries.includes(customerCountry)) {
       score -= 10; // Player not available in customer's country
     }
+
+    // Micro-copy impact for shipping text
+    selectedDeliveryOptions.forEach((optId) => {
+      const text = shippingTexts[optId] || '';
+      // Specific time window (e.g., "10:00-11:30") increases conversion
+      if (/\d{1,2}:\d{2}-\d{1,2}:\d{2}/.test(text)) {
+        score += 12;
+      }
+      // Vague text (e.g., "1-3 days", "snart") decreases conversion
+      else if (/(\d-\d\s*dag(ar)?|snart|inom kort)/i.test(text)) {
+        score -= 7;
+      }
+    });
 
     return Math.max(0, Math.min(100, score));
   };
@@ -288,6 +309,16 @@ export default function TestCheckoutPage() {
     } else if (!player?.countries.includes(customerCountry)) {
       metrics.push({ label: 'Provider ej tillgängligt', impact: -10, source: 'Availability check' });
     }
+
+    // Micro-copy impact for shipping text
+    selectedDeliveryOptions.forEach((optId) => {
+      const text = shippingTexts[optId] || '';
+      if (/\d{1,2}:\d{2}-\d{1,2}:\d{2}/.test(text)) {
+        metrics.push({ label: 'Specifikt tidsfönster', impact: 12, source: 'Delivery experience studies' });
+      } else if (/(\d-\d\s*dag(ar)?|snart|inom kort)/i.test(text)) {
+        metrics.push({ label: 'Luddig leveranstext', impact: -7, source: 'Baymard Institute' });
+      }
+    });
 
     return metrics;
   };
