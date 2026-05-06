@@ -35,6 +35,11 @@ export default function PlayerPage({ params }: { params: { slug: string } }) {
       name: player.name,
       applicationCategory: 'BusinessApplication',
       operatingSystem: 'Web',
+      offers: {
+        '@type': 'Offer',
+        price: player.pricing,
+        priceCurrency: 'SEK',
+      },
     },
     author: { '@type': 'Organization', name: siteConfig.name },
     reviewRating: {
@@ -54,6 +59,27 @@ export default function PlayerPage({ params }: { params: { slug: string } }) {
       name: f.q,
       acceptedAnswer: { '@type': 'Answer', text: f.a },
     })),
+  };
+
+  const softwareJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: player.name,
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    offers: {
+      '@type': 'Offer',
+      price: player.pricing,
+      priceCurrency: 'SEK',
+    },
+    description: player.description,
+    aggregateRating: player.reviews && player.reviews.length > 0 ? {
+      '@type': 'AggregateRating',
+      ratingValue: player.reviews.reduce((sum, r) => sum + r.rating, 0) / player.reviews.length,
+      reviewCount: player.reviews.length,
+      bestRating: 5,
+      worstRating: 1,
+    } : undefined,
   };
 
   return (
@@ -228,6 +254,7 @@ export default function PlayerPage({ params }: { params: { slug: string } }) {
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareJsonLd) }} />
     </article>
   );
 }
