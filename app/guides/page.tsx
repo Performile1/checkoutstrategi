@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { BookOpen, TrendingUp, Truck, MousePointerClick } from 'lucide-react';
+import { BookOpen, TrendingUp, Truck, MousePointerClick, BarChart3 } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Strategiguider – CRO, leverans & one-click checkout',
@@ -26,6 +26,12 @@ const guides = [
     title: 'Framtiden för one-click checkout',
     summary: 'Wallet-konvergens, passkeys och vad Apple/Google Pay betyder för svensk e-handel.',
     icon: MousePointerClick,
+  },
+  {
+    slug: 'checkout-analys-2026',
+    title: 'Checkoutanalys 2026: Micro-conversions, EU-regler och Benchmarks',
+    summary: 'Komplett guide till modern checkoutanalys med detaljerade mätpunkter, nya EU-regler för 2026 och uppdaterade branschbenchmarks.',
+    icon: BarChart3,
   },
 ];
 
