@@ -10,13 +10,16 @@ export const metadata: Metadata = {
 };
 
 export default function PlayersPage() {
+  const playerCount = players.length;
+  const countText = playerCount === 1 ? 'En aktör' : `${playerCount} aktörer`;
+
   return (
     <section className="container-prose py-16">
       <div className="max-w-2xl">
         <p className="badge">Trust Layer</p>
         <h1 className="mt-3 text-4xl md:text-5xl font-bold tracking-tight">Checkout Players</h1>
         <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
-          Sex aktörer, en analysram. Vi värderar varje leverantör som en analystjänst gör – på affärs­logik, konverterings­impact och vilket segment de faktiskt vinner i.
+          {countText}, en analysram. Vi värderar varje leverantör som en analystjänst gör – på affärs­logik, konverterings­impact och vilket segment de faktiskt vinner i.
         </p>
       </div>
 

@@ -86,7 +86,7 @@ export default function TestCheckoutPage() {
   const [shippingOrder, setShippingOrder] = useState<string[]>(['pickup', 'home']);
 
   const calculateConversionScore = () => {
-    let score = 50; // Base score (lowered from 100 to show impact)
+    let score = 40; // Base score (lowered to show impact more clearly)
 
     // Guest checkout impact (Baymard: forced account creation is top 3 reason for abandonment)
     if (!isGuestCheckout) {
