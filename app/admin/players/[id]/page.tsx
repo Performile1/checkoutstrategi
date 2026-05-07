@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 
@@ -9,9 +9,10 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export default function NewPlayerPage() {
+export default function EditPlayerPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     slug: '',
@@ -34,35 +35,81 @@ export default function NewPlayerPage() {
     faq: '',
   });
 
+  useEffect(() => {
+    loadPlayer();
+  }, [params.id]);
+
+  const loadPlayer = async () => {
+    try {
+      const { data: player, error } = await supabase
+        .from('players')
+        .select('*')
+        .eq('id', params.id)
+        .single();
+
+      if (error) throw error;
+
+      setFormData({
+        slug: player.slug,
+        name: player.name,
+        tagline: player.tagline,
+        logo_url: player.logo_url,
+        website_url: player.website_url,
+        brand_color: player.brand_color,
+        category: player.category,
+        target_market: player.target_market,
+        conversion_impact: player.conversion_impact,
+        trust_angle: player.trust_angle,
+        pros: Array.isArray(player.pros) ? player.pros.join('\n') : '',
+        cons: Array.isArray(player.cons) ? player.cons.join('\n') : '',
+        key_features: Array.isArray(player.key_features) ? player.key_features.join('\n') : '',
+        pricing: player.pricing,
+        countries: Array.isArray(player.countries) ? player.countries.join(', ') : '',
+        affiliate_url: player.affiliate_url,
+        description: player.description,
+        faq: Array.isArray(player.faq) 
+          ? player.faq.map(f => `Q: ${f.q}\nA: ${f.a}`).join('\n\n')
+          : '',
+      });
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSaving(true);
     setError('');
 
     try {
-      const { error } = await supabase.from('players').insert({
-        slug: formData.slug,
-        name: formData.name,
-        tagline: formData.tagline,
-        logo_url: formData.logo_url,
-        website_url: formData.website_url,
-        brand_color: formData.brand_color,
-        category: formData.category,
-        target_market: formData.target_market,
-        conversion_impact: formData.conversion_impact,
-        trust_angle: formData.trust_angle,
-        pros: formData.pros.split('\n').filter(Boolean),
-        cons: formData.cons.split('\n').filter(Boolean),
-        key_features: formData.key_features.split('\n').filter(Boolean),
-        pricing: formData.pricing,
-        countries: formData.countries.split(',').map(c => c.trim()),
-        affiliate_url: formData.affiliate_url,
-        description: formData.description,
-        faq: formData.faq.split('\n\n').map(block => {
-          const [q, a] = block.split('\n');
-          return { q: q?.replace(/^Q:\s*/i, '') || '', a: a?.replace(/^A:\s*/i, '') || '' };
-        }).filter(f => f.q && f.a),
-      });
+      const { error } = await supabase
+        .from('players')
+        .update({
+          slug: formData.slug,
+          name: formData.name,
+          tagline: formData.tagline,
+          logo_url: formData.logo_url,
+          website_url: formData.website_url,
+          brand_color: formData.brand_color,
+          category: formData.category,
+          target_market: formData.target_market,
+          conversion_impact: formData.conversion_impact,
+          trust_angle: formData.trust_angle,
+          pros: formData.pros.split('\n').filter(Boolean),
+          cons: formData.cons.split('\n').filter(Boolean),
+          key_features: formData.key_features.split('\n').filter(Boolean),
+          pricing: formData.pricing,
+          countries: formData.countries.split(',').map(c => c.trim()),
+          affiliate_url: formData.affiliate_url,
+          description: formData.description,
+          faq: formData.faq.split('\n\n').map(block => {
+            const [q, a] = block.split('\n');
+            return { q: q?.replace(/^Q:\s*/i, '') || '', a: a?.replace(/^A:\s*/i, '') || '' };
+          }).filter(f => f.q && f.a),
+        })
+        .eq('id', params.id);
 
       if (error) throw error;
 
@@ -70,15 +117,30 @@ export default function NewPlayerPage() {
       router.refresh();
     } catch (err) {
       setError((err as Error).message);
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+        <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+          <div className="container-prose py-4">
+            <h1 className="text-xl font-bold">Redigera player</h1>
+          </div>
+        </header>
+        <div className="container-prose py-8">
+          <p>Laddar...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         <div className="container-prose py-4">
-          <h1 className="text-xl font-bold">Lägg till ny player</h1>
+          <h1 className="text-xl font-bold">Redigera player</h1>
         </div>
       </header>
 
@@ -290,10 +352,10 @@ export default function NewPlayerPage() {
           <div className="flex gap-4">
             <button
               type="submit"
-              disabled={loading}
+              disabled={saving}
               className="btn-primary"
             >
-              {loading ? 'Sparar...' : 'Spara player'}
+              {saving ? 'Sparar...' : 'Spara ändringar'}
             </button>
             <button
               type="button"
