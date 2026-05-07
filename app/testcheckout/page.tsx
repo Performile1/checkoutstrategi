@@ -22,7 +22,8 @@ import {
   Zap,
   DollarSign,
   RefreshCw,
-  Globe
+  Globe,
+  HelpCircle
 } from 'lucide-react';
 import { players } from '@/lib/players';
 
@@ -40,6 +41,99 @@ type DeliveryOption = {
   icon: React.ReactNode;
 };
 
+type PaymentMethod = {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  logo?: string;
+};
+
+type Carrier = {
+  id: string;
+  name: string;
+  logo: string;
+  trustScore: number;
+  marketImpact: {
+    se: number;
+    no: number;
+    dk: number;
+    fi: number;
+  };
+};
+
+const PAYMENT_METHODS: PaymentMethod[] = [
+  { id: 'klarna', name: 'Klarna - Delbetalning', icon: <CreditCard size={18} /> },
+  { id: 'card', name: 'Kort', icon: <CreditCard size={18} /> },
+  { id: 'swish', name: 'Swish', icon: <CreditCard size={18} /> },
+  { id: 'paypal', name: 'PayPal', icon: <CreditCard size={18} /> },
+];
+
+const CARRIERS: Carrier[] = [
+  { 
+    id: 'postnord', 
+    name: 'PostNord', 
+    logo: '/logos/postnord.svg',
+    trustScore: 4.2,
+    marketImpact: { se: 5, no: 3, dk: 4, fi: 4 }
+  },
+  { 
+    id: 'dhl', 
+    name: 'DHL', 
+    logo: '/logos/dhl.svg',
+    trustScore: 1.4,
+    marketImpact: { se: -8, no: -5, dk: -6, fi: -7 }
+  },
+  { 
+    id: 'bring', 
+    name: 'Bring', 
+    logo: '/logos/bring.svg',
+    trustScore: 4.0,
+    marketImpact: { se: 2, no: 5, dk: 4, fi: 3 }
+  },
+  { 
+    id: 'citymail', 
+    name: 'CityMail', 
+    logo: '/logos/citymail.svg',
+    trustScore: 4.5,
+    marketImpact: { se: 4, no: 2, dk: 3, fi: 2 }
+  },
+  { 
+    id: 'airmee', 
+    name: 'Airmee', 
+    logo: '/logos/airmee.svg',
+    trustScore: 4.1,
+    marketImpact: { se: 3, no: 2, dk: 2, fi: 2 }
+  },
+  { 
+    id: 'earlybird', 
+    name: 'Earlybird', 
+    logo: '/logos/earlybird.svg',
+    trustScore: 3.8,
+    marketImpact: { se: 2, no: 2, dk: 2, fi: 2 }
+  },
+  { 
+    id: 'budbee', 
+    name: 'Budbee', 
+    logo: '/logos/budbee.svg',
+    trustScore: 4.6,
+    marketImpact: { se: 4, no: 3, dk: 3, fi: 3 }
+  },
+  { 
+    id: 'instabox', 
+    name: 'Instabox', 
+    logo: '/logos/instabox.svg',
+    trustScore: 4.4,
+    marketImpact: { se: 4, no: 3, dk: 3, fi: 3 }
+  },
+  { 
+    id: 'helthjem', 
+    name: 'Helthjem', 
+    logo: '/logos/helthjem.svg',
+    trustScore: 4.3,
+    marketImpact: { se: 2, no: 6, dk: 3, fi: 2 }
+  },
+];
+
 const DELIVERY_OPTIONS: DeliveryOption[] = [
   { id: 'pickup', name: 'Hämtas i butik', cost: 0, icon: <Package size={18} /> },
   { id: 'locker', name: 'Paketskåp', cost: 39, icon: <Home size={18} /> },
@@ -54,6 +148,7 @@ const SECTIONS: CheckoutSection[] = [
   { id: 'guest', title: 'Gästutcheckning', icon: <User size={20} />, description: 'Köp utan konto' },
   { id: 'coupon', title: 'Rabattkod', icon: <DollarSign size={20} />, description: 'Ange rabattkod' },
   { id: 'shipping', title: 'Leveransval', icon: <Truck size={20} />, description: 'Fraktalternativ och ombud' },
+  { id: 'crossSell', title: 'Korsförsäljning', icon: <TrendingUp size={20} />, description: 'Rekommenderade tillbehör' },
   { id: 'payment', title: 'Betalning', icon: <CreditCard size={20} />, description: 'Betalmetoder och kort' },
   { id: 'review', title: 'Orderöversikt', icon: <Package size={20} />, description: 'Sammanfattning av köp' },
 ];
@@ -63,6 +158,10 @@ export default function TestCheckoutPage() {
   const [hasAutofill, setHasAutofill] = useState(false);
   const [isGuestCheckout, setIsGuestCheckout] = useState(true);
   const [hasUpsell, setHasUpsell] = useState(false);
+  const [hasCrossSell, setHasCrossSell] = useState(false);
+  const [crossSellProductName, setCrossSellProductName] = useState('Premium Tillbehör');
+  const [crossSellProductPrice, setCrossSellProductPrice] = useState(99);
+  const [crossSellDiscount, setCrossSellDiscount] = useState(20);
   const [shippingDisplayedEarly, setShippingDisplayedEarly] = useState(true);
   const [hideHeaderFooter, setHideHeaderFooter] = useState(false);
   const [orderValue, setOrderValue] = useState(500);
@@ -86,6 +185,10 @@ export default function TestCheckoutPage() {
   const [productName, setProductName] = useState('Premium Tröja');
   const [productPrice, setProductPrice] = useState(499);
   const [shippingOrder, setShippingOrder] = useState<string[]>(['pickup', 'home']);
+  const [paymentOrder, setPaymentOrder] = useState<string[]>(['klarna', 'card']);
+  const [selectedCarriers, setSelectedCarriers] = useState<string[]>(['postnord']);
+  const [carrierOrder, setCarrierOrder] = useState<string[]>(['postnord']);
+  const [showEuReturnButton, setShowEuReturnButton] = useState(false);
 
   const calculateConversionScore = () => {
     let score = 40; // Base score (lowered to show impact more clearly)
@@ -240,6 +343,29 @@ export default function TestCheckoutPage() {
     return Math.round(clvMultiplier * 1000); // Base CLV of 1000
   };
 
+  const getSectionDescription = (sectionId: string) => {
+    switch (sectionId) {
+      case 'customer':
+        return hasAutofill ? 'Autofill aktiverat: +12% konvertering' : 'Autofill inaktiverat: Kan öka konvertering med 12%';
+      case 'guest':
+        return isGuestCheckout ? 'Gästutcheckning: +15% konvertering, -40% CLV' : 'Tvingat konto: -35% konvertering, +50% CLV';
+      case 'coupon':
+        return freeShippingThreshold > 0 ? `Fri frakt-gräns: ${freeShippingThreshold} kr` : 'Ingen fri frakt-gräns';
+      case 'shipping':
+        const shippingImpact = freeShipping ? 'Fri frakt alltid' : freeHomeDelivery ? 'Fri hemleverans' : freeLockerDelivery ? 'Fri skåpsleverans' : 'Standard frakt';
+        return `${shippingImpact}, ${selectedDeliveryOptions.length} alternativ valda`;
+      case 'crossSell':
+        return hasCrossSell ? `${crossSellProductName} (${crossSellDiscount}% rabatt): +10% AOV` : 'Korsförsäljning inaktiverad';
+      case 'payment':
+        const player = players.find(p => p.slug === selectedPlayer);
+        return player ? `${player.name} (Trust: ${player.conversionImpact}/10)` : 'Ingen provider vald';
+      case 'review':
+        return hasUpsell ? 'Post-purchase upsell: +15% AOV' : 'Ingen upsell';
+      default:
+        return '';
+    }
+  };
+
   const getConversionMetrics = () => {
     const score = calculateConversionScore();
     const metrics = [];
@@ -272,11 +398,26 @@ export default function TestCheckoutPage() {
     if (freeLockerDelivery) {
       metrics.push({ label: 'Fri skåpsleverans', impact: 5, source: 'Delivery experience studies' });
     }
+    if (showEuReturnButton) {
+      metrics.push({ label: 'EU-ångerknapp', impact: 8, source: 'EU Consumer Rights Directive 2025' });
+    }
     if (selectedDeliveryOptions.length >= 3) {
       metrics.push({ label: 'Många leveransalternativ', impact: 6, source: 'Ingrid/nShift studies' });
     } else if (selectedDeliveryOptions.length >= 2) {
       metrics.push({ label: 'Flera leveransalternativ', impact: 3, source: 'Ingrid/nShift studies' });
     }
+
+    // Carrier trust impact based on market
+    const marketKey = customerCountry.toLowerCase() as keyof typeof CARRIERS[0]['marketImpact'];
+    selectedCarriers.forEach((carrierId) => {
+      const carrier = CARRIERS.find(c => c.id === carrierId);
+      if (carrier && marketKey in carrier.marketImpact) {
+        const impact = carrier.marketImpact[marketKey];
+        if (impact !== 0) {
+          metrics.push({ label: `${carrier.name} (${customerCountry})`, impact, source: 'Carrier trust studies' });
+        }
+      }
+    });
 
     const shippingRatio = shippingCost / orderValue;
     if (shippingRatio > 0.2) {
@@ -439,6 +580,22 @@ export default function TestCheckoutPage() {
       items.splice(result.destination.index, 0, reorderedItem);
       setShippingOrder(items);
     }
+
+    // Handle payment method reordering within payment section
+    if (result.type === 'PAYMENT_METHOD') {
+      const items = Array.from(paymentOrder);
+      const [reorderedItem] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, reorderedItem);
+      setPaymentOrder(items);
+    }
+
+    // Handle carrier reordering within shipping section
+    if (result.type === 'CARRIER') {
+      const items = Array.from(carrierOrder);
+      const [reorderedItem] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, reorderedItem);
+      setCarrierOrder(items);
+    }
   };
 
   const conversionScore = calculateConversionScore();
@@ -499,7 +656,7 @@ export default function TestCheckoutPage() {
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
-                                className="bg-slate-50 dark:bg-slate-700 rounded-lg p-4 border-2 border-slate-200 dark:border-slate-600 hover:border-brand-500 dark:hover:border-brand-400 transition-colors cursor-move"
+                                className="bg-slate-50 dark:bg-slate-700 rounded-lg p-4 border-2 border-slate-200 dark:border-slate-600 hover:border-brand-500 dark:hover:border-brand-400 transition-colors cursor-move group relative"
                               >
                                 <div className="flex items-start gap-3">
                                   <div className="text-slate-400 mt-1">
@@ -508,7 +665,11 @@ export default function TestCheckoutPage() {
                                   <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-1">
                                       <span className="font-semibold text-slate-900 dark:text-slate-100">{section.title}</span>
+                                      <HelpCircle size={14} className="text-slate-400 group-hover:text-brand-500 transition-colors" />
                                       <span className="text-xs text-slate-500 dark:text-slate-400">{section.description}</span>
+                                    </div>
+                                    <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-xs p-2 rounded-lg max-w-xs shadow-lg pointer-events-none">
+                                      {getSectionDescription(sectionId)}
                                     </div>
                                     <div className="space-y-2">
                                       {sectionId === 'customer' && (
@@ -577,18 +738,93 @@ export default function TestCheckoutPage() {
                                               Köp för {freeShippingThreshold - orderValue} kr till för fri frakt!
                                             </div>
                                           )}
+                                          {selectedCarriers.length > 0 && (
+                                            <div className="mt-3 p-2 bg-slate-100 dark:bg-slate-600 rounded">
+                                              <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">Levereras av:</div>
+                                              <Droppable droppableId="carriers" type="CARRIER">
+                                                {(provided) => (
+                                                  <div {...provided.droppableProps} ref={provided.innerRef} className="flex flex-wrap gap-2">
+                                                    {carrierOrder.map((carrierId, idx) => {
+                                                      const carrier = CARRIERS.find(c => c.id === carrierId);
+                                                      if (!carrier) return null;
+                                                      return (
+                                                        <Draggable key={carrier.id} draggableId={carrier.id} index={idx}>
+                                                          {(provided) => (
+                                                            <div
+                                                              ref={provided.innerRef}
+                                                              {...provided.draggableProps}
+                                                              {...provided.dragHandleProps}
+                                                              className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-slate-500 rounded text-xs font-medium text-slate-700 dark:text-slate-300 cursor-move"
+                                                            >
+                                                              <span>{carrier.name}</span>
+                                                              <span className="text-green-600 dark:text-green-400">★{carrier.trustScore}</span>
+                                                            </div>
+                                                          )}
+                                                        </Draggable>
+                                                      );
+                                                    })}
+                                                    {provided.placeholder}
+                                                  </div>
+                                                )}
+                                              </Droppable>
+                                            </div>
+                                          )}
+                                        </>
+                                      )}
+                                      {sectionId === 'crossSell' && hasCrossSell && (
+                                        <>
+                                          <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                            <div className="w-16 h-16 bg-slate-300 dark:bg-slate-500 rounded flex-shrink-0 flex items-center justify-center">
+                                              <Package size={24} className="text-slate-400 dark:text-slate-400" />
+                                            </div>
+                                            <div className="flex-1">
+                                              <div className="font-medium text-slate-700 dark:text-slate-300 text-sm">{crossSellProductName}</div>
+                                              <div className="text-sm text-slate-600 dark:text-slate-400">
+                                                <span className="line-through text-xs">{crossSellProductPrice} kr</span>
+                                                <span className="ml-2 font-semibold">{Math.round(crossSellProductPrice * (1 - crossSellDiscount / 100))} kr</span>
+                                                <span className="ml-2 text-xs text-green-600 dark:text-green-400">-{crossSellDiscount}%</span>
+                                              </div>
+                                              <div className="text-xs text-slate-500 dark:text-slate-500 mt-1">Perfekt till din produkt!</div>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-center gap-2 mt-2">
+                                            <div className="w-4 h-4 rounded border-2 border-slate-400" />
+                                            <span className="text-xs text-slate-600 dark:text-slate-400">Lägg till i kundvagn</span>
+                                          </div>
                                         </>
                                       )}
                                       {sectionId === 'payment' && (
                                         <>
-                                          <div className="h-8 bg-slate-200 dark:bg-slate-600 rounded flex items-center px-3">
-                                            <div className="w-4 h-4 rounded-full border-2 border-slate-400 mr-2" />
-                                            <span className="text-sm text-slate-600 dark:text-slate-300">Klarna - Delbetalning</span>
-                                          </div>
-                                          <div className="h-8 bg-slate-200 dark:bg-slate-600 rounded flex items-center px-3">
-                                            <div className="w-4 h-4 rounded-full border-2 border-slate-400 mr-2" />
-                                            <span className="text-sm text-slate-600 dark:text-slate-300">Kort</span>
-                                          </div>
+                                          <Droppable droppableId="payment-methods" type="PAYMENT_METHOD">
+                                            {(provided) => (
+                                              <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                                                {paymentOrder.map((methodId, idx) => {
+                                                  const player = players.find(p => p.slug === selectedPlayer);
+                                                  return (
+                                                    <Draggable key={methodId} draggableId={methodId} index={idx}>
+                                                      {(provided) => (
+                                                        <div
+                                                          ref={provided.innerRef}
+                                                          {...provided.draggableProps}
+                                                          {...provided.dragHandleProps}
+                                                          className="h-8 bg-slate-200 dark:bg-slate-600 rounded flex items-center px-3 cursor-move"
+                                                        >
+                                                          <div className="w-4 h-4 rounded-full border-2 border-slate-400 mr-2" />
+                                                          <span className="text-sm text-slate-600 dark:text-slate-300">
+                                                            {methodId === 'klarna' && player ? player.name : methodId === 'card' ? 'Kort' : methodId === 'swish' ? 'Swish' : 'PayPal'}
+                                                          </span>
+                                                          {player && methodId === 'klarna' && (
+                                                            <span className="ml-2 text-xs text-green-600 dark:text-green-400">★{player.conversionImpact}/10</span>
+                                                          )}
+                                                        </div>
+                                                      )}
+                                                    </Draggable>
+                                                  );
+                                                })}
+                                                {provided.placeholder}
+                                              </div>
+                                            )}
+                                          </Droppable>
                                         </>
                                       )}
                                       {sectionId === 'review' && (
@@ -632,6 +868,40 @@ export default function TestCheckoutPage() {
                     <div>
                       <div className="font-semibold text-amber-900 dark:text-amber-100">Lägg till för 49 kr</div>
                       <div className="text-sm text-amber-700 dark:text-amber-300">Spara 20% på tillbehör</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {freeShippingThreshold > 0 && orderValue < freeShippingThreshold && (
+                <div className="mx-6 mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Truck size={20} className="text-green-600 dark:text-green-400" />
+                    <div className="flex-1">
+                      <div className="font-semibold text-green-900 dark:text-green-100">Fri frakt inom kort!</div>
+                      <div className="text-sm text-green-700 dark:text-green-300">
+                        Köp för {freeShippingThreshold - orderValue} kr till för fri frakt
+                      </div>
+                      <div className="mt-2 h-2 bg-green-200 dark:bg-green-800 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-green-500 transition-all"
+                          style={{ width: `${(orderValue / freeShippingThreshold) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {showEuReturnButton && (
+                <div className="mx-6 mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <RefreshCw size={20} className="text-blue-600 dark:text-blue-400" />
+                    <div className="flex-1">
+                      <div className="font-semibold text-blue-900 dark:text-blue-100">Ångra köp</div>
+                      <div className="text-sm text-blue-700 dark:text-blue-300">
+                        Du har rätt att ångra detta köp inom 14 dagar
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -789,6 +1059,16 @@ export default function TestCheckoutPage() {
                 >
                   Produkt
                 </button>
+                <button
+                  onClick={() => setActiveTab('provider')}
+                  className={`flex-1 px-4 py-3 text-sm font-medium transition ${
+                    activeTab === 'provider'
+                      ? 'text-brand-600 border-b-2 border-brand-600 bg-brand-50 dark:bg-brand-950'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                  }`}
+                >
+                  Provider
+                </button>
               </div>
 
               <div className="p-4 max-h-[500px] overflow-y-auto">
@@ -819,6 +1099,56 @@ export default function TestCheckoutPage() {
                       onChange={setHasUpsell}
                     />
                     <Toggle
+                      label="Korsförsäljning"
+                      description="Visa rekommenderade tillbehör i kassan"
+                      checked={hasCrossSell}
+                      onChange={(checked) => {
+                        setHasCrossSell(checked);
+                        if (checked && !layoutOrder.includes('crossSell')) {
+                          setLayoutOrder([...layoutOrder.slice(0, -1), 'crossSell', 'review']);
+                        } else if (!checked) {
+                          setLayoutOrder(layoutOrder.filter(id => id !== 'crossSell'));
+                        }
+                      }}
+                    />
+                    {hasCrossSell && (
+                      <div className="space-y-3 pl-4 border-l-2 border-slate-200 dark:border-slate-700">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Produktnamn
+                          </label>
+                          <input
+                            type="text"
+                            value={crossSellProductName}
+                            onChange={(e) => setCrossSellProductName(e.target.value)}
+                            className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Produktpris (kr)
+                          </label>
+                          <input
+                            type="number"
+                            value={crossSellProductPrice}
+                            onChange={(e) => setCrossSellProductPrice(Number(e.target.value))}
+                            className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Rabatt (%)
+                          </label>
+                          <input
+                            type="number"
+                            value={crossSellDiscount}
+                            onChange={(e) => setCrossSellDiscount(Number(e.target.value))}
+                            className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 text-sm"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <Toggle
                       label="Dölj header/footer"
                       description="Minimal UI för mindre distraktioner"
                       checked={hideHeaderFooter}
@@ -841,6 +1171,12 @@ export default function TestCheckoutPage() {
                       description="Gratis leverans till paketskåp"
                       checked={freeLockerDelivery}
                       onChange={setFreeLockerDelivery}
+                    />
+                    <Toggle
+                      label="EU-ångerknapp (obligatorisk från juni 2025)"
+                      description="Visa ångerknapp enligt EU:s nya regler"
+                      checked={showEuReturnButton}
+                      onChange={setShowEuReturnButton}
                     />
                   </div>
                 )}
@@ -926,6 +1262,40 @@ export default function TestCheckoutPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Transportörer (påverkar konvertering per marknad)
+                      </label>
+                      <div className="space-y-2">
+                        {CARRIERS.map((carrier) => (
+                          <label key={carrier.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={selectedCarriers.includes(carrier.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  const newSelected = [...selectedCarriers, carrier.id];
+                                  setSelectedCarriers(newSelected);
+                                  setCarrierOrder([...carrierOrder, carrier.id]);
+                                } else {
+                                  const newSelected = selectedCarriers.filter(id => id !== carrier.id);
+                                  setSelectedCarriers(newSelected);
+                                  setCarrierOrder(carrierOrder.filter(id => id !== carrier.id));
+                                }
+                              }}
+                              className="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                            />
+                            <div className="flex items-center gap-2 flex-1">
+                              <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{carrier.name}</span>
+                              <span className="text-xs text-slate-500">Trust: {carrier.trustScore}/5</span>
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              SE: {carrier.marketImpact.se > 0 ? '+' : ''}{carrier.marketImpact.se}%
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         Leveranstext (påverkar konvertering)
                       </label>
                       <div className="space-y-2">
@@ -974,6 +1344,11 @@ export default function TestCheckoutPage() {
                         className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700"
                       />
                     </div>
+                  </div>
+                )}
+
+                {activeTab === 'provider' && (
+                  <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         Checkout Provider
