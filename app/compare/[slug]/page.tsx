@@ -69,12 +69,8 @@ export default function ComparisonPage({ params }: ComparisonPageProps) {
       player2: player2.pricing || 'Kontakta för pris',
     },
     features: {
-      player1: player1.features || [],
-      player2: player2.features || [],
-    },
-    platforms: {
-      player1: player1.platforms || [],
-      player2: player2.platforms || [],
+      player1: player1.keyFeatures || [],
+      player2: player2.keyFeatures || [],
     },
     conversionImpact: {
       player1: player1.conversionImpact || 5,
