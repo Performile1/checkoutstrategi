@@ -3,9 +3,9 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Check, X, ExternalLink } from 'lucide-react';
-import { players, type Player } from '@/lib/players';
+import { players, type Player, type Category } from '@/lib/players';
 
-const CATEGORIES: (keyof Player & string)[] = ['Checkout', 'Betallösning', 'Transportör', 'E-handelsplattform', 'Plugin'];
+const CATEGORIES: Category[] = ['Checkout', 'Betallösning', 'Transportör', 'E-handelsplattform', 'Plugin'];
 
 export function ComparisonTable({ initial }: { initial?: string[] }) {
   const [selected, setSelected] = useState<string[]>(initial || players.map((p) => p.slug));
