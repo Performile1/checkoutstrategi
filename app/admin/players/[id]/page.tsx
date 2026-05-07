@@ -68,7 +68,7 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
         affiliate_url: player.affiliate_url,
         description: player.description,
         faq: Array.isArray(player.faq) 
-          ? player.faq.map(f => `Q: ${f.q}\nA: ${f.a}`).join('\n\n')
+          ? player.faq.map((f: { q: string; a: string }) => `Q: ${f.q}\nA: ${f.a}`).join('\n\n')
           : '',
       });
     } catch (err) {
