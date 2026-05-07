@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Metadata } from 'next';
-import { players } from '@/lib/data';
+import { players } from '@/lib/players';
 
 interface ComparisonPageProps {
   params: {
