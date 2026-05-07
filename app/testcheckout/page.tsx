@@ -263,9 +263,6 @@ export default function TestCheckoutPage() {
     if (hasUpsell) {
       metrics.push({ label: 'Post-purchase upsell', impact: 5, source: 'E-commerce studies' });
     }
-    if (freeShippingThreshold > 0) {
-      metrics.push({ label: 'Fri frakt-gräns (AOV)', impact: 20, source: 'Shopify/Baymard' });
-    }
     if (freeShipping) {
       metrics.push({ label: 'Fri frakt alltid', impact: 12, source: 'E-commerce studies' });
     }
@@ -327,15 +324,45 @@ export default function TestCheckoutPage() {
       }
     });
 
-    // Add AOV and CLV metrics
+    return metrics;
+  };
+
+  const getAOVMetrics = () => {
+    const metrics = [];
+
+    if (freeShippingThreshold > 0) {
+      const aov = calculateAOV();
+      const baseAov = orderValue;
+      const increase = Math.round((aov / baseAov - 1) * 100);
+      metrics.push({ label: 'Fri frakt-gräns', impact: increase, source: 'Shopify/Baymard' });
+    }
+
+    if (freeShipping) {
+      metrics.push({ label: 'Fri frakt alltid', impact: 10, source: 'E-commerce studies' });
+    }
+
+    if (hasUpsell) {
+      metrics.push({ label: 'Post-purchase upsell', impact: 15, source: 'E-commerce studies' });
+    }
+
+    return metrics;
+  };
+
+  const getCLVMetrics = () => {
+    const metrics = [];
+
     if (isGuestCheckout) {
-      metrics.push({ label: 'Gästutcheckning (CLV)', impact: -40, source: 'E-commerce studies' });
+      metrics.push({ label: 'Gästutcheckning', impact: -40, source: 'E-commerce studies' });
     }
+
     if (!isGuestCheckout) {
-      metrics.push({ label: 'Konto-creation (CLV)', impact: 50, source: 'E-commerce studies' });
+      metrics.push({ label: 'Konto-creation', impact: 50, source: 'E-commerce studies' });
     }
+
     if (selectedDeliveryOptions.length >= 3) {
-      metrics.push({ label: 'Många leveransalternativ (CLV)', impact: 20, source: 'Delivery experience studies' });
+      metrics.push({ label: 'Många leveransalternativ', impact: 20, source: 'Delivery experience studies' });
+    } else if (selectedDeliveryOptions.length >= 2) {
+      metrics.push({ label: 'Flera leveransalternativ', impact: 10, source: 'Delivery experience studies' });
     }
 
     return metrics;
@@ -363,6 +390,8 @@ export default function TestCheckoutPage() {
 
   const conversionScore = calculateConversionScore();
   const metrics = getConversionMetrics();
+  const aovMetrics = getAOVMetrics();
+  const clvMetrics = getCLVMetrics();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
@@ -594,8 +623,18 @@ export default function TestCheckoutPage() {
                   }`}
                 />
               </div>
-              <div className="text-xs text-slate-600 dark:text-slate-400">
+              <div className="text-xs text-slate-600 dark:text-slate-400 mb-3">
                 {conversionScore >= 70 ? 'Optimerad för hög konvertering' : conversionScore >= 40 ? 'Medel konvertering' : 'Låg konvertering - förbättringar behövs'}
+              </div>
+              <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{calculateAOV()} kr</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">Beräknad AOV</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{calculateCLV()} kr</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">Beräknad CLV</div>
+                </div>
               </div>
             </div>
 
@@ -603,9 +642,9 @@ export default function TestCheckoutPage() {
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
               <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2 text-sm">
                 <Info size={16} />
-                Påverkansfaktorer
+                Påverkansfaktorer (Konvertering)
               </h3>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
+              <div className="space-y-2 max-h-48 overflow-y-auto">
                 <AnimatePresence>
                   {metrics.map((metric, index) => (
                     <motion.div
@@ -619,6 +658,72 @@ export default function TestCheckoutPage() {
                       <div className="flex-1">
                         <div className="font-medium text-slate-900 dark:text-slate-100">{metric.label}</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">{metric.source}</div>
+                      </div>
+                      <div className={`flex items-center gap-1 font-semibold ${
+                        metric.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {metric.impact > 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
+                        {Math.abs(metric.impact)}%
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* AOV Metrics */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2 text-sm">
+                <DollarSign size={16} />
+                AOV-faktorer
+              </h3>
+              <div className="space-y-2 max-h-32 overflow-y-auto">
+                <AnimatePresence>
+                  {aovMetrics.map((metric, index) => (
+                    <motion.div
+                      key={metric.label}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="flex items-center justify-between p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-xs"
+                    >
+                      <div className="flex-1">
+                        <div className="font-medium text-blue-900 dark:text-blue-100">{metric.label}</div>
+                        <div className="text-xs text-blue-700 dark:text-blue-300">{metric.source}</div>
+                      </div>
+                      <div className={`flex items-center gap-1 font-semibold ${
+                        metric.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {metric.impact > 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
+                        {Math.abs(metric.impact)}%
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* CLV Metrics */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2 text-sm">
+                <DollarSign size={16} />
+                CLV-faktorer
+              </h3>
+              <div className="space-y-2 max-h-32 overflow-y-auto">
+                <AnimatePresence>
+                  {clvMetrics.map((metric, index) => (
+                    <motion.div
+                      key={metric.label}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="flex items-center justify-between p-2 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 text-xs"
+                    >
+                      <div className="flex-1">
+                        <div className="font-medium text-purple-900 dark:text-purple-100">{metric.label}</div>
+                        <div className="text-xs text-purple-700 dark:text-purple-300">{metric.source}</div>
                       </div>
                       <div className={`flex items-center gap-1 font-semibold ${
                         metric.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
@@ -886,39 +991,6 @@ export default function TestCheckoutPage() {
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
-
-            {/* Metrics Breakdown */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2 text-sm">
-                <Info size={16} />
-                Påverkansfaktorer
-              </h3>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                <AnimatePresence>
-                  {metrics.map((metric, index) => (
-                    <motion.div
-                      key={metric.label}
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-700 text-xs"
-                    >
-                      <div className="flex-1">
-                        <div className="font-medium text-slate-900 dark:text-slate-100">{metric.label}</div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">{metric.source}</div>
-                      </div>
-                      <div className={`flex items-center gap-1 font-semibold ${
-                        metric.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {metric.impact > 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
-                        {Math.abs(metric.impact)}%
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
               </div>
             </div>
           </div>
