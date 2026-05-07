@@ -51,13 +51,14 @@ const DELIVERY_OPTIONS: DeliveryOption[] = [
 
 const SECTIONS: CheckoutSection[] = [
   { id: 'customer', title: 'Kunduppgifter', icon: <User size={20} />, description: 'Namn, e-post, adress' },
+  { id: 'coupon', title: 'Rabattkod', icon: <DollarSign size={20} />, description: 'Ange rabattkod' },
   { id: 'shipping', title: 'Leveransval', icon: <Truck size={20} />, description: 'Fraktalternativ och ombud' },
   { id: 'payment', title: 'Betalning', icon: <CreditCard size={20} />, description: 'Betalmetoder och kort' },
   { id: 'review', title: 'Orderöversikt', icon: <Package size={20} />, description: 'Sammanfattning av köp' },
 ];
 
 export default function TestCheckoutPage() {
-  const [layoutOrder, setLayoutOrder] = useState(['customer', 'shipping', 'payment', 'review']);
+  const [layoutOrder, setLayoutOrder] = useState(['customer', 'coupon', 'shipping', 'payment', 'review']);
   const [hasAutofill, setHasAutofill] = useState(false);
   const [isGuestCheckout, setIsGuestCheckout] = useState(true);
   const [hasUpsell, setHasUpsell] = useState(false);
@@ -389,6 +390,16 @@ export default function TestCheckoutPage() {
                 </div>
               )}
 
+              {/* Guest Checkout Indicator */}
+              {isGuestCheckout && (
+                <div className="bg-green-50 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800 px-6 py-3">
+                  <div className="flex items-center gap-2 text-green-800 dark:text-green-300 text-sm">
+                    <CheckCircle2 size={16} />
+                    <span>Gästutcheckning - Inget konto krävs</span>
+                  </div>
+                </div>
+              )}
+
               <DragDropContext onDragEnd={handleDragEnd}>
                 <Droppable droppableId="checkout-sections" type="SECTION">
                   {(provided) => (
@@ -420,6 +431,14 @@ export default function TestCheckoutPage() {
                                         <>
                                           <div className="h-8 bg-slate-200 dark:bg-slate-600 rounded" />
                                           <div className="h-8 bg-slate-200 dark:bg-slate-600 rounded" />
+                                        </>
+                                      )}
+                                      {sectionId === 'coupon' && (
+                                        <>
+                                          <div className="flex gap-2">
+                                            <div className="flex-1 h-8 bg-slate-200 dark:bg-slate-600 rounded" />
+                                            <div className="h-8 px-4 bg-brand-600 rounded text-white text-sm flex items-center">Använd</div>
+                                          </div>
                                         </>
                                       )}
                                       {sectionId === 'shipping' && (
@@ -490,6 +509,10 @@ export default function TestCheckoutPage() {
                                           </div>
                                           <div className="h-4 bg-slate-200 dark:bg-slate-600 rounded w-3/4 mt-2" />
                                           <div className="h-4 bg-slate-200 dark:bg-slate-600 rounded w-1/2 mt-1" />
+                                          <div className="flex items-center gap-2 mt-3 text-xs">
+                                            <div className="w-4 h-4 rounded border-2 border-slate-400" />
+                                            <span className="text-slate-600 dark:text-slate-400">Jag godkänner köpvillkoren</span>
+                                          </div>
                                         </>
                                       )}
                                     </div>
@@ -559,6 +582,44 @@ export default function TestCheckoutPage() {
               </div>
               <div className="text-xs text-slate-600 dark:text-slate-400">
                 {conversionScore >= 70 ? 'Optimerad för hög konvertering' : conversionScore >= 40 ? 'Medel konvertering' : 'Låg konvertering - förbättringar behövs'}
+              </div>
+            </div>
+
+            {/* AOV & CLV Metrics */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2 text-sm">
+                <DollarSign size={16} />
+                AOV & CLV
+              </h3>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="text-center p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                  <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{calculateAOV()} kr</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">Beräknad AOV</div>
+                </div>
+                <div className="text-center p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                  <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{calculateCLV()} kr</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">Beräknad CLV</div>
+                </div>
+              </div>
+              <div className="space-y-2 text-xs">
+                <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="font-semibold text-blue-900 dark:text-blue-100 mb-1">Öka AOV:</div>
+                  <ul className="text-blue-800 dark:text-blue-300 space-y-1 ml-2">
+                    <li>• Fri frakt-gräns (15-30% ökning)</li>
+                    <li>• Post-purchase upsell (+15%)</li>
+                    <li>• Paketerbjudanden & bundles</li>
+                    <li>• Cross-sell i kassan</li>
+                  </ul>
+                </div>
+                <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                  <div className="font-semibold text-purple-900 dark:text-purple-100 mb-1">Öka CLV:</div>
+                  <ul className="text-purple-800 dark:text-purple-300 space-y-1 ml-2">
+                    <li>• Konto-creation för återkommande köp (+50%)</li>
+                    <li>• Många leveransalternativ (+20%)</li>
+                    <li>• Loyalty-program & rewards</li>
+                    <li>• E-postmarknadsföring</li>
+                  </ul>
+                </div>
               </div>
             </div>
 
@@ -849,24 +910,6 @@ export default function TestCheckoutPage() {
                     </motion.div>
                   ))}
                 </AnimatePresence>
-              </div>
-            </div>
-
-            {/* AOV & CLV Metrics */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2 text-sm">
-                <DollarSign size={16} />
-                AOV & CLV
-              </h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="text-center p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                  <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{calculateAOV()} kr</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">Beräknad AOV</div>
-                </div>
-                <div className="text-center p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                  <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{calculateCLV()} kr</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">Beräknad CLV</div>
-                </div>
               </div>
             </div>
           </div>
