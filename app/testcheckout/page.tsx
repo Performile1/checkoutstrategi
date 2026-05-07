@@ -51,6 +51,7 @@ const DELIVERY_OPTIONS: DeliveryOption[] = [
 
 const SECTIONS: CheckoutSection[] = [
   { id: 'customer', title: 'Kunduppgifter', icon: <User size={20} />, description: 'Namn, e-post, adress' },
+  { id: 'guest', title: 'Gästutcheckning', icon: <User size={20} />, description: 'Köp utan konto' },
   { id: 'coupon', title: 'Rabattkod', icon: <DollarSign size={20} />, description: 'Ange rabattkod' },
   { id: 'shipping', title: 'Leveransval', icon: <Truck size={20} />, description: 'Fraktalternativ och ombud' },
   { id: 'payment', title: 'Betalning', icon: <CreditCard size={20} />, description: 'Betalmetoder och kort' },
@@ -58,7 +59,7 @@ const SECTIONS: CheckoutSection[] = [
 ];
 
 export default function TestCheckoutPage() {
-  const [layoutOrder, setLayoutOrder] = useState(['customer', 'coupon', 'shipping', 'payment', 'review']);
+  const [layoutOrder, setLayoutOrder] = useState(['customer', 'guest', 'coupon', 'shipping', 'payment', 'review']);
   const [hasAutofill, setHasAutofill] = useState(false);
   const [isGuestCheckout, setIsGuestCheckout] = useState(true);
   const [hasUpsell, setHasUpsell] = useState(false);
@@ -349,8 +350,60 @@ export default function TestCheckoutPage() {
     }
   };
 
+  const getAOVMetrics = () => {
+    const metrics = [];
+    const aov = calculateAOV();
+    const baseAov = orderValue;
+
+    if (freeShippingThreshold > 0) {
+      const increase = Math.round((aov / baseAov - 1) * 100);
+      metrics.push({ label: 'Fri frakt-gräns', impact: increase, source: 'Shopify/Baymard' });
+    }
+
+    if (freeShipping) {
+      const increase = 10;
+      metrics.push({ label: 'Fri frakt alltid', impact: increase, source: 'E-commerce studies' });
+    }
+
+    if (hasUpsell) {
+      const increase = 15;
+      metrics.push({ label: 'Post-purchase upsell', impact: increase, source: 'E-commerce studies' });
+    }
+
+    return metrics;
+  };
+
+  const getCLVMetrics = () => {
+    const metrics = [];
+    const clv = calculateCLV();
+    const baseClv = 1000;
+    const clvMultiplier = clv / baseClv;
+
+    if (isGuestCheckout) {
+      const decrease = -40;
+      metrics.push({ label: 'Gästutcheckning', impact: decrease, source: 'E-commerce studies' });
+    }
+
+    if (!isGuestCheckout) {
+      const increase = 50;
+      metrics.push({ label: 'Konto-creation', impact: increase, source: 'E-commerce studies' });
+    }
+
+    if (selectedDeliveryOptions.length >= 3) {
+      const increase = 20;
+      metrics.push({ label: 'Många leveransalternativ', impact: increase, source: 'Delivery experience studies' });
+    } else if (selectedDeliveryOptions.length >= 2) {
+      const increase = 10;
+      metrics.push({ label: 'Flera leveransalternativ', impact: increase, source: 'Delivery experience studies' });
+    }
+
+    return metrics;
+  };
+
   const conversionScore = calculateConversionScore();
   const metrics = getConversionMetrics();
+  const aovMetrics = getAOVMetrics();
+  const clvMetrics = getCLVMetrics();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
@@ -390,16 +443,6 @@ export default function TestCheckoutPage() {
                 </div>
               )}
 
-              {/* Guest Checkout Indicator */}
-              {isGuestCheckout && (
-                <div className="bg-green-50 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800 px-6 py-3">
-                  <div className="flex items-center gap-2 text-green-800 dark:text-green-300 text-sm">
-                    <CheckCircle2 size={16} />
-                    <span>Gästutcheckning - Inget konto krävs</span>
-                  </div>
-                </div>
-              )}
-
               <DragDropContext onDragEnd={handleDragEnd}>
                 <Droppable droppableId="checkout-sections" type="SECTION">
                   {(provided) => (
@@ -431,6 +474,18 @@ export default function TestCheckoutPage() {
                                         <>
                                           <div className="h-8 bg-slate-200 dark:bg-slate-600 rounded" />
                                           <div className="h-8 bg-slate-200 dark:bg-slate-600 rounded" />
+                                        </>
+                                      )}
+                                      {sectionId === 'guest' && (
+                                        <>
+                                          <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                                            <CheckCircle2 size={16} className="text-green-600 dark:text-green-400" />
+                                            <span className="text-sm text-green-800 dark:text-green-300">Fortsätt som gäst - Inget konto krävs</span>
+                                          </div>
+                                          <div className="flex items-center gap-2 mt-2">
+                                            <div className="w-4 h-4 rounded border-2 border-slate-400" />
+                                            <span className="text-xs text-slate-600 dark:text-slate-400">Spara mina uppgifter för nästa köp</span>
+                                          </div>
                                         </>
                                       )}
                                       {sectionId === 'coupon' && (
@@ -601,24 +656,62 @@ export default function TestCheckoutPage() {
                   <div className="text-xs text-slate-500 dark:text-slate-400">Beräknad CLV</div>
                 </div>
               </div>
-              <div className="space-y-2 text-xs">
-                <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <div className="font-semibold text-blue-900 dark:text-blue-100 mb-1">Öka AOV:</div>
-                  <ul className="text-blue-800 dark:text-blue-300 space-y-1 ml-2">
-                    <li>• Fri frakt-gräns (15-30% ökning)</li>
-                    <li>• Post-purchase upsell (+15%)</li>
-                    <li>• Paketerbjudanden & bundles</li>
-                    <li>• Cross-sell i kassan</li>
-                  </ul>
+              <div className="space-y-3">
+                <div>
+                  <div className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-2">AOV-faktorer:</div>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    <AnimatePresence>
+                      {aovMetrics.map((metric, index) => (
+                        <motion.div
+                          key={metric.label}
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="flex items-center justify-between p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-xs"
+                        >
+                          <div className="flex-1">
+                            <div className="font-medium text-blue-900 dark:text-blue-100">{metric.label}</div>
+                            <div className="text-xs text-blue-700 dark:text-blue-300">{metric.source}</div>
+                          </div>
+                          <div className={`flex items-center gap-1 font-semibold ${
+                            metric.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                          }`}>
+                            {metric.impact > 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
+                            {Math.abs(metric.impact)}%
+                          </div>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
                 </div>
-                <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                  <div className="font-semibold text-purple-900 dark:text-purple-100 mb-1">Öka CLV:</div>
-                  <ul className="text-purple-800 dark:text-purple-300 space-y-1 ml-2">
-                    <li>• Konto-creation för återkommande köp (+50%)</li>
-                    <li>• Många leveransalternativ (+20%)</li>
-                    <li>• Loyalty-program & rewards</li>
-                    <li>• E-postmarknadsföring</li>
-                  </ul>
+                <div>
+                  <div className="text-xs font-semibold text-purple-900 dark:text-purple-100 mb-2">CLV-faktorer:</div>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    <AnimatePresence>
+                      {clvMetrics.map((metric, index) => (
+                        <motion.div
+                          key={metric.label}
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="flex items-center justify-between p-2 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 text-xs"
+                        >
+                          <div className="flex-1">
+                            <div className="font-medium text-purple-900 dark:text-purple-100">{metric.label}</div>
+                            <div className="text-xs text-purple-700 dark:text-purple-300">{metric.source}</div>
+                          </div>
+                          <div className={`flex items-center gap-1 font-semibold ${
+                            metric.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                          }`}>
+                            {metric.impact > 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
+                            {Math.abs(metric.impact)}%
+                          </div>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
                 </div>
               </div>
             </div>
