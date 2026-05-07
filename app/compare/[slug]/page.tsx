@@ -72,6 +72,10 @@ export default function ComparisonPage({ params }: ComparisonPageProps) {
       player1: player1.keyFeatures || [],
       player2: player2.keyFeatures || [],
     },
+    platforms: {
+      player1: player1.platforms || [],
+      player2: player2.platforms || [],
+    },
     conversionImpact: {
       player1: player1.conversionImpact || 5,
       player2: player2.conversionImpact || 5,
@@ -166,6 +170,22 @@ export default function ComparisonPage({ params }: ComparisonPageProps) {
                 </ul>
               </div>
 
+              <div>
+                <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Plattformar</h4>
+                <div className="flex flex-wrap gap-2">
+                  {comparisonData.platforms.player1.length > 0 ? (
+                    comparisonData.platforms.player1.map((platform, idx) => (
+                      <span key={idx} className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-xs text-slate-700 dark:text-slate-300">
+                        {platform}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-slate-500">Inga plattformar angivna</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <Link href={`/players/${player1.slug}`} className="btn-primary mt-6 block text-center">
               Läs mer om {player1.name}
             </Link>
@@ -191,6 +211,21 @@ export default function ComparisonPage({ params }: ComparisonPageProps) {
                     <li className="text-sm text-slate-500">Inga funktioner angivna</li>
                   )}
                 </ul>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Plattformar</h4>
+                <div className="flex flex-wrap gap-2">
+                  {comparisonData.platforms.player2.length > 0 ? (
+                    comparisonData.platforms.player2.map((platform, idx) => (
+                      <span key={idx} className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-xs text-slate-700 dark:text-slate-300">
+                        {platform}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-slate-500">Inga plattformar angivna</span>
+                  )}
+                </div>
               </div>
             </div>
 

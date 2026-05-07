@@ -27,6 +27,7 @@ export default function NewPlayerPage() {
     pros: '',
     cons: '',
     key_features: '',
+    platforms: '',
     pricing: '',
     countries: '',
     affiliate_url: '',
@@ -54,6 +55,7 @@ export default function NewPlayerPage() {
         pros: formData.pros.split('\n').filter(Boolean),
         cons: formData.cons.split('\n').filter(Boolean),
         key_features: formData.key_features.split('\n').filter(Boolean),
+        platforms: formData.platforms.split(',').map(p => p.trim()).filter(Boolean),
         pricing: formData.pricing,
         countries: formData.countries.split(',').map(c => c.trim()),
         affiliate_url: formData.affiliate_url,
@@ -198,6 +200,20 @@ export default function NewPlayerPage() {
                 value={formData.trust_angle}
                 onChange={(e) => setFormData({ ...formData, trust_angle: e.target.value })}
                 required
+                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900"
+              />
+            </div>
+          </div>
+
+          <div className="card space-y-4">
+            <h2 className="text-lg font-semibold">Plattformar</h2>
+            <div>
+              <label className="block text-sm font-medium mb-2">Plattformar (kommaseparerad)</label>
+              <input
+                type="text"
+                value={formData.platforms}
+                onChange={(e) => setFormData({ ...formData, platforms: e.target.value })}
+                placeholder="Shopify, WooCommerce, Magento, Custom"
                 className="w-full px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900"
               />
             </div>
