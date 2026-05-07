@@ -334,7 +334,9 @@ export default function TestCheckoutPage() {
       const aov = calculateAOV();
       const baseAov = orderValue;
       const increase = Math.round((aov / baseAov - 1) * 100);
-      metrics.push({ label: 'Fri frakt-gräns', impact: increase, source: 'Shopify/Baymard' });
+      if (increase > 0) {
+        metrics.push({ label: 'Fri frakt-gräns', impact: increase, source: 'Shopify/Baymard' });
+      }
     }
 
     if (freeShipping) {
@@ -630,39 +632,41 @@ export default function TestCheckoutPage() {
                 <div className="text-center">
                   <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{calculateAOV()} kr</div>
                   <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Beräknad AOV</div>
-                  <div className="relative h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(100, (calculateAOV() / orderValue) * 100)}%` }}
-                      transition={{ duration: 0.5 }}
-                      className={`h-full rounded-full ${
-                        aovMetrics.length > 0 && aovMetrics[0]?.impact > 0 ? 'bg-blue-500' : 'bg-slate-400'
-                      }`}
-                    />
-                  </div>
                   {aovMetrics.length > 0 && (
-                    <div className={`text-xs mt-1 ${aovMetrics[0]?.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
-                      {aovMetrics[0]?.impact > 0 ? '+' : ''}{aovMetrics[0]?.impact}% från base
-                    </div>
+                    <>
+                      <div className="relative h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min(100, (calculateAOV() / orderValue) * 100)}%` }}
+                          transition={{ duration: 0.5 }}
+                          className="h-full rounded-full bg-blue-500"
+                        />
+                      </div>
+                      <div className={`text-xs mt-1 ${aovMetrics[0]?.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
+                        {aovMetrics[0]?.impact > 0 ? '+' : ''}{aovMetrics[0]?.impact}% från base
+                      </div>
+                    </>
                   )}
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{calculateCLV()} kr</div>
                   <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Beräknad CLV</div>
-                  <div className="relative h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(100, (calculateCLV() / 1000) * 100)}%` }}
-                      transition={{ duration: 0.5 }}
-                      className={`h-full rounded-full ${
-                        clvMetrics.length > 0 && clvMetrics[0]?.impact > 0 ? 'bg-purple-500' : 'bg-slate-400'
-                      }`}
-                    />
-                  </div>
                   {clvMetrics.length > 0 && (
-                    <div className={`text-xs mt-1 ${clvMetrics[0]?.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                      {clvMetrics[0]?.impact > 0 ? '+' : ''}{clvMetrics[0]?.impact}% från base
-                    </div>
+                    <>
+                      <div className="relative h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min(100, (calculateCLV() / 1000) * 100)}%` }}
+                          transition={{ duration: 0.5 }}
+                          className={`h-full rounded-full ${
+                            clvMetrics[0]?.impact > 0 ? 'bg-purple-500' : 'bg-slate-400'
+                          }`}
+                        />
+                      </div>
+                      <div className={`text-xs mt-1 ${clvMetrics[0]?.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {clvMetrics[0]?.impact > 0 ? '+' : ''}{clvMetrics[0]?.impact}% från base
+                      </div>
+                    </>
                   )}
                 </div>
               </div>
