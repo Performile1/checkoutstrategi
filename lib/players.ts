@@ -893,6 +893,7 @@ export const players: Player[] = [
       'Payouts',
       'Data & analytics',
     ],
+    platforms: ['Shopify', 'WooCommerce', 'Magento', 'BigCommerce', 'Custom'],
     pricing: 'Transaktionsbaserad. Offert för enterprise.',
     countries: ['Global'],
     affiliateUrl: 'https://www.adyen.com/',
