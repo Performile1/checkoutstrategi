@@ -39,6 +39,9 @@ export function Footer() {
           <h4 className="text-sm font-semibold">Resurser</h4>
           <ul className="mt-3 space-y-2 text-sm">
             <li><Link href="/comparison" className="text-slate-600 hover:text-brand-600 dark:text-slate-400">Jämförelsetabell</Link></li>
+            <li><Link href="/compare/klarna-vs-walley" className="text-slate-600 hover:text-brand-600 dark:text-slate-400">Klarna vs Walley</Link></li>
+            <li><Link href="/compare/klarna-vs-qliro" className="text-slate-600 hover:text-brand-600 dark:text-slate-400">Klarna vs Qliro</Link></li>
+            <li><Link href="/compare/walley-vs-qliro" className="text-slate-600 hover:text-brand-600 dark:text-slate-400">Walley vs Qliro</Link></li>
             <li><Link href="/blog" className="text-slate-600 hover:text-brand-600 dark:text-slate-400">Blogg</Link></li>
             <li><Link href="/guides" className="text-slate-600 hover:text-brand-600 dark:text-slate-400">Strategiguider</Link></li>
             <li><Link href="/contact" className="text-slate-600 hover:text-brand-600 dark:text-slate-400">Kontakt / Köp domän</Link></li>
