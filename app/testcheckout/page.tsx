@@ -629,22 +629,52 @@ export default function TestCheckoutPage() {
               <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-200 dark:border-slate-700">
                 <div className="text-center">
                   <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{calculateAOV()} kr</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">Beräknad AOV</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Beräknad AOV</div>
+                  <div className="relative h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, (calculateAOV() / orderValue) * 100)}%` }}
+                      transition={{ duration: 0.5 }}
+                      className={`h-full rounded-full ${
+                        aovMetrics.length > 0 && aovMetrics[0]?.impact > 0 ? 'bg-blue-500' : 'bg-slate-400'
+                      }`}
+                    />
+                  </div>
+                  {aovMetrics.length > 0 && (
+                    <div className={`text-xs mt-1 ${aovMetrics[0]?.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
+                      {aovMetrics[0]?.impact > 0 ? '+' : ''}{aovMetrics[0]?.impact}% från base
+                    </div>
+                  )}
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{calculateCLV()} kr</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">Beräknad CLV</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Beräknad CLV</div>
+                  <div className="relative h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, (calculateCLV() / 1000) * 100)}%` }}
+                      transition={{ duration: 0.5 }}
+                      className={`h-full rounded-full ${
+                        clvMetrics.length > 0 && clvMetrics[0]?.impact > 0 ? 'bg-purple-500' : 'bg-slate-400'
+                      }`}
+                    />
+                  </div>
+                  {clvMetrics.length > 0 && (
+                    <div className={`text-xs mt-1 ${clvMetrics[0]?.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                      {clvMetrics[0]?.impact > 0 ? '+' : ''}{clvMetrics[0]?.impact}% från base
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Combined Metrics - Conversion, AOV, CLV */}
+            {/* Combined Metrics - Conversion */}
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
               <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2 text-sm">
                 <Info size={16} />
-                Påverkansfaktorer (Konvertering)
+                Påverkansfaktorer
               </h3>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
+              <div className="space-y-2 max-h-64 overflow-y-auto">
                 <AnimatePresence>
                   {metrics.map((metric, index) => (
                     <motion.div
@@ -658,72 +688,6 @@ export default function TestCheckoutPage() {
                       <div className="flex-1">
                         <div className="font-medium text-slate-900 dark:text-slate-100">{metric.label}</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">{metric.source}</div>
-                      </div>
-                      <div className={`flex items-center gap-1 font-semibold ${
-                        metric.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {metric.impact > 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
-                        {Math.abs(metric.impact)}%
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            </div>
-
-            {/* AOV Metrics */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2 text-sm">
-                <DollarSign size={16} />
-                AOV-faktorer
-              </h3>
-              <div className="space-y-2 max-h-32 overflow-y-auto">
-                <AnimatePresence>
-                  {aovMetrics.map((metric, index) => (
-                    <motion.div
-                      key={metric.label}
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="flex items-center justify-between p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-xs"
-                    >
-                      <div className="flex-1">
-                        <div className="font-medium text-blue-900 dark:text-blue-100">{metric.label}</div>
-                        <div className="text-xs text-blue-700 dark:text-blue-300">{metric.source}</div>
-                      </div>
-                      <div className={`flex items-center gap-1 font-semibold ${
-                        metric.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {metric.impact > 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
-                        {Math.abs(metric.impact)}%
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            </div>
-
-            {/* CLV Metrics */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2 text-sm">
-                <DollarSign size={16} />
-                CLV-faktorer
-              </h3>
-              <div className="space-y-2 max-h-32 overflow-y-auto">
-                <AnimatePresence>
-                  {clvMetrics.map((metric, index) => (
-                    <motion.div
-                      key={metric.label}
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="flex items-center justify-between p-2 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 text-xs"
-                    >
-                      <div className="flex-1">
-                        <div className="font-medium text-purple-900 dark:text-purple-100">{metric.label}</div>
-                        <div className="text-xs text-purple-700 dark:text-purple-300">{metric.source}</div>
                       </div>
                       <div className={`flex items-center gap-1 font-semibold ${
                         metric.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
