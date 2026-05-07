@@ -1,14 +1,11 @@
 -- Setup Admin User
--- Run this in Supabase SQL Editor to create the admin user
+-- Run this in Supabase SQL Editor to update the admin user email
 
--- First, check if the user exists
--- If not, you need to create the user through Supabase Auth Dashboard or API
-
--- After creating the user via Supabase Auth, run this to set the admin role:
-
+-- Update the admin user email
 UPDATE auth.users
-SET raw_user_meta_data = raw_user_meta_data || '{"role": "admin"}'
-WHERE email = 'rickard@wigrund.se';
+SET email = 'rickard@wigrund.se',
+    raw_user_meta_data = raw_user_meta_data || '{"role": "admin"}'
+WHERE email = 'din@email.se';
 
 -- Verify the admin role was set
 SELECT 
