@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar } from 'lucide-react';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { getAllPosts, getPost } from '@/lib/blog';
 import { siteConfig } from '@/lib/site';
+import { ShareButtons } from '@/components/ShareButtons';
 
 export function generateStaticParams() {
   return getAllPosts().map((p) => ({ slug: p.slug }));
@@ -46,9 +47,18 @@ export default function PostPage({ params }: { params: { slug: string } }) {
         <ArrowLeft size={14} /> Bloggen
       </Link>
       <header className="mt-6">
-        <p className="flex items-center gap-2 text-xs text-slate-500"><Calendar size={12} /> {new Date(post.date).toLocaleDateString('sv-SE')}</p>
-        <h1 className="mt-2 text-3xl md:text-4xl font-bold tracking-tight">{post.title}</h1>
-        <p className="mt-3 text-lg text-slate-600 dark:text-slate-400">{post.description}</p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <p className="flex items-center gap-2 text-xs text-slate-500"><Calendar size={12} /> {new Date(post.date).toLocaleDateString('sv-SE')}</p>
+            <h1 className="mt-2 text-3xl md:text-4xl font-bold tracking-tight">{post.title}</h1>
+            <p className="mt-3 text-lg text-slate-600 dark:text-slate-400">{post.description}</p>
+          </div>
+          <ShareButtons 
+            title={post.title}
+            url={`${siteConfig.url}/blog/${post.slug}`}
+            description={post.description}
+          />
+        </div>
       </header>
       <div className="prose prose-slate dark:prose-invert mt-10 max-w-none">
         <MDXRemote source={post.content} />
