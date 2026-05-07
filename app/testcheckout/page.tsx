@@ -296,6 +296,26 @@ export default function TestCheckoutPage() {
     const customerIndex = layoutOrder.indexOf('customer');
     if (customerIndex !== 0) {
       metrics.push({ label: 'Kundinfo ej först', impact: -3, source: 'UX best practices' });
+    } else {
+      metrics.push({ label: 'Kundinfo först', impact: 5, source: 'UX best practices' });
+    }
+
+    // Payment should be last for optimal conversion
+    const lastBlock = layoutOrder[layoutOrder.length - 1];
+    if (lastBlock === 'payment') {
+      metrics.push({ label: 'Betalning sist', impact: 5, source: 'QuickSprout' });
+    }
+
+    // Guest checkout early in layout increases conversion
+    const guestIndex = layoutOrder.indexOf('guest');
+    if (guestIndex !== -1 && guestIndex < layoutOrder.length / 2) {
+      metrics.push({ label: 'Gästutcheckning tidigt', impact: 5, source: 'UX best practices' });
+    }
+
+    // Order summary visible increases conversion
+    const summaryIndex = layoutOrder.indexOf('summary');
+    if (summaryIndex !== -1) {
+      metrics.push({ label: 'Orderöversikt synlig', impact: 3, source: 'E-commerce studies' });
     }
 
     const player = players.find(p => p.slug === selectedPlayer);
@@ -347,6 +367,19 @@ export default function TestCheckoutPage() {
       metrics.push({ label: 'Post-purchase upsell', impact: 15, source: 'E-commerce studies' });
     }
 
+    // Discount code before payment increases AOV
+    const discountIndex = layoutOrder.indexOf('discount');
+    const paymentIndex = layoutOrder.indexOf('payment');
+    if (discountIndex !== -1 && paymentIndex !== -1 && discountIndex < paymentIndex) {
+      metrics.push({ label: 'Rabattkod före betalning', impact: 8, source: 'E-commerce studies' });
+    }
+
+    // Order summary visible can increase AOV (people see total and add items)
+    const summaryIndex = layoutOrder.indexOf('summary');
+    if (summaryIndex !== -1) {
+      metrics.push({ label: 'Orderöversikt synlig', impact: 5, source: 'E-commerce studies' });
+    }
+
     return metrics;
   };
 
@@ -365,6 +398,24 @@ export default function TestCheckoutPage() {
       metrics.push({ label: 'Många leveransalternativ', impact: 20, source: 'Delivery experience studies' });
     } else if (selectedDeliveryOptions.length >= 2) {
       metrics.push({ label: 'Flera leveransalternativ', impact: 10, source: 'Delivery experience studies' });
+    }
+
+    // Customer info first establishes trust which increases CLV
+    const customerIndex = layoutOrder.indexOf('customer');
+    if (customerIndex === 0) {
+      metrics.push({ label: 'Kundinfo först (CLV)', impact: 10, source: 'E-commerce studies' });
+    }
+
+    // Order summary visible increases CLV (people see value and return)
+    const summaryIndex = layoutOrder.indexOf('summary');
+    if (summaryIndex !== -1) {
+      metrics.push({ label: 'Orderöversikt synlig (CLV)', impact: 8, source: 'E-commerce studies' });
+    }
+
+    // Shipping options early in layout increases satisfaction and CLV
+    const shippingIndex = layoutOrder.indexOf('shipping');
+    if (shippingIndex !== -1 && shippingIndex < layoutOrder.length / 2) {
+      metrics.push({ label: 'Leveransval tidigt (CLV)', impact: 5, source: 'Delivery experience studies' });
     }
 
     return metrics;
