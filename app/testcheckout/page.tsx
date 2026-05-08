@@ -438,10 +438,12 @@ export default function TestCheckoutPage() {
       score -= 3; // Starting with customer info is best practice
     }
 
-    // Player trust/conversion impact
+    // Player trust/conversion impact based on market
     const player = players.find(p => p.slug === selectedPlayer);
     if (player) {
-      score += (player.conversionImpact - 5) * 2; // Scale conversion impact (1-10) to score impact
+      const marketKey = customerCountry.toLowerCase() as keyof typeof player.marketImpact;
+      const impact = player.marketImpact[marketKey];
+      score += impact;
     }
 
     // Country impact (Swedish customers have higher trust in local players)
@@ -666,10 +668,12 @@ export default function TestCheckoutPage() {
       metrics.push({ label: 'Kundinfo först', impact: 5, source: 'UX best practices' });
     }
 
-    // Provider trust score
+    // Provider trust score based on market
     const player = players.find(p => p.slug === selectedPlayer);
     if (player) {
-      metrics.push({ label: `${player.name} trust score`, impact: player.conversionImpact, source: 'CRO analysis' });
+      const marketKey = customerCountry.toLowerCase() as keyof typeof player.marketImpact;
+      const impact = player.marketImpact[marketKey];
+      metrics.push({ label: `${player.name} trust score (${customerCountry})`, impact, source: 'CRO analysis' });
     }
 
     // Local provider impact
@@ -1755,11 +1759,15 @@ export default function TestCheckoutPage() {
                         onChange={(e) => setSelectedPlayer(e.target.value)}
                         className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700"
                       >
-                        {players.map((p) => (
-                          <option key={p.slug} value={p.slug}>
-                            {p.name} (Trust: {p.conversionImpact}/10)
-                          </option>
-                        ))}
+                        {players.map((p) => {
+                          const marketKey = customerCountry.toLowerCase() as keyof typeof p.marketImpact;
+                          const impact = p.marketImpact[marketKey];
+                          return (
+                            <option key={p.slug} value={p.slug}>
+                              {p.name} ({customerCountry}: +{impact}%)
+                            </option>
+                          );
+                        })}
                       </select>
                     </div>
                     <div>

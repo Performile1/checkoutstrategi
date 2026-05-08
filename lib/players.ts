@@ -19,7 +19,13 @@ export interface Player {
   brandColor: string; // tailwind class for brand bar
   category: Category;
   targetMarket: Market;
-  conversionImpact: number; // 1-10
+  conversionImpact: number; // 1-10 (legacy, kept for backward compatibility)
+  marketImpact: {
+    se: number;
+    no: number;
+    dk: number;
+    fi: number;
+  };
   trustAngle: string; // Gartner-style positioning angle
   pros: string[];
   cons: string[];
@@ -44,6 +50,7 @@ export const players: Player[] = [
     category: 'Betallösning',
     targetMarket: 'B2C',
     conversionImpact: 9,
+    marketImpact: { se: 8, no: 7, dk: 6, fi: 6 },
     trustAngle: 'Brand recognition & frictionless BNPL',
     pros: [
       'Hög igenkänning ökar trygghet i kassan',
@@ -102,6 +109,7 @@ export const players: Player[] = [
     category: 'Betallösning',
     targetMarket: 'B2B/B2C',
     conversionImpact: 8,
+    marketImpact: { se: 8, no: 7, dk: 7, fi: 6 },
     trustAngle: 'Post-purchase revenue & B2B strength',
     pros: [
       'Stark B2B-funktionalitet (organisationsnummer-flöde)',
@@ -141,6 +149,7 @@ export const players: Player[] = [
     category: 'Betallösning',
     targetMarket: 'B2C',
     conversionImpact: 8,
+    marketImpact: { se: 7, no: 6, dk: 6, fi: 5 },
     trustAngle: 'Customizable UI & full brand control',
     pros: [
       'Full UI-kontroll – inget tredjeparts-branding',
@@ -180,6 +189,7 @@ export const players: Player[] = [
     category: 'Betallösning',
     targetMarket: 'B2C',
     conversionImpact: 7,
+    marketImpact: { se: 7, no: 6, dk: 5, fi: 5 },
     trustAngle: 'Post-purchase revenue & high-AOV ecommerce',
     pros: [
       'Stark vid höga ordervärden (möbler, hemelektronik)',
@@ -217,6 +227,7 @@ export const players: Player[] = [
     category: 'Transportör',
     targetMarket: 'B2C',
     conversionImpact: 8,
+    marketImpact: { se: 8, no: 7, dk: 6, fi: 6 },
     trustAngle: 'Logistics conversion & delivery UX',
     pros: [
       'Leveransval i kassan ökar konvertering bevisligen',
@@ -256,6 +267,7 @@ export const players: Player[] = [
     category: 'Transportör',
     targetMarket: 'B2B/B2C',
     conversionImpact: 7,
+    marketImpact: { se: 7, no: 6, dk: 6, fi: 5 },
     trustAngle: 'Logistics conversion at enterprise scale',
     pros: [
       'Bredaste carrier-nätverket i Norden',
@@ -294,6 +306,7 @@ export const players: Player[] = [
     category: 'Betallösning',
     targetMarket: 'B2B/B2C',
     conversionImpact: 7,
+    marketImpact: { se: 8, no: 7, dk: 6, fi: 6 },
     trustAngle: 'Etablerad finansiell partner med full betalmeny',
     pros: [
       'Stor svensk finansiell koncern – högt förtroende',
@@ -333,6 +346,7 @@ export const players: Player[] = [
     category: 'Transportör',
     targetMarket: 'B2B/B2C',
     conversionImpact: 6,
+    marketImpact: { se: 6, no: 5, dk: 5, fi: 4 },
     trustAngle: 'Logistiklösning med fokus på leveransupplevelse',
     pros: [
       'Specialiserad på logistik och leverans',
@@ -371,6 +385,7 @@ export const players: Player[] = [
     category: 'E-handelsplattform',
     targetMarket: 'B2B/B2C',
     conversionImpact: 6,
+    marketImpact: { se: 6, no: 5, dk: 4, fi: 4 },
     trustAngle: 'All-in-one e-handelsplattform med logistik',
     pros: [
       'Komplett e-handelsplattform',
@@ -410,6 +425,7 @@ export const players: Player[] = [
     category: 'Transportör',
     targetMarket: 'B2B',
     conversionImpact: 6,
+    marketImpact: { se: 6, no: 5, dk: 5, fi: 4 },
     trustAngle: 'Fraktjämförelse och TMS för e-handel',
     pros: [
       'Jämför fraktpriser från flera transportörer',
@@ -449,6 +465,7 @@ export const players: Player[] = [
     category: 'Transportör',
     targetMarket: 'B2B',
     conversionImpact: 6,
+    marketImpact: { se: 6, no: 5, dk: 5, fi: 4 },
     trustAngle: 'Fraktplattform med många integrationer',
     pros: [
       'Många integrationer med webshop-system',
@@ -488,6 +505,7 @@ export const players: Player[] = [
     category: 'Transportör',
     targetMarket: 'B2B/B2C',
     conversionImpact: 7,
+    marketImpact: { se: 8, no: 7, dk: 6, fi: 6 },
     trustAngle: 'Nordens ledande logistikaktör',
     pros: [
       'Starkast logistiknät i Norden',
@@ -527,6 +545,7 @@ export const players: Player[] = [
     category: 'Transportör',
     targetMarket: 'B2B/B2C',
     conversionImpact: 7,
+    marketImpact: { se: 6, no: 6, dk: 6, fi: 6 },
     trustAngle: 'Global logistikledare',
     pros: [
       'Globalt logistiknätverk',
@@ -566,6 +585,7 @@ export const players: Player[] = [
     category: 'Transportör',
     targetMarket: 'B2B/B2C',
     conversionImpact: 6,
+    marketImpact: { se: 6, no: 6, dk: 5, fi: 5 },
     trustAngle: 'Nordisk logistikpartner',
     pros: [
       'Stark i Norden',
@@ -605,6 +625,7 @@ export const players: Player[] = [
     category: 'E-handelsplattform',
     targetMarket: 'B2B/B2C',
     conversionImpact: 6,
+    marketImpact: { se: 6, no: 5, dk: 4, fi: 4 },
     trustAngle: 'Svensk e-handelsplattform med B2B-fokus',
     pros: [
       'Stark på B2B e-handel',
@@ -644,6 +665,7 @@ export const players: Player[] = [
     category: 'E-handelsplattform',
     targetMarket: 'B2B/B2C',
     conversionImpact: 6,
+    marketImpact: { se: 6, no: 5, dk: 4, fi: 4 },
     trustAngle: 'Etablerad svensk e-handelsplattform',
     pros: [
       'Lång erfarenhet av svensk e-handel',
@@ -683,6 +705,7 @@ export const players: Player[] = [
     category: 'E-handelsplattform',
     targetMarket: 'B2C',
     conversionImpact: 9,
+    marketImpact: { se: 8, no: 7, dk: 7, fi: 7 },
     trustAngle: 'Global marknadsledare inom e-handelsplattformar',
     pros: [
       'Världens största e-handelsplattform',
@@ -722,6 +745,7 @@ export const players: Player[] = [
     category: 'E-handelsplattform',
     targetMarket: 'B2B/B2C',
     conversionImpact: 7,
+    marketImpact: { se: 7, no: 6, dk: 5, fi: 5 },
     trustAngle: 'Enterprise e-handelsplattform för Norden',
     pros: [
       'Enterprise-fokus',
@@ -761,6 +785,7 @@ export const players: Player[] = [
     category: 'E-handelsplattform',
     targetMarket: 'B2C',
     conversionImpact: 6,
+    marketImpact: { se: 6, no: 5, dk: 4, fi: 4 },
     trustAngle: 'Svensk e-handelsplattform för små och medelstora butiker',
     pros: [
       'Enkel att använda',
@@ -800,6 +825,7 @@ export const players: Player[] = [
     category: 'Transportör',
     targetMarket: 'B2B',
     conversionImpact: 6,
+    marketImpact: { se: 6, no: 5, dk: 5, fi: 4 },
     trustAngle: 'Multi-carrier shipping automation',
     pros: [
       'Kopplar till +70 carriers',
@@ -838,6 +864,7 @@ export const players: Player[] = [
     category: 'Transportör',
     targetMarket: 'B2B',
     conversionImpact: 6,
+    marketImpact: { se: 6, no: 5, dk: 5, fi: 4 },
     trustAngle: 'Svensk fraktlösning med ombudsnät',
     pros: [
       'Flera frakttjänster på ett ställe',
@@ -875,7 +902,8 @@ export const players: Player[] = [
     category: 'Betallösning',
     targetMarket: 'B2B/B2C',
     conversionImpact: 9,
-    trustAngle: 'Global payment platform with enterprise scale',
+    marketImpact: { se: 7, no: 7, dk: 7, fi: 7 },
+    trustAngle: 'Global betalningsplattform för enterprise',
     pros: [
       'Global närvaro i många länder',
       'Enterprise-skala',
