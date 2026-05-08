@@ -752,59 +752,92 @@ export default function TestCheckoutPage() {
       }
     });
 
-    return Math.max(0, Math.min(100, score));
+    return Math.min(Math.max(score, 0), 100);
+  };
+
+  // Helper functions for summary
+  const countActiveFeatures = () => {
+    let count = 0;
+    if (isGuestCheckout) count++;
+    if (hasAutofill) count++;
+    if (shippingDisplayedEarly) count++;
+    if (hideHeaderFooter) count++;
+    if (hasUpsell) count++;
+    if (freeShipping) count++;
+    if (freeHomeDelivery) count++;
+    if (freeLockerDelivery) count++;
+    if (preselectShipping) count++;
+    if (showEuReturnButton) count++;
+    if (addGiftWrapping) count++;
+    if (addInsurance) count++;
+    if (addGiftMessage) count++;
+    if (showLowStockWarning) count++;
+    if (showCartTimer) count++;
+    if (showSocialProof) count++;
+    if (showNextPurchaseDiscount) count++;
+    return count;
   };
 
   const calculateAOV = () => {
-    let aov = orderValue;
-
-    // Extra services increase order value
-    if (addGiftWrapping) aov += Math.round(orderValue * 0.10);
-    if (addInsurance) aov += Math.round(orderValue * 0.05);
-    if (addGiftMessage) aov += Math.round(orderValue * 0.02);
-
-    // Cross-sell increases AOV by 10%
-    if (hasCrossSell) {
-      aov *= 1.10;
+    let aov = productPrice;
+    if (hasUpsell) aov += crossSellProductPrice * (1 - crossSellDiscount / 100);
+    if (addGiftWrapping) aov *= 1.1;
+    if (addInsurance) aov *= 1.05;
+    if (addGiftMessage) aov *= 1.02;
+    if (freeShippingThreshold > 0 && productPrice < freeShippingThreshold) {
+      aov += (freeShippingThreshold - productPrice) * 0.3; // Customers add items to reach threshold
     }
-
-    // Free shipping threshold increases AOV by 15-30% (customers add items to reach threshold)
-    if (freeShippingThreshold > 0) {
-      aov *= 1.2;
-    }
-
-    // Free shipping on all orders increases AOV by 10%
-    if (freeShipping) {
-      aov *= 1.1;
-    }
-
-    // Upsell increases AOV by 15%
-    if (hasUpsell) {
-      aov *= 1.15;
-    }
-
     return Math.round(aov);
   };
 
   const calculateCLV = () => {
-    let clvMultiplier = 1;
-
-    // Guest checkout reduces CLV (no customer account for future marketing)
+    const aov = calculateAOV();
+    const baseCLV = aov * 3; // Average 3 purchases per customer
+    let clv = baseCLV;
+    
     if (isGuestCheckout) {
-      clvMultiplier *= 0.6;
+      clv *= 0.6; // Guest checkout reduces CLV by 40%
     }
+    if (showNextPurchaseDiscount) {
+      clv *= 1.15; // Discount increases CLV by 15%
+    }
+    if (showSocialProof) {
+      clv *= 1.05; // Social proof increases CLV by 5%
+    }
+    
+    return Math.round(clv);
+  };
 
-    // Account creation enables future marketing, increases CLV
+  const calculateReturningCustomer = () => {
+    let percentage = 25; // Base 25% returning customers
+    
     if (!isGuestCheckout) {
-      clvMultiplier *= 1.5;
+      percentage += 15; // Account creation increases returning customers
     }
-
-    // Multiple delivery options improves satisfaction, increases repeat purchases
-    if (selectedDeliveryOptions.length >= 3) {
-      clvMultiplier *= 1.2;
+    if (showNextPurchaseDiscount) {
+      percentage += 10; // Discount increases returning customers
     }
+    if (showSocialProof) {
+      percentage += 5; // Social proof increases returning customers
+    }
+    
+    return Math.min(percentage, 90);
+  };
 
-    return Math.round(clvMultiplier * 1000); // Base CLV of 1000
+  const calculateSupportTickets = () => {
+    let tickets = 5; // Base 5 tickets per 100 orders
+    
+    if (showEuReturnButton) {
+      tickets += 8; // EU return button increases returns
+    }
+    if (isGuestCheckout) {
+      tickets += 3; // Guest checkout increases support needs
+    }
+    if (preselectShipping) {
+      tickets -= 2; // Preselect shipping reduces issues
+    }
+    
+    return Math.max(tickets, 1);
   };
 
   const getSectionDescription = (sectionId: string) => {
@@ -1827,7 +1860,10 @@ export default function TestCheckoutPage() {
                     </div>
 
                     <button
-                      onClick={() => setShowReturnModal(false)}
+                      onClick={() => {
+                        // Process return without creating new order
+                        setShowReturnModal(false);
+                      }}
                       className="w-full py-3 px-4 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 transition-colors"
                     >
                       Skicka retur
@@ -1989,6 +2025,16 @@ export default function TestCheckoutPage() {
                   }`}
                 >
                   Provider
+                </button>
+                <button
+                  onClick={() => setActiveTab('export')}
+                  className={`flex-1 px-4 py-3 text-sm font-medium transition ${
+                    activeTab === 'export'
+                      ? 'text-brand-600 border-b-2 border-brand-600 bg-brand-50 dark:bg-brand-950'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                  }`}
+                >
+                  Export & Sammanfattning
                 </button>
               </div>
 
@@ -2632,6 +2678,99 @@ export default function TestCheckoutPage() {
                         <option value="UK">Storbritannien</option>
                         <option value="US">USA</option>
                       </select>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'export' && (
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3">Ladda ned PDF med checkout-konfiguration</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                        Fyll i dina uppgifter för att ladda ned en sammanfattning av din checkout-konfiguration med konverteringsdata.
+                      </p>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Namn
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Ditt namn"
+                            className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            E-post
+                          </label>
+                          <input
+                            type="email"
+                            placeholder="din@email.se"
+                            className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Företag (valfritt)
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Företagsnamn"
+                            className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 text-sm"
+                          />
+                        </div>
+                        <button
+                          className="w-full py-2 px-4 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 transition-colors"
+                        >
+                          Ladda ned PDF
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3">Sammanfattning av alla vyer</h3>
+                      <div className="space-y-4">
+                        <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-4">
+                          <h4 className="font-medium text-slate-900 dark:text-slate-100 mb-2">Checkout</h4>
+                          <div className="text-sm text-slate-600 dark:text-slate-400 space-y-1">
+                            <div>• Konverteringsgrad: {conversionScore}%</div>
+                            <div>• AOV: {calculateAOV()} kr</div>
+                            <div>• Gästutcheckning: {isGuestCheckout ? 'Aktiv' : 'Inaktiv'}</div>
+                            <div>• FOMO-element: {[showLowStockWarning, showCartTimer, showSocialProof].filter(Boolean).length} aktiva</div>
+                          </div>
+                        </div>
+
+                        <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-4">
+                          <h4 className="font-medium text-slate-900 dark:text-slate-100 mb-2">Orderbekräftelse</h4>
+                          <div className="text-sm text-slate-600 dark:text-slate-400 space-y-1">
+                            <div>• CLV: {calculateCLV()} kr</div>
+                            <div>• Återkommande kunder: {calculateReturningCustomer()}%</div>
+                            <div>• Support tickets: {calculateSupportTickets()}</div>
+                            <div>• One-click kontoskapande: {isGuestCheckout ? 'Tillgänglig' : 'Ej tillgänglig'}</div>
+                          </div>
+                        </div>
+
+                        <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-4">
+                          <h4 className="font-medium text-slate-900 dark:text-slate-100 mb-2">Retursida</h4>
+                          <div className="text-sm text-slate-600 dark:text-slate-400 space-y-1">
+                            <div>• EU-Ångerknapp: {showEuReturnButton ? 'Aktiv' : 'Inaktiv'}</div>
+                            <div>• Returmodal: {showReturnModal ? 'Öppen' : 'Stängd'}</div>
+                            <div>• QR-kod för retur: Tillgänglig</div>
+                            <div>• Returorsaker: 6 alternativ</div>
+                          </div>
+                        </div>
+
+                        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+                          <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">Total sammanfattning</h4>
+                          <div className="text-sm text-green-800 dark:text-green-300 space-y-1">
+                            <div>• Beräknad konverteringsgrad: {conversionScore}%</div>
+                            <div>• Beräknad AOV: {calculateAOV()} kr</div>
+                            <div>• Beräknad CLV: {calculateCLV()} kr</div>
+                            <div>• Aktiva funktioner: {countActiveFeatures()}</div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
