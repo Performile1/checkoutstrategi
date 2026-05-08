@@ -261,6 +261,30 @@ export default function TestCheckoutPage() {
   const [freeLockerDelivery, setFreeLockerDelivery] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState('klarna');
   const [customerCountry, setCustomerCountry] = useState('SE');
+
+  // Mapping of provider slugs to carrier IDs (for providers that are also carriers)
+  const PROVIDER_TO_CARRIER: { [key: string]: string } = {
+    'dhl': 'dhl',
+    'bring': 'bring',
+    'postnord': 'postnord',
+    'budbee': 'budbee',
+    'instabox': 'instabox',
+    'airmee': 'airmee',
+    'earlybird': 'earlybird',
+    'citymail': 'citymail',
+  };
+
+  // Handle provider change - lock carrier if provider is also a carrier
+  const handleProviderChange = (newPlayer: string) => {
+    setSelectedPlayer(newPlayer);
+    
+    // If provider is also a carrier, lock carrier selection to that provider
+    if (newPlayer in PROVIDER_TO_CARRIER) {
+      const carrierId = PROVIDER_TO_CARRIER[newPlayer];
+      setSelectedCarriers([carrierId]);
+      setCarrierOrder([carrierId]);
+    }
+  };
   const [shippingTexts, setShippingTexts] = useState<{ [key: string]: string }>({
     pickup: 'Hämtas i butik',
     locker: 'Paketskåp - Hämtas när som helst',
@@ -1660,30 +1684,48 @@ export default function TestCheckoutPage() {
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         Transportörer (påverkar konvertering per marknad)
                       </label>
+                      {selectedPlayer in PROVIDER_TO_CARRIER && (
+                        <div className="mb-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded text-xs text-blue-800 dark:text-blue-300">
+                          Carrier låst till provider: {players.find(p => p.slug === selectedPlayer)?.name}
+                        </div>
+                      )}
                       <div className="space-y-2">
-                        {CARRIERS.map((carrier) => (
-                          <label key={carrier.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={selectedCarriers.includes(carrier.id)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  const newSelected = [...selectedCarriers, carrier.id];
-                                  setSelectedCarriers(newSelected);
-                                  setCarrierOrder([...carrierOrder, carrier.id]);
-                                } else {
-                                  const newSelected = selectedCarriers.filter(id => id !== carrier.id);
-                                  setSelectedCarriers(newSelected);
-                                  setCarrierOrder(carrierOrder.filter(id => id !== carrier.id));
-                                }
-                              }}
-                              className="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
-                            />
-                            <div className="flex items-center gap-2 flex-1">
-                              <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{carrier.name}</span>
-                              <span className="text-xs text-slate-500">Trust: {carrier.trustScore}/5</span>
-                            </div>
-                            <div className="text-xs text-slate-500">
+                        {CARRIERS.map((carrier) => {
+                          const isLockedToProvider = selectedPlayer in PROVIDER_TO_CARRIER;
+                          const isProviderCarrier = selectedPlayer === carrier.id;
+                          const isDisabled = isLockedToProvider && !isProviderCarrier;
+                          
+                          return (
+                            <label 
+                              key={carrier.id} 
+                              className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer ${
+                                isDisabled 
+                                  ? 'opacity-50 cursor-not-allowed bg-slate-100 dark:bg-slate-700' 
+                                  : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedCarriers.includes(carrier.id)}
+                                disabled={isDisabled}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    const newSelected = [...selectedCarriers, carrier.id];
+                                    setSelectedCarriers(newSelected);
+                                    setCarrierOrder([...carrierOrder, carrier.id]);
+                                  } else {
+                                    const newSelected = selectedCarriers.filter(id => id !== carrier.id);
+                                    setSelectedCarriers(newSelected);
+                                    setCarrierOrder(carrierOrder.filter(id => id !== carrier.id));
+                                  }
+                                }}
+                                className="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 disabled:opacity-50"
+                              />
+                              <div className="flex items-center gap-2 flex-1">
+                                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{carrier.name}</span>
+                                <span className="text-xs text-slate-500">Trust: {carrier.trustScore}/5</span>
+                              </div>
+                              <div className="text-xs text-slate-500">
                               SE: {carrier.marketImpact.se > 0 ? '+' : ''}{carrier.marketImpact.se}%
                             </div>
                           </label>
@@ -1805,7 +1847,7 @@ export default function TestCheckoutPage() {
                       </label>
                       <select
                         value={selectedPlayer}
-                        onChange={(e) => setSelectedPlayer(e.target.value)}
+                        onChange={(e) => handleProviderChange(e.target.value)}
                         className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700"
                       >
                         {players.map((p) => {
