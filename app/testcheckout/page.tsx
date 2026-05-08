@@ -1212,6 +1212,14 @@ export default function TestCheckoutPage() {
                                           </div>
                                           {isGuestCheckout && (
                                             <>
+                                              <div className="space-y-2 mt-3">
+                                                <div className="h-8 bg-slate-200 dark:bg-slate-600 rounded px-2 flex items-center">
+                                                  <span className="text-xs text-slate-500 dark:text-slate-400">E-post</span>
+                                                </div>
+                                                <div className="h-8 bg-slate-200 dark:bg-slate-600 rounded px-2 flex items-center">
+                                                  <span className="text-xs text-slate-500 dark:text-slate-400">Lösenord</span>
+                                                </div>
+                                              </div>
                                               <div className="flex items-center gap-2 mt-2">
                                                 <div className="w-4 h-4 rounded border-2 border-slate-400" />
                                                 <span className="text-xs text-slate-600 dark:text-slate-400">Spara mina uppgifter för nästa köp</span>
