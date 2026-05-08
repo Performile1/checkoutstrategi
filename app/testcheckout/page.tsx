@@ -1266,39 +1266,6 @@ export default function TestCheckoutPage() {
               </div>
             </div>
 
-            {/* Combined Metrics - Conversion */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2 text-sm">
-                <Info size={16} />
-                Påverkansfaktorer
-              </h3>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                <AnimatePresence>
-                  {metrics.map((metric, index) => (
-                    <motion.div
-                      key={metric.label}
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-700 text-xs"
-                    >
-                      <div className="flex-1">
-                        <div className="font-medium text-slate-900 dark:text-slate-100">{metric.label}</div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">{metric.source}</div>
-                      </div>
-                      <div className={`flex items-center gap-1 font-semibold ${
-                        metric.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {metric.impact > 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
-                        {Math.abs(metric.impact)}%
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            </div>
-
             {/* Tabs */}
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
               <div className="flex border-b border-slate-200 dark:border-slate-700">
@@ -1347,45 +1314,70 @@ export default function TestCheckoutPage() {
               <div className="p-4 max-h-[500px] overflow-y-auto">
                 {activeTab === 'settings' && (
                   <div className="space-y-3">
-                    <Toggle
-                      label="Gästutcheckning"
-                      description="Inget krav på att skapa konto"
-                      checked={isGuestCheckout}
-                      onChange={setIsGuestCheckout}
-                    />
-                    <Toggle
-                      label="Adress-autofill"
-                      description="Automatisk ifyllning av adresser"
-                      checked={hasAutofill}
-                      onChange={setHasAutofill}
-                    />
-                    <Toggle
-                      label="Visa frakt tidigt"
-                      description="Visa fraktkostnader direkt i kassan"
-                      checked={shippingDisplayedEarly}
-                      onChange={setShippingDisplayedEarly}
-                    />
-                    <Toggle
-                      label="Post-purchase upsell"
-                      description="Erbjud tilläggsprodukter efter köp"
-                      checked={hasUpsell}
-                      onChange={setHasUpsell}
-                    />
-                    <Toggle
-                      label="Korsförsäljning"
-                      description="Visa rekommenderade tillbehör i kassan"
-                      checked={hasCrossSell}
-                      onChange={(checked) => {
-                        setHasCrossSell(checked);
-                        if (checked && !layoutOrder.includes('crossSell')) {
-                          // Remove all 'review' entries, then add crossSell and review once
-                          const withoutReview = layoutOrder.filter(id => id !== 'review');
-                          setLayoutOrder([...withoutReview, 'crossSell', 'review']);
-                        } else if (!checked) {
-                          setLayoutOrder(layoutOrder.filter(id => id !== 'crossSell'));
-                        }
-                      }}
-                    />
+                    <div className="flex items-center justify-between">
+                      <Toggle
+                        label="Gästutcheckning"
+                        description="Inget krav på att skapa konto"
+                        checked={isGuestCheckout}
+                        onChange={setIsGuestCheckout}
+                      />
+                      <span className={`text-xs font-semibold ${isGuestCheckout ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {isGuestCheckout ? '+15%' : '-35%'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Toggle
+                        label="Adress-autofill"
+                        description="Automatisk ifyllning av adresser"
+                        checked={hasAutofill}
+                        onChange={setHasAutofill}
+                      />
+                      <span className={`text-xs font-semibold ${hasAutofill ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
+                        {hasAutofill ? '+12%' : ''}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Toggle
+                        label="Visa frakt tidigt"
+                        description="Visa fraktkostnader direkt i kassan"
+                        checked={shippingDisplayedEarly}
+                        onChange={setShippingDisplayedEarly}
+                      />
+                      <span className={`text-xs font-semibold ${shippingDisplayedEarly ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {shippingDisplayedEarly ? '+5%' : '-8%'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Toggle
+                        label="Post-purchase upsell"
+                        description="Erbjud tilläggsprodukter efter köp"
+                        checked={hasUpsell}
+                        onChange={setHasUpsell}
+                      />
+                      <span className={`text-xs font-semibold ${hasUpsell ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
+                        {hasUpsell ? '+15% AOV' : ''}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Toggle
+                        label="Korsförsäljning"
+                        description="Visa rekommenderade tillbehör i kassan"
+                        checked={hasCrossSell}
+                        onChange={(checked) => {
+                          setHasCrossSell(checked);
+                          if (checked && !layoutOrder.includes('crossSell')) {
+                            // Remove all 'review' entries, then add crossSell and review once
+                            const withoutReview = layoutOrder.filter(id => id !== 'review');
+                            setLayoutOrder([...withoutReview, 'crossSell', 'review']);
+                          } else if (!checked) {
+                            setLayoutOrder(layoutOrder.filter(id => id !== 'crossSell'));
+                          }
+                        }}
+                      />
+                      <span className={`text-xs font-semibold ${hasCrossSell ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
+                        {hasCrossSell ? '+10% AOV' : ''}
+                      </span>
+                    </div>
                     {hasCrossSell && (
                       <div className="space-y-3 pl-4 border-l-2 border-slate-200 dark:border-slate-700">
                         <div>
@@ -1423,12 +1415,17 @@ export default function TestCheckoutPage() {
                         </div>
                       </div>
                     )}
-                    <Toggle
-                      label="Dölj header/footer"
-                      description="Minimal UI för mindre distraktioner"
-                      checked={hideHeaderFooter}
-                      onChange={setHideHeaderFooter}
-                    />
+                    <div className="flex items-center justify-between">
+                      <Toggle
+                        label="Dölj header/footer"
+                        description="Minimal UI för mindre distraktioner"
+                        checked={hideHeaderFooter}
+                        onChange={setHideHeaderFooter}
+                      />
+                      <span className={`text-xs font-semibold ${hideHeaderFooter ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
+                        {hideHeaderFooter ? '+3%' : ''}
+                      </span>
+                    </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         Fri frakt-alternativ (påverkar konvertering)
@@ -1472,47 +1469,72 @@ export default function TestCheckoutPage() {
                         </label>
                       </div>
                     </div>
-                    <Toggle
-                      label="EU-ångerknapp (obligatorisk från juni 2026)"
-                      description="Visa ångerknapp enligt EU:s nya regler"
-                      checked={showEuReturnButton}
-                      onChange={(checked) => {
-                        setShowEuReturnButton(checked);
-                        if (checked && !layoutOrder.includes('euReturn')) {
-                          // Add euReturn before review
-                          const withoutReview = layoutOrder.filter(id => id !== 'review');
-                          setLayoutOrder([...withoutReview, 'euReturn', 'review']);
-                        } else if (!checked) {
-                          setLayoutOrder(layoutOrder.filter(id => id !== 'euReturn'));
-                        }
-                      }}
-                    />
+                    <div className="flex items-center justify-between">
+                      <Toggle
+                        label="EU-ångerknapp (obligatorisk från juni 2026)"
+                        description="Visa ångerknapp enligt EU:s nya regler"
+                        checked={showEuReturnButton}
+                        onChange={(checked) => {
+                          setShowEuReturnButton(checked);
+                          if (checked && !layoutOrder.includes('euReturn')) {
+                            // Add euReturn before review
+                            const withoutReview = layoutOrder.filter(id => id !== 'review');
+                            setLayoutOrder([...withoutReview, 'euReturn', 'review']);
+                          } else if (!checked) {
+                            setLayoutOrder(layoutOrder.filter(id => id !== 'euReturn'));
+                          }
+                        }}
+                      />
+                      <span className={`text-xs font-semibold ${showEuReturnButton ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
+                        {showEuReturnButton ? '+6-8%' : ''}
+                      </span>
+                    </div>
                     <div className="pt-2 border-t border-slate-200 dark:border-slate-700 mt-2">
                       <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3">Extra tjänster</div>
-                      <Toggle
-                        label="Presentinslagning"
-                        description="Lägg till presentinslagning (+10% till ordervärde)"
-                        checked={addGiftWrapping}
-                        onChange={setAddGiftWrapping}
-                      />
-                      <Toggle
-                        label="Leveransförsäkring"
-                        description="Lägg till leveransförsäkring (+5% till ordervärde)"
-                        checked={addInsurance}
-                        onChange={setAddInsurance}
-                      />
-                      <Toggle
-                        label="Gåvomeddelande"
-                        description="Lägg till gåvomeddelande (+2% till ordervärde)"
-                        checked={addGiftMessage}
-                        onChange={setAddGiftMessage}
-                      />
-                      <Toggle
-                        label="Förvalt fraktalternativ"
-                        description="Förvälj billigaste fraktalternativ (+4% konvertering)"
-                        checked={preselectShipping}
-                        onChange={setPreselectShipping}
-                      />
+                      <div className="flex items-center justify-between">
+                        <Toggle
+                          label="Presentinslagning"
+                          description="Lägg till presentinslagning (+10% till ordervärde)"
+                          checked={addGiftWrapping}
+                          onChange={setAddGiftWrapping}
+                        />
+                        <span className={`text-xs font-semibold ${addGiftWrapping ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
+                          {addGiftWrapping ? '+2% AOV' : ''}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Toggle
+                          label="Leveransförsäkring"
+                          description="Lägg till leveransförsäkring (+5% till ordervärde)"
+                          checked={addInsurance}
+                          onChange={setAddInsurance}
+                        />
+                        <span className={`text-xs font-semibold ${addInsurance ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
+                          {addInsurance ? '+1%' : ''}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Toggle
+                          label="Gåvomeddelande"
+                          description="Lägg till gåvomeddelande (+2% till ordervärde)"
+                          checked={addGiftMessage}
+                          onChange={setAddGiftMessage}
+                        />
+                        <span className={`text-xs font-semibold ${addGiftMessage ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
+                          {addGiftMessage ? '+1%' : ''}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Toggle
+                          label="Förvalt fraktalternativ"
+                          description="Välj automatiskt bästa fraktalternativ"
+                          checked={preselectShipping}
+                          onChange={setPreselectShipping}
+                        />
+                        <span className={`text-xs font-semibold ${preselectShipping ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
+                          {preselectShipping ? '+3%' : ''}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}
