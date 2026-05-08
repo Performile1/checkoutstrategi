@@ -1326,65 +1326,53 @@ export default function TestCheckoutPage() {
               <div className="p-4 max-h-[500px] overflow-y-auto">
                 {activeTab === 'settings' && (
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between group relative">
+                    <div className="group relative">
                       <Toggle
-                        label="Gästutcheckning"
+                        label={`Gästutcheckning ${isGuestCheckout ? '(+15%)' : '(-35%)'}`}
                         description="Inget krav på att skapa konto"
                         checked={isGuestCheckout}
                         onChange={setIsGuestCheckout}
                       />
-                      <span className={`text-xs font-semibold ${isGuestCheckout ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {isGuestCheckout ? '+15%' : '-35%'}
-                      </span>
                       <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                         Tvingat konto = -35%, Gäst = +15%
                       </div>
                     </div>
-                    <div className="flex items-center justify-between group relative">
+                    <div className="group relative">
                       <Toggle
-                        label="Adress-autofill"
+                        label={`Adress-autofill ${hasAutofill ? '(+12%)' : ''}`}
                         description="Automatisk ifyllning av adresser"
                         checked={hasAutofill}
                         onChange={setHasAutofill}
                       />
-                      <span className={`text-xs font-semibold ${hasAutofill ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
-                        {hasAutofill ? '+12%' : ''}
-                      </span>
                       <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                         Autofill = +12%
                       </div>
                     </div>
-                    <div className="flex items-center justify-between group relative">
+                    <div className="group relative">
                       <Toggle
-                        label="Visa frakt tidigt"
+                        label={`Visa frakt tidigt ${shippingDisplayedEarly ? '(+5%)' : '(-8%)'}`}
                         description="Visa fraktkostnader direkt i kassan"
                         checked={shippingDisplayedEarly}
                         onChange={setShippingDisplayedEarly}
                       />
-                      <span className={`text-xs font-semibold ${shippingDisplayedEarly ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {shippingDisplayedEarly ? '+5%' : '-8%'}
-                      </span>
                       <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                         Dold frakt = -8%, Visad frakt = +5%
                       </div>
                     </div>
-                    <div className="flex items-center justify-between group relative">
+                    <div className="group relative">
                       <Toggle
-                        label="Post-purchase upsell"
+                        label={`Post-purchase upsell ${hasUpsell ? '(+15% AOV)' : ''}`}
                         description="Erbjud tilläggsprodukter efter köp"
                         checked={hasUpsell}
                         onChange={setHasUpsell}
                       />
-                      <span className={`text-xs font-semibold ${hasUpsell ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
-                        {hasUpsell ? '+15% AOV' : ''}
-                      </span>
                       <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                         Upsell = +15% AOV (ej konvertering)
                       </div>
                     </div>
-                    <div className="flex items-center justify-between group relative">
+                    <div className="group relative">
                       <Toggle
-                        label="Korsförsäljning"
+                        label={`Korsförsäljning ${hasCrossSell ? '(+10% AOV)' : ''}`}
                         description="Visa rekommenderade tillbehör i kassan"
                         checked={hasCrossSell}
                         onChange={(checked) => {
@@ -1397,9 +1385,6 @@ export default function TestCheckoutPage() {
                           }
                         }}
                       />
-                      <span className={`text-xs font-semibold ${hasCrossSell ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
-                        {hasCrossSell ? '+10% AOV' : ''}
-                      </span>
                       <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                         Korsförsäljning = +10% AOV (ej konvertering)
                       </div>
@@ -1441,16 +1426,13 @@ export default function TestCheckoutPage() {
                         </div>
                       </div>
                     )}
-                    <div className="flex items-center justify-between group relative">
+                    <div className="group relative">
                       <Toggle
-                        label="Dölj header/footer"
+                        label={`Dölj header/footer ${hideHeaderFooter ? '(+3%)' : ''}`}
                         description="Minimal UI för mindre distraktioner"
                         checked={hideHeaderFooter}
                         onChange={setHideHeaderFooter}
                       />
-                      <span className={`text-xs font-semibold ${hideHeaderFooter ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
-                        {hideHeaderFooter ? '+3%' : ''}
-                      </span>
                       <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                         Minimal UI = +3%
                       </div>
@@ -1498,9 +1480,9 @@ export default function TestCheckoutPage() {
                         </label>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between group relative">
+                    <div className="group relative">
                       <Toggle
-                        label="EU-ångerknapp (obligatorisk från juni 2026)"
+                        label={`EU-ångerknapp (obligatorisk från juni 2026) ${showEuReturnButton ? '(+6-8%)' : ''}`}
                         description="Visa ångerknapp enligt EU:s nya regler"
                         checked={showEuReturnButton}
                         onChange={(checked) => {
@@ -1513,67 +1495,52 @@ export default function TestCheckoutPage() {
                           }
                         }}
                       />
-                      <span className={`text-xs font-semibold ${showEuReturnButton ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
-                        {showEuReturnButton ? '+6-8%' : ''}
-                      </span>
                       <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                         EU-återgång = +6-8% (beroende på position)
                       </div>
                     </div>
                     <div className="pt-2 border-t border-slate-200 dark:border-slate-700 mt-2">
                       <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3">Extra tjänster</div>
-                      <div className="flex items-center justify-between group relative">
+                      <div className="group relative">
                         <Toggle
-                          label="Presentinslagning"
+                          label={`Presentinslagning ${addGiftWrapping ? '(+2% AOV)' : ''}`}
                           description="Lägg till presentinslagning (+10% till ordervärde)"
                           checked={addGiftWrapping}
                           onChange={setAddGiftWrapping}
                         />
-                        <span className={`text-xs font-semibold ${addGiftWrapping ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
-                          {addGiftWrapping ? '+2% AOV' : ''}
-                        </span>
                         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                           Presentinslagning = +2% konvertering
                         </div>
                       </div>
-                      <div className="flex items-center justify-between group relative">
+                      <div className="group relative">
                         <Toggle
-                          label="Leveransförsäkring"
+                          label={`Leveransförsäkring ${addInsurance ? '(+1%)' : ''}`}
                           description="Lägg till leveransförsäkring (+5% till ordervärde)"
                           checked={addInsurance}
                           onChange={setAddInsurance}
                         />
-                        <span className={`text-xs font-semibold ${addInsurance ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
-                          {addInsurance ? '+1%' : ''}
-                        </span>
                         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                           Leveransförsäkring = +1%
                         </div>
                       </div>
-                      <div className="flex items-center justify-between group relative">
+                      <div className="group relative">
                         <Toggle
-                          label="Gåvomeddelande"
+                          label={`Gåvomeddelande ${addGiftMessage ? '(+1%)' : ''}`}
                           description="Lägg till gåvomeddelande (+2% till ordervärde)"
                           checked={addGiftMessage}
                           onChange={setAddGiftMessage}
                         />
-                        <span className={`text-xs font-semibold ${addGiftMessage ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
-                          {addGiftMessage ? '+1%' : ''}
-                        </span>
                         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                           Gåvomeddelande = +1%
                         </div>
                       </div>
-                      <div className="flex items-center justify-between group relative">
+                      <div className="group relative">
                         <Toggle
-                          label="Förvalt fraktalternativ"
+                          label={`Förvalt fraktalternativ ${preselectShipping ? '(+3%)' : ''}`}
                           description="Välj automatiskt bästa fraktalternativ"
                           checked={preselectShipping}
                           onChange={setPreselectShipping}
                         />
-                        <span className={`text-xs font-semibold ${preselectShipping ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
-                          {preselectShipping ? '+3%' : ''}
-                        </span>
                         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                           Förvalt frakt = +3%
                         </div>
