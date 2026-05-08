@@ -221,6 +221,16 @@ const CARRIERS: Carrier[] = [
   },
 ];
 
+// Mapping of delivery options to carriers that support them
+const DELIVERY_OPTION_CARRIERS: Record<string, string[]> = {
+  pickup: ['postnord', 'dhl', 'bring', 'citymail'],
+  locker: ['postnord', 'dhl', 'bring', 'citymail', 'budbee', 'instabox'],
+  point: ['postnord', 'dhl', 'bring', 'citymail'],
+  home: ['postnord', 'dhl', 'bring', 'citymail', 'airmee', 'earlybird', 'budbee', 'instabox', 'helthjem'],
+  mailbox: ['postnord', 'dhl', 'bring', 'citymail'],
+  express: ['postnord', 'dhl', 'bring', 'citymail', 'airmee', 'earlybird', 'budbee', 'instabox', 'helthjem'],
+};
+
 const DELIVERY_OPTIONS: DeliveryOption[] = [
   { id: 'pickup', name: 'Hämtas i butik', cost: 0, icon: <Package size={18} /> },
   { id: 'locker', name: 'Paketskåp', cost: 39, icon: <Home size={18} /> },
@@ -1779,6 +1789,12 @@ export default function TestCheckoutPage() {
                               <span className="text-sm text-slate-700 dark:text-slate-300">{opt.name}</span>
                               <span className="text-xs text-slate-500">{opt.cost} kr</span>
                             </div>
+                            <div className="text-xs text-slate-400">
+                              {DELIVERY_OPTION_CARRIERS[opt.id]?.map(carrierId => {
+                                const carrier = CARRIERS.find(c => c.id === carrierId);
+                                return carrier ? carrier.name : carrierId;
+                              }).join(', ') || 'Inga transportörer'}
+                            </div>
                           </label>
                         ))}
                       </div>
@@ -1832,7 +1848,8 @@ export default function TestCheckoutPage() {
                               SE: {carrier.marketImpact.se > 0 ? '+' : ''}{carrier.marketImpact.se}%
                             </div>
                           </label>
-                        ))}
+                        );
+                      })}
                       </div>
                     </div>
                     <div>
