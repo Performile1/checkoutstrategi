@@ -1396,16 +1396,136 @@ export default function TestCheckoutPage() {
 
               <div className="p-4 max-h-[500px] overflow-y-auto">
                 {activeTab === 'settings' && (
-                  <div className="space-y-3">
-                    <div className="group relative">
-                      <Toggle
-                        label={`Gästutcheckning ${isGuestCheckout ? '(+15%)' : '(-35%)'}`}
-                        description="Inget krav på att skapa konto"
-                        checked={isGuestCheckout}
-                        onChange={setIsGuestCheckout}
-                      />
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                        Gästutcheckning ökar konvertering med 15%, men sänker CLV med 40%
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="group relative">
+                        <Toggle
+                          label={isGuestCheckout ? '+15% Gästutcheckning' : '-35% Tvingat konto'}
+                          description="Inget krav på att skapa konto"
+                          checked={isGuestCheckout}
+                          onChange={setIsGuestCheckout}
+                        />
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Gästutcheckning ökar konvertering med 15%, men sänker CLV med 40%
+                        </div>
+                      </div>
+                      <div className="group relative">
+                        <Toggle
+                          label={hasAutofill ? '+8% Adress-autofill' : 'Adress-autofill'}
+                          description="Automatisk ifyllning av adresser"
+                          checked={hasAutofill}
+                          onChange={setHasAutofill}
+                        />
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Autofill = +8%
+                        </div>
+                      </div>
+                      <div className="group relative">
+                        <Toggle
+                          label={shippingDisplayedEarly ? '+5% Visa frakt tidigt' : '-8% Dölj frakt'}
+                          description="Visa fraktkostnader direkt i kassan"
+                          checked={shippingDisplayedEarly}
+                          onChange={setShippingDisplayedEarly}
+                        />
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Dold frakt = -8%, Visad frakt = +5%
+                        </div>
+                      </div>
+                      <div className="group relative">
+                        <Toggle
+                          label={hideHeaderFooter ? '+6% Dölj header/footer' : 'Dölj header/footer'}
+                          description="Minimal UI för mindre distraktioner"
+                          checked={hideHeaderFooter}
+                          onChange={setHideHeaderFooter}
+                        />
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Dölj header/footer = +6%
+                        </div>
+                      </div>
+                      <div className="group relative">
+                        <Toggle
+                          label={hasUpsell ? '+4% Post-purchase upsell' : 'Post-purchase upsell'}
+                          description="Erbjud tilläggsprodukter efter köp"
+                          checked={hasUpsell}
+                          onChange={setHasUpsell}
+                        />
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Upsell = +15% AOV, +4% konvertering
+                        </div>
+                      </div>
+                      <div className="group relative">
+                        <Toggle
+                          label={hasCrossSell ? '+10% AOV Korsförsäljning' : 'Korsförsäljning'}
+                          description="Visa rekommenderade tillbehör i kassan"
+                          checked={hasCrossSell}
+                          onChange={(checked) => {
+                            setHasCrossSell(checked);
+                            if (checked && !layoutOrder.includes('crossSell')) {
+                              const withoutReview = layoutOrder.filter(id => id !== 'review');
+                              setLayoutOrder([...withoutReview, 'crossSell', 'review']);
+                            } else if (!checked) {
+                              setLayoutOrder(layoutOrder.filter(id => id !== 'crossSell'));
+                            }
+                          }}
+                        />
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Korsförsäljning = +10% AOV (ej konvertering)
+                        </div>
+                      </div>
+                      <div className="group relative">
+                        <Toggle
+                          label={freeShipping ? '+8% Fri frakt alltid' : 'Fri frakt alltid'}
+                          description="Fri frakt på alla beställningar"
+                          checked={freeShipping}
+                          onChange={setFreeShipping}
+                        />
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Fri frakt = +8% konvertering, +10% AOV
+                        </div>
+                      </div>
+                      <div className="group relative">
+                        <Toggle
+                          label={freeHomeDelivery ? '+5% Fri hemleverans' : 'Fri hemleverans'}
+                          description="Fri frakt på hemleverans"
+                          checked={freeHomeDelivery}
+                          onChange={setFreeHomeDelivery}
+                        />
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Fri hemleverans = +5%
+                        </div>
+                      </div>
+                      <div className="group relative">
+                        <Toggle
+                          label={freeLockerDelivery ? '+4% Fri skåpsleverans' : 'Fri skåpsleverans'}
+                          description="Fri frakt på paketskåp"
+                          checked={freeLockerDelivery}
+                          onChange={setFreeLockerDelivery}
+                        />
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Fri skåpsleverans = +4%
+                        </div>
+                      </div>
+                      <div className="group relative">
+                        <Toggle
+                          label={preselectShipping ? '+3% Förvalt fraktalternativ' : 'Förvalt fraktalternativ'}
+                          description="Välj automatiskt bästa fraktalternativ"
+                          checked={preselectShipping}
+                          onChange={setPreselectShipping}
+                        />
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Förvalt fraktalternativ = +3%
+                        </div>
+                      </div>
+                      <div className="group relative">
+                        <Toggle
+                          label={showEuReturnButton ? '+8% EU-Ångerknapp' : 'EU-Ångerknapp'}
+                          description="Ångra köp enligt EU-direktiv"
+                          checked={showEuReturnButton}
+                          onChange={setShowEuReturnButton}
+                        />
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          EU-Ångerknapp = +6-8%
+                        </div>
                       </div>
                     </div>
                     <div>
@@ -1423,58 +1543,6 @@ export default function TestCheckoutPage() {
                           </option>
                         ))}
                       </select>
-                    </div>
-                    <div className="group relative">
-                      <Toggle
-                        label={`Adress-autofill ${hasAutofill ? '(+12%)' : ''}`}
-                        description="Automatisk ifyllning av adresser"
-                        checked={hasAutofill}
-                        onChange={setHasAutofill}
-                      />
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                        Autofill = +12%
-                      </div>
-                    </div>
-                    <div className="group relative">
-                      <Toggle
-                        label={`Visa frakt tidigt ${shippingDisplayedEarly ? '(+5%)' : '(-8%)'}`}
-                        description="Visa fraktkostnader direkt i kassan"
-                        checked={shippingDisplayedEarly}
-                        onChange={setShippingDisplayedEarly}
-                      />
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                        Dold frakt = -8%, Visad frakt = +5%
-                      </div>
-                    </div>
-                    <div className="group relative">
-                      <Toggle
-                        label={`Post-purchase upsell ${hasUpsell ? '(+15% AOV)' : ''}`}
-                        description="Erbjud tilläggsprodukter efter köp"
-                        checked={hasUpsell}
-                        onChange={setHasUpsell}
-                      />
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                        Upsell = +15% AOV (ej konvertering)
-                      </div>
-                    </div>
-                    <div className="group relative">
-                      <Toggle
-                        label={`Korsförsäljning ${hasCrossSell ? '(+10% AOV)' : ''}`}
-                        description="Visa rekommenderade tillbehör i kassan"
-                        checked={hasCrossSell}
-                        onChange={(checked) => {
-                          setHasCrossSell(checked);
-                          if (checked && !layoutOrder.includes('crossSell')) {
-                            const withoutReview = layoutOrder.filter(id => id !== 'review');
-                            setLayoutOrder([...withoutReview, 'crossSell', 'review']);
-                          } else if (!checked) {
-                            setLayoutOrder(layoutOrder.filter(id => id !== 'crossSell'));
-                          }
-                        }}
-                      />
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                        Korsförsäljning = +10% AOV (ej konvertering)
-                      </div>
                     </div>
                     {hasCrossSell && (
                       <div className="space-y-3 pl-4 border-l-2 border-slate-200 dark:border-slate-700">
