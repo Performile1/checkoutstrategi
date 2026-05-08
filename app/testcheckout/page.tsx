@@ -2072,57 +2072,13 @@ export default function TestCheckoutPage() {
                       </div>
                       <div className="group relative">
                         <Toggle
-                          label={freeShipping ? `+${getDynamicPercentage(BASE_PERCENTAGES.freeShipping, 6, SETTINGS_ORDER.length)}% Fri frakt alltid` : 'Fri frakt alltid'}
-                          description="Fri frakt på alla beställningar"
-                          checked={freeShipping}
-                          onChange={setFreeShipping}
-                        />
-                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          Fri frakt = +{getDynamicPercentage(BASE_PERCENTAGES.freeShipping, 6, SETTINGS_ORDER.length)}% konvertering, +10% AOV
-                        </div>
-                      </div>
-                      <div className="group relative">
-                        <Toggle
-                          label={freeHomeDelivery ? `+${getDynamicPercentage(BASE_PERCENTAGES.freeHomeDelivery, 7, SETTINGS_ORDER.length)}% Fri hemleverans` : 'Fri hemleverans'}
-                          description="Fri frakt på hemleverans"
-                          checked={freeHomeDelivery}
-                          onChange={setFreeHomeDelivery}
-                        />
-                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          Fri hemleverans = +{getDynamicPercentage(BASE_PERCENTAGES.freeHomeDelivery, 7, SETTINGS_ORDER.length)}%
-                        </div>
-                      </div>
-                      <div className="group relative">
-                        <Toggle
-                          label={freeLockerDelivery ? `+${getDynamicPercentage(BASE_PERCENTAGES.freeLockerDelivery, 8, SETTINGS_ORDER.length)}% Fri skåpsleverans` : 'Fri skåpsleverans'}
-                          description="Fri frakt på paketskåp"
-                          checked={freeLockerDelivery}
-                          onChange={setFreeLockerDelivery}
-                        />
-                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          Fri skåpsleverans = +{getDynamicPercentage(BASE_PERCENTAGES.freeLockerDelivery, 8, SETTINGS_ORDER.length)}%
-                        </div>
-                      </div>
-                      <div className="group relative">
-                        <Toggle
-                          label={preselectShipping ? `+${getDynamicPercentage(BASE_PERCENTAGES.preselectShipping, 9, SETTINGS_ORDER.length)}% Förvalt fraktalternativ` : 'Förvalt fraktalternativ'}
-                          description="Välj automatiskt bästa fraktalternativ"
-                          checked={preselectShipping}
-                          onChange={setPreselectShipping}
-                        />
-                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          Förvalt fraktalternativ = +{getDynamicPercentage(BASE_PERCENTAGES.preselectShipping, 9, SETTINGS_ORDER.length)}%
-                        </div>
-                      </div>
-                      <div className="group relative">
-                        <Toggle
-                          label={showEuReturnButton ? `-${getDynamicPercentage(BASE_PERCENTAGES.euReturnButton, 10, SETTINGS_ORDER.length)}% EU-Ångerknapp` : 'EU-Ångerknapp'}
+                          label={showEuReturnButton ? `-${getDynamicPercentage(BASE_PERCENTAGES.euReturnButton, 6, SETTINGS_ORDER.length)}% EU-Ångerknapp` : 'EU-Ångerknapp'}
                           description="Ångra köp enligt EU-direktiv"
                           checked={showEuReturnButton}
                           onChange={setShowEuReturnButton}
                         />
                         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          EU-Ångerknapp = -{getDynamicPercentage(BASE_PERCENTAGES.euReturnButton, 10, SETTINGS_ORDER.length)}% (minskar köp-iv, men obligatoriskt från 19 juni 2026)
+                          EU-Ångerknapp = -{getDynamicPercentage(BASE_PERCENTAGES.euReturnButton, 6, SETTINGS_ORDER.length)}% (minskar köp-iv, men obligatoriskt från 19 juni 2026)
                         </div>
                       </div>
                     </div>
@@ -2310,6 +2266,17 @@ export default function TestCheckoutPage() {
                           </div>
                           <div className="text-xs text-slate-500">+4%</div>
                         </label>
+                      </div>
+                    </div>
+                    <div className="group relative">
+                      <Toggle
+                        label={preselectShipping ? `+${BASE_PERCENTAGES.preselectShipping}% Förvalt fraktalternativ` : 'Förvalt fraktalternativ'}
+                        description="Välj automatiskt bästa fraktalternativ"
+                        checked={preselectShipping}
+                        onChange={setPreselectShipping}
+                      />
+                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                        Förvalt fraktalternativ = +3% konvertering
                       </div>
                     </div>
                     <div className="group relative">
