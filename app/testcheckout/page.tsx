@@ -23,7 +23,10 @@ import {
   DollarSign,
   RefreshCw,
   Globe,
-  HelpCircle
+  HelpCircle,
+  AlertTriangle,
+  Clock,
+  Users
 } from 'lucide-react';
 import { players } from '@/lib/players';
 
@@ -249,6 +252,9 @@ const SECTIONS: CheckoutSection[] = [
   { id: 'payment', title: 'Betalning', icon: <CreditCard size={20} />, description: 'Betalmetoder och kort' },
   { id: 'euReturn', title: 'EU-Ångerknapp', icon: <RefreshCw size={20} />, description: 'Ångra köp enligt EU-direktiv' },
   { id: 'review', title: 'Orderöversikt', icon: <Package size={20} />, description: 'Sammanfattning av köp' },
+  { id: 'lowStock', title: 'Lagersaldovarning', icon: <AlertTriangle size={20} />, description: 'Endast X kvar i lager' },
+  { id: 'cartTimer', title: 'Varukorgstimer', icon: <Clock size={20} />, description: 'Reserverad i X minuter' },
+  { id: 'socialProof', title: 'Social Proof', icon: <Users size={20} />, description: 'X personer tittar nu' },
 ];
 
 export default function TestCheckoutPage() {
@@ -342,6 +348,69 @@ export default function TestCheckoutPage() {
   const [addGiftMessage, setAddGiftMessage] = useState(false);
   const [preselectShipping, setPreselectShipping] = useState(false);
   const [selectedCardProviders, setSelectedCardProviders] = useState<string[]>(['visa', 'mastercard']);
+  const [ctaColor, setCtaColor] = useState<'green' | 'orange' | 'red' | 'low-contrast'>('green');
+  const [ctaText, setCtaText] = useState<'complete' | 'pay' | 'confirm'>('complete');
+  const [showOrderConfirmation, setShowOrderConfirmation] = useState(false);
+  const [showLowStockWarning, setShowLowStockWarning] = useState(false);
+  const [showCartTimer, setShowCartTimer] = useState(false);
+  const [showSocialProof, setShowSocialProof] = useState(false);
+
+  // Base percentages for each toggle setting
+  const BASE_PERCENTAGES = {
+    guestCheckout: 15,
+    autofill: 8,
+    shippingDisplayedEarly: 5,
+    hideHeaderFooter: 6,
+    upsell: 4,
+    crossSell: 0, // AOV only, not conversion
+    freeShipping: 8,
+    freeHomeDelivery: 5,
+    freeLockerDelivery: 4,
+    preselectShipping: 3,
+    euReturnButton: 8,
+    giftWrapping: 2,
+    insurance: 1,
+    giftMessage: 1,
+    lowStockWarning: 8,
+    cartTimer: 5,
+    socialProof: 3,
+  };
+
+  // Calculate position-based multiplier based on toggle order in settings
+  const getPositionMultiplier = (index: number, total: number): number => {
+    // First 3 toggles (prime position): 100%
+    if (index < 3) return 1.0;
+    // Toggles 4-7: 95%
+    if (index < 7) return 0.95;
+    // Toggles 8-11: 90%
+    if (index < 11) return 0.90;
+    // Toggles 12+: 85%
+    return 0.85;
+  };
+
+  // Get dynamic percentage based on position
+  const getDynamicPercentage = (basePercentage: number, index: number, total: number): number => {
+    const multiplier = getPositionMultiplier(index, total);
+    return Math.round(basePercentage * multiplier);
+  };
+
+  // Settings toggle order for position calculation
+  const SETTINGS_ORDER = [
+    { id: 'guestCheckout', base: BASE_PERCENTAGES.guestCheckout },
+    { id: 'autofill', base: BASE_PERCENTAGES.autofill },
+    { id: 'shippingDisplayedEarly', base: BASE_PERCENTAGES.shippingDisplayedEarly },
+    { id: 'hideHeaderFooter', base: BASE_PERCENTAGES.hideHeaderFooter },
+    { id: 'upsell', base: BASE_PERCENTAGES.upsell },
+    { id: 'crossSell', base: BASE_PERCENTAGES.crossSell },
+    { id: 'freeShipping', base: BASE_PERCENTAGES.freeShipping },
+    { id: 'freeHomeDelivery', base: BASE_PERCENTAGES.freeHomeDelivery },
+    { id: 'freeLockerDelivery', base: BASE_PERCENTAGES.freeLockerDelivery },
+    { id: 'preselectShipping', base: BASE_PERCENTAGES.preselectShipping },
+    { id: 'euReturnButton', base: BASE_PERCENTAGES.euReturnButton },
+    { id: 'giftWrapping', base: BASE_PERCENTAGES.giftWrapping },
+    { id: 'insurance', base: BASE_PERCENTAGES.insurance },
+    { id: 'giftMessage', base: BASE_PERCENTAGES.giftMessage },
+  ];
 
   const calculateConversionScore = () => {
     let score = 20; // Base score (lowered to give more room for toggle settings)
@@ -356,85 +425,133 @@ export default function TestCheckoutPage() {
     if (!isGuestCheckout) {
       score -= 35;
     } else {
-      score += 8; // Guest checkout helps conversion (reduced from 10 to prevent exceeding 100)
+      const guestIndex = SETTINGS_ORDER.findIndex(s => s.id === 'guestCheckout');
+      const dynamicGuest = getDynamicPercentage(BASE_PERCENTAGES.guestCheckout, guestIndex, SETTINGS_ORDER.length);
+      score += dynamicGuest;
     }
 
     // Autofill impact (reduces friction, especially on mobile)
     if (hasAutofill) {
-      score += 8; // Reduced from 10 to prevent exceeding 100
+      const autofillIndex = SETTINGS_ORDER.findIndex(s => s.id === 'autofill');
+      const dynamicAutofill = getDynamicPercentage(BASE_PERCENTAGES.autofill, autofillIndex, SETTINGS_ORDER.length);
+      score += dynamicAutofill;
     }
 
     // Hidden shipping costs (biggest reason for cart abandonment)
     if (!shippingDisplayedEarly) {
       score -= 48;
     } else {
-      score += 6; // Reduced from 8 to prevent exceeding 100
+      const shippingIndex = SETTINGS_ORDER.findIndex(s => s.id === 'shippingDisplayedEarly');
+      const dynamicShipping = getDynamicPercentage(BASE_PERCENTAGES.shippingDisplayedEarly, shippingIndex, SETTINGS_ORDER.length);
+      score += dynamicShipping;
     }
 
     // No header/footer (reduces distractions)
     if (hideHeaderFooter) {
-      score += 6; // Reduced from 8 to prevent exceeding 100
+      const headerIndex = SETTINGS_ORDER.findIndex(s => s.id === 'hideHeaderFooter');
+      const dynamicHeader = getDynamicPercentage(BASE_PERCENTAGES.hideHeaderFooter, headerIndex, SETTINGS_ORDER.length);
+      score += dynamicHeader;
     }
 
     // Post-purchase upsell (increases AOV without hurting conversion)
     if (hasUpsell) {
-      score += 4; // Reduced from 5 to prevent exceeding 100
+      const upsellIndex = SETTINGS_ORDER.findIndex(s => s.id === 'upsell');
+      const dynamicUpsell = getDynamicPercentage(BASE_PERCENTAGES.upsell, upsellIndex, SETTINGS_ORDER.length);
+      score += dynamicUpsell;
     }
 
     // Free shipping threshold (increases AOV and conversion)
     if (freeShippingThreshold > 0) {
-      score += 6; // Reduced from 8 to prevent exceeding 100
+      const thresholdIndex = SETTINGS_ORDER.findIndex(s => s.id === 'freeShipping');
+      const dynamicThreshold = getDynamicPercentage(BASE_PERCENTAGES.freeShipping, thresholdIndex, SETTINGS_ORDER.length);
+      score += dynamicThreshold;
     }
 
     // Free shipping on all orders
     if (freeShipping) {
-      score += 8; // Reduced from 10 to prevent exceeding 100
+      const freeShippingIndex = SETTINGS_ORDER.findIndex(s => s.id === 'freeShipping');
+      const dynamicFreeShipping = getDynamicPercentage(BASE_PERCENTAGES.freeShipping, freeShippingIndex, SETTINGS_ORDER.length);
+      score += dynamicFreeShipping;
     }
 
     // Free home delivery
     if (freeHomeDelivery) {
-      score += 5; // Reduced from 7 to prevent exceeding 100
+      const homeIndex = SETTINGS_ORDER.findIndex(s => s.id === 'freeHomeDelivery');
+      const dynamicHome = getDynamicPercentage(BASE_PERCENTAGES.freeHomeDelivery, homeIndex, SETTINGS_ORDER.length);
+      score += dynamicHome;
     }
 
     // Free locker delivery
     if (freeLockerDelivery) {
-      score += 4; // Reduced from 5 to prevent exceeding 100
+      const lockerIndex = SETTINGS_ORDER.findIndex(s => s.id === 'freeLockerDelivery');
+      const dynamicLocker = getDynamicPercentage(BASE_PERCENTAGES.freeLockerDelivery, lockerIndex, SETTINGS_ORDER.length);
+      score += dynamicLocker;
     }
 
     // EU return button (mandatory from June 2026)
+    // From customer perspective, having an easy return option can reduce purchase urgency
     if (showEuReturnButton) {
-      // Position-based impact: higher impact if placed before payment or near top
-      const euReturnIndex = layoutOrder.indexOf('euReturn');
-      const paymentIndex = layoutOrder.indexOf('payment');
-      let euReturnImpact = 6; // Base impact
-      
-      if (euReturnIndex !== -1) {
-        // If placed before payment, higher impact
-        if (euReturnIndex < paymentIndex) {
-          euReturnImpact = 8;
-        }
-        // If placed in first half of layout, slight bonus
-        if (euReturnIndex < layoutOrder.length / 2) {
-          euReturnImpact += 2;
-        }
-      }
-      score += euReturnImpact;
+      const euIndex = SETTINGS_ORDER.findIndex(s => s.id === 'euReturnButton');
+      const dynamicEu = getDynamicPercentage(BASE_PERCENTAGES.euReturnButton, euIndex, SETTINGS_ORDER.length);
+      score -= dynamicEu; // Negative impact: reduces purchase urgency
     }
     
     // Extra services impact
     if (addGiftWrapping) {
-      score += 2; // Reduced from 3 to prevent exceeding 100
+      const wrappingIndex = SETTINGS_ORDER.findIndex(s => s.id === 'giftWrapping');
+      const dynamicWrapping = getDynamicPercentage(BASE_PERCENTAGES.giftWrapping, wrappingIndex, SETTINGS_ORDER.length);
+      score += dynamicWrapping;
     }
     if (addInsurance) {
-      score += 1; // Reduced from 2 to prevent exceeding 100
+      const insuranceIndex = SETTINGS_ORDER.findIndex(s => s.id === 'insurance');
+      const dynamicInsurance = getDynamicPercentage(BASE_PERCENTAGES.insurance, insuranceIndex, SETTINGS_ORDER.length);
+      score += dynamicInsurance;
     }
     if (addGiftMessage) {
-      score += 1; // Reduced from 1
+      const messageIndex = SETTINGS_ORDER.findIndex(s => s.id === 'giftMessage');
+      const dynamicMessage = getDynamicPercentage(BASE_PERCENTAGES.giftMessage, messageIndex, SETTINGS_ORDER.length);
+      score += dynamicMessage;
     }
-    
+
     // Pre-selected shipping option impact
     if (preselectShipping) {
-      score += 3; // Reduced from 4 to prevent exceeding 100
+      const preselectIndex = SETTINGS_ORDER.findIndex(s => s.id === 'preselectShipping');
+      const dynamicPreselect = getDynamicPercentage(BASE_PERCENTAGES.preselectShipping, preselectIndex, SETTINGS_ORDER.length);
+      score += dynamicPreselect;
+    }
+
+    // CTA button color psychology impact
+    if (ctaColor === 'green') {
+      score += 3; // Confirming/safe: +3% conversion
+    } else if (ctaColor === 'orange' || ctaColor === 'red') {
+      // Urgent/action: +2% for low order values, but -2% for high values
+      if (orderValue < 500) {
+        score += 2;
+      } else {
+        score -= 2;
+      }
+    } else if (ctaColor === 'low-contrast') {
+      score -= 8; // Low contrast: -8% conversion
+    }
+
+    // CTA button text impact
+    if (ctaText === 'pay') {
+      score -= 2; // "Betala" focuses on loss of money: -2%
+    } else if (ctaText === 'confirm') {
+      score += 1; // "Bekräfta order" is softer: +1%
+    }
+
+    // FOMO features impact
+    if (showLowStockWarning) {
+      score += 8; // Low stock warning creates urgency: +8%
+    }
+    if (showCartTimer) {
+      score += 5; // Cart timer creates urgency: +5%
+      // Cart timer slightly reduces trust
+      score -= 2; // -2% trust impact
+    }
+    if (showSocialProof) {
+      score += 3; // Social proof leverages herd behavior: +3%
     }
 
     // Multiple delivery options (gives customers choice)
@@ -910,19 +1027,21 @@ export default function TestCheckoutPage() {
             </div>
 
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-              {!hideHeaderFooter && (
-                <div className="bg-slate-900 dark:bg-slate-950 px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-white font-semibold">Checkout</div>
-                    <div className="flex items-center gap-2 text-slate-400 text-sm">
-                      <div className="w-8 h-8 rounded-full bg-slate-700" />
-                      <div className="w-24 h-2 rounded bg-slate-700" />
+              {!showOrderConfirmation ? (
+                <>
+                  {!hideHeaderFooter && (
+                    <div className="bg-slate-900 dark:bg-slate-950 px-6 py-4">
+                      <div className="flex items-center justify-between">
+                        <div className="text-white font-semibold">Checkout</div>
+                        <div className="flex items-center gap-2 text-slate-400 text-sm">
+                          <div className="w-8 h-8 rounded-full bg-slate-700" />
+                          <div className="w-24 h-2 rounded bg-slate-700" />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              )}
+                  )}
 
-              <DragDropContext onDragEnd={handleDragEnd}>
+                  <DragDropContext onDragEnd={handleDragEnd}>
                 <Droppable droppableId="checkout-sections" type="SECTION">
                   {(provided) => (
                     <div {...provided.droppableProps} ref={provided.innerRef} className="p-6 space-y-4">
@@ -1222,6 +1341,39 @@ export default function TestCheckoutPage() {
                                           </div>
                                         </>
                                       )}
+                                      {sectionId === 'lowStock' && showLowStockWarning && (
+                                        <>
+                                          <div className="flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                            <AlertTriangle size={20} className="text-red-600 dark:text-red-400 flex-shrink-0" />
+                                            <div className="flex-1">
+                                              <div className="font-semibold text-red-900 dark:text-red-100">Endast 2 kvar i lager!</div>
+                                              <div className="text-sm text-red-700 dark:text-red-300">Sluta kö innan det är slut</div>
+                                            </div>
+                                          </div>
+                                        </>
+                                      )}
+                                      {sectionId === 'cartTimer' && showCartTimer && (
+                                        <>
+                                          <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                                            <Clock size={20} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                                            <div className="flex-1">
+                                              <div className="font-semibold text-amber-900 dark:text-amber-100">Varukorgen reserverad i 10:00</div>
+                                              <div className="text-sm text-amber-700 dark:text-amber-300">Slutför köpet innan varukorgen släpps</div>
+                                            </div>
+                                          </div>
+                                        </>
+                                      )}
+                                      {sectionId === 'socialProof' && showSocialProof && (
+                                        <>
+                                          <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                                            <Users size={20} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                                            <div className="flex-1">
+                                              <div className="font-semibold text-blue-900 dark:text-blue-100">3 personer tittar på denna just nu</div>
+                                              <div className="text-sm text-blue-700 dark:text-blue-300">Populär produkt - köp nu</div>
+                                            </div>
+                                          </div>
+                                        </>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
@@ -1284,6 +1436,134 @@ export default function TestCheckoutPage() {
                   </div>
                 </div>
               )}
+
+              {/* CTA Button */}
+              <div className="p-6 border-t border-slate-200 dark:border-slate-700">
+                <button
+                  onClick={() => setShowOrderConfirmation(true)}
+                  className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all ${
+                    ctaColor === 'green' 
+                      ? 'bg-green-600 hover:bg-green-700 text-white' 
+                      : ctaColor === 'orange' 
+                      ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                      : ctaColor === 'red'
+                      ? 'bg-red-600 hover:bg-red-700 text-white'
+                      : 'bg-slate-300 hover:bg-slate-400 text-slate-700'
+                  }`}
+                >
+                  {ctaText === 'complete' && 'Slutför köp'}
+                  {ctaText === 'pay' && 'Betala'}
+                  {ctaText === 'confirm' && 'Bekräfta order'}
+                </button>
+                <div className="text-center text-xs text-slate-500 dark:text-slate-400 mt-2">
+                  {ctaColor === 'green' && 'Grön: +3% konvertering (bekräftande/säker)'}
+                  {ctaColor === 'orange' && `Orange: ${orderValue < 500 ? '+2%' : '-2%'} konvertering (brådskande)`}
+                  {ctaColor === 'red' && `Röd: ${orderValue < 500 ? '+2%' : '-2%'} konvertering (brådskande)`}
+                  {ctaColor === 'low-contrast' && 'Låg kontrast: -8% konvertering'}
+                </div>
+              </div>
+              </>
+              ) : (
+                /* Order Confirmation View */
+                <div className="p-6">
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle2 size={32} className="text-green-600 dark:text-green-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Tack för din beställning!</h2>
+                    <p className="text-slate-600 dark:text-slate-400">Ordernummer: #ORD-{Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+                  </div>
+
+                  {/* Order Details */}
+                  <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-4 mb-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-16 h-16 bg-slate-300 dark:bg-slate-500 rounded flex-shrink-0 flex items-center justify-center">
+                        <Package size={24} className="text-slate-400 dark:text-slate-400" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-slate-700 dark:text-slate-300">{productName}</div>
+                        <div className="text-sm text-slate-600 dark:text-slate-400">{productPrice} kr</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-500">Antal: 1</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Simulated Tracking Timeline */}
+                  <div className="mb-4">
+                    <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3">Orderstatus</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                          <CheckCircle2 size={16} className="text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-slate-900 dark:text-slate-100">Order mottagen</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">Just nu</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 opacity-50">
+                        <div className="w-8 h-8 bg-slate-300 dark:bg-slate-600 rounded-full flex items-center justify-center">
+                          <Package size={16} className="text-slate-600 dark:text-slate-400" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-slate-900 dark:text-slate-100">Packas</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">Beräknat: Imorgon</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 opacity-50">
+                        <div className="w-8 h-8 bg-slate-300 dark:bg-slate-600 rounded-full flex items-center justify-center">
+                          <Truck size={16} className="text-slate-600 dark:text-slate-400" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-slate-900 dark:text-slate-100">Skickas</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">Beräknat: 2-3 dagar</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* One-click Account Creation (if guest checkout) */}
+                  {isGuestCheckout && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                      <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Spara dina uppgifter</h3>
+                      <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
+                        Skapa ett konto med ett klick för snabbare checkout nästa gång.
+                      </p>
+                      <div className="flex gap-2">
+                        <input
+                          type="password"
+                          placeholder="Lösenord"
+                          className="flex-1 px-3 py-2 border border-blue-300 dark:border-blue-700 rounded dark:bg-blue-900/30 text-sm"
+                        />
+                        <button className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700">
+                          Skapa konto
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* EU Return Button */}
+                  {showEuReturnButton && (
+                    <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-4 mb-4">
+                      <button className="w-full flex items-center justify-center gap-2 py-3 border-2 border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">
+                        <RefreshCw size={20} className="text-slate-600 dark:text-slate-400" />
+                        <span className="font-medium text-slate-900 dark:text-slate-100">Ångra köp</span>
+                      </button>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 text-center">
+                        Du har rätt att ångra detta köp inom 14 dagar enligt EU-direktiv
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Back to Checkout Button */}
+                  <button
+                    onClick={() => setShowOrderConfirmation(false)}
+                    className="w-full py-3 px-4 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                  >
+                    ← Tillbaka till checkout
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1293,52 +1573,54 @@ export default function TestCheckoutPage() {
               <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Control Panel</h2>
             </div>
 
-            {/* Conversion Score - Always Visible */}
+            {/* Metrics - Always Visible */}
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Gauge size={18} className="text-brand-600 dark:text-brand-400" />
-                  <span className="font-semibold text-slate-900 dark:text-slate-100">Konverteringsscore</span>
-                </div>
-                <div className="text-3xl font-bold text-slate-900 dark:text-slate-100">{conversionScore}%</div>
-              </div>
-              <div className="relative h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-2">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${conversionScore}%` }}
-                  transition={{ duration: 0.5 }}
-                  className={`h-full rounded-full ${
-                    conversionScore >= 70 ? 'bg-green-500' : conversionScore >= 40 ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}
-                />
-              </div>
-              <div className="text-xs text-slate-600 dark:text-slate-400 mb-3">
-                {conversionScore >= 70 ? 'Optimerad för hög konvertering' : conversionScore >= 40 ? 'Medel konvertering' : 'Låg konvertering - förbättringar behövs'}
-              </div>
-              <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-200 dark:border-slate-700">
-                <div className="text-center">
-                  <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{calculateAOV()} kr</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Beräknad AOV</div>
-                  {aovMetrics.length > 0 && (
-                    <>
-                      <div className="relative h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${Math.min(100, (calculateAOV() / orderValue) * 100)}%` }}
-                          transition={{ duration: 0.5 }}
-                          className="h-full rounded-full bg-blue-500"
-                        />
-                      </div>
-                      <div className={`text-xs mt-1 ${aovMetrics[0]?.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
-                        {aovMetrics[0]?.impact > 0 ? '+' : ''}{aovMetrics[0]?.impact}% från base
-                      </div>
-                    </>
-                  )}
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{calculateCLV()} kr</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Beräknad CLV</div>
-                  {clvMetrics.length > 0 && (
+              {!showOrderConfirmation ? (
+                <>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Gauge size={18} className="text-brand-600 dark:text-brand-400" />
+                      <span className="font-semibold text-slate-900 dark:text-slate-100">Konverteringsscore</span>
+                    </div>
+                    <div className="text-3xl font-bold text-slate-900 dark:text-slate-100">{conversionScore}%</div>
+                  </div>
+                  <div className="relative h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-2">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${conversionScore}%` }}
+                      transition={{ duration: 0.5 }}
+                      className={`h-full rounded-full ${
+                        conversionScore >= 70 ? 'bg-green-500' : conversionScore >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+                      }`}
+                    />
+                  </div>
+                  <div className="text-xs text-slate-600 dark:text-slate-400 mb-3">
+                    {conversionScore >= 70 ? 'Optimerad för hög konvertering' : conversionScore >= 40 ? 'Medel konvertering' : 'Låg konvertering - förbättringar behövs'}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{calculateAOV()} kr</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Beräknad AOV</div>
+                      {aovMetrics.length > 0 && (
+                        <>
+                          <div className="relative h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${Math.min(100, (calculateAOV() / orderValue) * 100)}%` }}
+                              transition={{ duration: 0.5 }}
+                              className="h-full rounded-full bg-blue-500"
+                            />
+                          </div>
+                          <div className={`text-xs mt-1 ${aovMetrics[0]?.impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
+                            {aovMetrics[0]?.impact > 0 ? '+' : ''}{aovMetrics[0]?.impact}% från base
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{calculateCLV()} kr</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Beräknad CLV</div>
+                      {clvMetrics.length > 0 && (
                     <>
                       <div className="relative h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                         <motion.div
@@ -1357,6 +1639,41 @@ export default function TestCheckoutPage() {
                   )}
                 </div>
               </div>
+                </>
+              ) : (
+                /* Order Confirmation Metrics */
+                <>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp size={18} className="text-purple-600 dark:text-purple-400" />
+                      <span className="font-semibold text-slate-900 dark:text-slate-100">Post-Purchase Metrics</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3">
+                      <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{calculateCLV()} kr</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">Beräknad CLV (Customer Lifetime Value)</div>
+                      <div className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                        {isGuestCheckout ? '-40% CLV pga gästutcheckning' : 'Base CLV'}
+                      </div>
+                    </div>
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+                      <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{isGuestCheckout ? '15%' : '45%'}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">Återkommande Kunder</div>
+                      <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                        {isGuestCheckout ? 'Låg pga gästutcheckning' : 'Hög med konto'}
+                      </div>
+                    </div>
+                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
+                      <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{selectedDeliveryOptions.length >= 3 ? 'Low' : 'Medium'}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">Support Tickets (WISMO)</div>
+                      <div className="text-xs text-green-600 dark:text-green-400 mt-1">
+                        Tracking minskar WISMO med 40%
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Tabs */}
@@ -1410,57 +1727,57 @@ export default function TestCheckoutPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="group relative">
                         <Toggle
-                          label={isGuestCheckout ? '+15% Gästutcheckning' : '-35% Tvingat konto'}
+                          label={isGuestCheckout ? `+${getDynamicPercentage(BASE_PERCENTAGES.guestCheckout, 0, SETTINGS_ORDER.length)}% Gästutcheckning` : '-35% Tvingat konto'}
                           description="Inget krav på att skapa konto"
                           checked={isGuestCheckout}
                           onChange={setIsGuestCheckout}
                         />
                         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          Gästutcheckning ökar konvertering med 15%, men sänker CLV med 40%
+                          Gästutcheckning ökar konvertering med {getDynamicPercentage(BASE_PERCENTAGES.guestCheckout, 0, SETTINGS_ORDER.length)}%, men sänker CLV med 40%
                         </div>
                       </div>
                       <div className="group relative">
                         <Toggle
-                          label={hasAutofill ? '+8% Adress-autofill' : 'Adress-autofill'}
+                          label={hasAutofill ? `+${getDynamicPercentage(BASE_PERCENTAGES.autofill, 1, SETTINGS_ORDER.length)}% Adress-autofill` : 'Adress-autofill'}
                           description="Automatisk ifyllning av adresser"
                           checked={hasAutofill}
                           onChange={setHasAutofill}
                         />
                         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          Autofill = +8%
+                          Autofill = +{getDynamicPercentage(BASE_PERCENTAGES.autofill, 1, SETTINGS_ORDER.length)}%
                         </div>
                       </div>
                       <div className="group relative">
                         <Toggle
-                          label={shippingDisplayedEarly ? '+5% Visa frakt tidigt' : '-8% Dölj frakt'}
+                          label={shippingDisplayedEarly ? `+${getDynamicPercentage(BASE_PERCENTAGES.shippingDisplayedEarly, 2, SETTINGS_ORDER.length)}% Visa frakt tidigt` : '-8% Dölj frakt'}
                           description="Visa fraktkostnader direkt i kassan"
                           checked={shippingDisplayedEarly}
                           onChange={setShippingDisplayedEarly}
                         />
                         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          Dold frakt = -8%, Visad frakt = +5%
+                          Dold frakt = -8%, Visad frakt = +{getDynamicPercentage(BASE_PERCENTAGES.shippingDisplayedEarly, 2, SETTINGS_ORDER.length)}%
                         </div>
                       </div>
                       <div className="group relative">
                         <Toggle
-                          label={hideHeaderFooter ? '+6% Dölj header/footer' : 'Dölj header/footer'}
+                          label={hideHeaderFooter ? `+${getDynamicPercentage(BASE_PERCENTAGES.hideHeaderFooter, 3, SETTINGS_ORDER.length)}% Dölj header/footer` : 'Dölj header/footer'}
                           description="Minimal UI för mindre distraktioner"
                           checked={hideHeaderFooter}
                           onChange={setHideHeaderFooter}
                         />
                         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          Dölj header/footer = +6%
+                          Dölj header/footer = +{getDynamicPercentage(BASE_PERCENTAGES.hideHeaderFooter, 3, SETTINGS_ORDER.length)}%
                         </div>
                       </div>
                       <div className="group relative">
                         <Toggle
-                          label={hasUpsell ? '+4% Post-purchase upsell' : 'Post-purchase upsell'}
+                          label={hasUpsell ? `+${getDynamicPercentage(BASE_PERCENTAGES.upsell, 4, SETTINGS_ORDER.length)}% Post-purchase upsell` : 'Post-purchase upsell'}
                           description="Erbjud tilläggsprodukter efter köp"
                           checked={hasUpsell}
                           onChange={setHasUpsell}
                         />
                         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          Upsell = +15% AOV, +4% konvertering
+                          Upsell = +15% AOV, +{getDynamicPercentage(BASE_PERCENTAGES.upsell, 4, SETTINGS_ORDER.length)}% konvertering
                         </div>
                       </div>
                       <div className="group relative">
@@ -1484,57 +1801,57 @@ export default function TestCheckoutPage() {
                       </div>
                       <div className="group relative">
                         <Toggle
-                          label={freeShipping ? '+8% Fri frakt alltid' : 'Fri frakt alltid'}
+                          label={freeShipping ? `+${getDynamicPercentage(BASE_PERCENTAGES.freeShipping, 6, SETTINGS_ORDER.length)}% Fri frakt alltid` : 'Fri frakt alltid'}
                           description="Fri frakt på alla beställningar"
                           checked={freeShipping}
                           onChange={setFreeShipping}
                         />
                         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          Fri frakt = +8% konvertering, +10% AOV
+                          Fri frakt = +{getDynamicPercentage(BASE_PERCENTAGES.freeShipping, 6, SETTINGS_ORDER.length)}% konvertering, +10% AOV
                         </div>
                       </div>
                       <div className="group relative">
                         <Toggle
-                          label={freeHomeDelivery ? '+5% Fri hemleverans' : 'Fri hemleverans'}
+                          label={freeHomeDelivery ? `+${getDynamicPercentage(BASE_PERCENTAGES.freeHomeDelivery, 7, SETTINGS_ORDER.length)}% Fri hemleverans` : 'Fri hemleverans'}
                           description="Fri frakt på hemleverans"
                           checked={freeHomeDelivery}
                           onChange={setFreeHomeDelivery}
                         />
                         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          Fri hemleverans = +5%
+                          Fri hemleverans = +{getDynamicPercentage(BASE_PERCENTAGES.freeHomeDelivery, 7, SETTINGS_ORDER.length)}%
                         </div>
                       </div>
                       <div className="group relative">
                         <Toggle
-                          label={freeLockerDelivery ? '+4% Fri skåpsleverans' : 'Fri skåpsleverans'}
+                          label={freeLockerDelivery ? `+${getDynamicPercentage(BASE_PERCENTAGES.freeLockerDelivery, 8, SETTINGS_ORDER.length)}% Fri skåpsleverans` : 'Fri skåpsleverans'}
                           description="Fri frakt på paketskåp"
                           checked={freeLockerDelivery}
                           onChange={setFreeLockerDelivery}
                         />
                         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          Fri skåpsleverans = +4%
+                          Fri skåpsleverans = +{getDynamicPercentage(BASE_PERCENTAGES.freeLockerDelivery, 8, SETTINGS_ORDER.length)}%
                         </div>
                       </div>
                       <div className="group relative">
                         <Toggle
-                          label={preselectShipping ? '+3% Förvalt fraktalternativ' : 'Förvalt fraktalternativ'}
+                          label={preselectShipping ? `+${getDynamicPercentage(BASE_PERCENTAGES.preselectShipping, 9, SETTINGS_ORDER.length)}% Förvalt fraktalternativ` : 'Förvalt fraktalternativ'}
                           description="Välj automatiskt bästa fraktalternativ"
                           checked={preselectShipping}
                           onChange={setPreselectShipping}
                         />
                         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          Förvalt fraktalternativ = +3%
+                          Förvalt fraktalternativ = +{getDynamicPercentage(BASE_PERCENTAGES.preselectShipping, 9, SETTINGS_ORDER.length)}%
                         </div>
                       </div>
                       <div className="group relative">
                         <Toggle
-                          label={showEuReturnButton ? '+8% EU-Ångerknapp' : 'EU-Ångerknapp'}
+                          label={showEuReturnButton ? `-${getDynamicPercentage(BASE_PERCENTAGES.euReturnButton, 10, SETTINGS_ORDER.length)}% EU-Ångerknapp` : 'EU-Ångerknapp'}
                           description="Ångra köp enligt EU-direktiv"
                           checked={showEuReturnButton}
                           onChange={setShowEuReturnButton}
                         />
                         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          EU-Ångerknapp = +6-8%
+                          EU-Ångerknapp = -{getDynamicPercentage(BASE_PERCENTAGES.euReturnButton, 10, SETTINGS_ORDER.length)}% (minskar köp-iv, men obligatoriskt från 19 juni 2026)
                         </div>
                       </div>
                     </div>
@@ -1553,6 +1870,71 @@ export default function TestCheckoutPage() {
                           </option>
                         ))}
                       </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        CTA-knapp färg
+                      </label>
+                      <select
+                        value={ctaColor}
+                        onChange={(e) => setCtaColor(e.target.value as 'green' | 'orange' | 'red' | 'low-contrast')}
+                        className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 text-sm"
+                      >
+                        <option value="green">Grön (+3% konvertering)</option>
+                        <option value="orange">Orange (+2%/-2% beroende på ordervärde)</option>
+                        <option value="red">Röd (+2%/-2% beroende på ordervärde)</option>
+                        <option value="low-contrast">Låg kontrast (-8% konvertering)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        CTA-knapp text
+                      </label>
+                      <select
+                        value={ctaText}
+                        onChange={(e) => setCtaText(e.target.value as 'complete' | 'pay' | 'confirm')}
+                        className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 text-sm"
+                      >
+                        <option value="complete">Slutför köp (Standard)</option>
+                        <option value="pay">Betala (-2% konvertering)</option>
+                        <option value="confirm">Bekräfta order (+1% konvertering)</option>
+                      </select>
+                    </div>
+                    <div className="border-t border-slate-200 dark:border-slate-700 pt-4 mt-4">
+                      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">FOMO (Fear Of Missing Out)</h3>
+                      <div className="group relative">
+                        <Toggle
+                          label={showLowStockWarning ? `+${BASE_PERCENTAGES.lowStockWarning}% Lagersaldovarning` : 'Lagersaldovarning'}
+                          description="Endast 2 kvar i lager"
+                          checked={showLowStockWarning}
+                          onChange={setShowLowStockWarning}
+                        />
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Lagersaldovarning = +8% konvertering
+                        </div>
+                      </div>
+                      <div className="group relative">
+                        <Toggle
+                          label={showCartTimer ? `+${BASE_PERCENTAGES.cartTimer}% Varukorgstimer` : 'Varukorgstimer'}
+                          description="Varukorgen reserverad i 10 min"
+                          checked={showCartTimer}
+                          onChange={setShowCartTimer}
+                        />
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Varukorgstimer = +5% konvertering, -2% trust
+                        </div>
+                      </div>
+                      <div className="group relative">
+                        <Toggle
+                          label={showSocialProof ? `+${BASE_PERCENTAGES.socialProof}% Social Proof` : 'Social Proof'}
+                          description="3 personer tittar på denna just nu"
+                          checked={showSocialProof}
+                          onChange={setShowSocialProof}
+                        />
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Social Proof = +3% konvertering
+                        </div>
+                      </div>
                     </div>
                     {hasCrossSell && (
                       <div className="space-y-3 pl-4 border-l-2 border-slate-200 dark:border-slate-700">
