@@ -245,7 +245,16 @@ export default function TestCheckoutPage() {
   const [layoutOrder, setLayoutOrder] = useState(['customer', 'guest', 'coupon', 'shipping', 'payment', 'review']);
   const [hasAutofill, setHasAutofill] = useState(false);
   const [isGuestCheckout, setIsGuestCheckout] = useState(true);
+  const [guestLoginText, setGuestLoginText] = useState('Välkommen in i värmen!');
   const [hasUpsell, setHasUpsell] = useState(false);
+
+  // Guest login text options
+  const GUEST_LOGIN_TEXTS = [
+    'Välkommen in i värmen!',
+    'Följ din order.',
+    'Tjäna poäng som medlem.',
+    'Enklare hantering av returer.',
+  ];
   const [hasCrossSell, setHasCrossSell] = useState(false);
   const [crossSellProductName, setCrossSellProductName] = useState('Premium Tillbehör');
   const [crossSellProductPrice, setCrossSellProductPrice] = useState(99);
@@ -956,12 +965,22 @@ export default function TestCheckoutPage() {
                                         <>
                                           <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                                             <CheckCircle2 size={16} className="text-green-600 dark:text-green-400" />
-                                            <span className="text-sm text-green-800 dark:text-green-300">Fortsätt som gäst - Inget konto krävs</span>
+                                            <span className="text-sm text-green-800 dark:text-green-300">
+                                              {isGuestCheckout ? guestLoginText : 'Skapa konto för att handla'}
+                                            </span>
                                           </div>
-                                          <div className="flex items-center gap-2 mt-2">
-                                            <div className="w-4 h-4 rounded border-2 border-slate-400" />
-                                            <span className="text-xs text-slate-600 dark:text-slate-400">Spara mina uppgifter för nästa köp</span>
-                                          </div>
+                                          {isGuestCheckout && (
+                                            <div className="flex items-center gap-2 mt-2">
+                                              <div className="w-4 h-4 rounded border-2 border-slate-400" />
+                                              <span className="text-xs text-slate-600 dark:text-slate-400">Spara mina uppgifter för nästa köp</span>
+                                            </div>
+                                          )}
+                                          {!isGuestCheckout && (
+                                            <div className="flex items-center gap-2 mt-2">
+                                              <div className="w-4 h-4 rounded border-2 border-slate-400" />
+                                              <span className="text-xs text-slate-600 dark:text-slate-400">Jag har redan ett konto</span>
+                                            </div>
+                                          )}
                                         </>
                                       )}
                                       {sectionId === 'coupon' && (
@@ -1094,8 +1113,8 @@ export default function TestCheckoutPage() {
                                           <div className="flex items-center gap-3 mb-3 p-2 bg-slate-100 dark:bg-slate-600 rounded">
                                             {(() => {
                                               const player = players.find(p => p.slug === selectedPlayer);
-                                              if (player?.logo) {
-                                                return <img src={player.logo} alt={player.name} className="w-8 h-5" />;
+                                              if (player?.logoUrl) {
+                                                return <img src={player.logoUrl} alt={player.name} className="w-8 h-5" />;
                                               }
                                               return <CreditCard size={20} className="text-slate-400" />;
                                             })()}
@@ -1386,8 +1405,24 @@ export default function TestCheckoutPage() {
                         onChange={setIsGuestCheckout}
                       />
                       <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                        Tvingat konto = -35%, Gäst = +15%
+                        Gästutcheckning ökar konvertering med 15%, men sänker CLV med 40%
                       </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Gästinlogg text
+                      </label>
+                      <select
+                        value={guestLoginText}
+                        onChange={(e) => setGuestLoginText(e.target.value)}
+                        className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 text-sm"
+                      >
+                        {GUEST_LOGIN_TEXTS.map((text) => (
+                          <option key={text} value={text}>
+                            {text}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div className="group relative">
                       <Toggle
