@@ -44,7 +44,7 @@ type DeliveryOption = {
 type CardProvider = {
   id: string;
   name: string;
-  logo: string;
+  logo?: string;
   conversionImpact: {
     se: number;
     no: number;
@@ -57,19 +57,19 @@ const CARD_PROVIDERS: CardProvider[] = [
   { 
     id: 'visa', 
     name: 'Visa', 
-    logo: '/logos/visa.svg',
+    logo: undefined,
     conversionImpact: { se: 3, no: 3, dk: 3, fi: 3 }
   },
   { 
     id: 'mastercard', 
     name: 'Mastercard', 
-    logo: '/logos/mastercard.svg',
+    logo: undefined,
     conversionImpact: { se: 3, no: 3, dk: 3, fi: 3 }
   },
   { 
     id: 'amex', 
     name: 'American Express', 
-    logo: '/logos/amex.svg',
+    logo: undefined,
     conversionImpact: { se: 1, no: 1, dk: 1, fi: 1 }
   },
 ];
@@ -113,14 +113,14 @@ const PAYMENT_METHODS: PaymentMethod[] = [
     id: 'klarna', 
     name: 'Klarna', 
     icon: <CreditCard size={18} />,
-    logo: '/logos/klarna.svg',
+    logo: '/logos/klarna.png',
     conversionImpact: { se: 5, no: 5, dk: 4, fi: 4 }
   },
   { 
     id: 'card', 
     name: 'Kort', 
     icon: <CreditCard size={18} />,
-    logo: '/logos/card.svg',
+    logo: undefined,
     conversionImpact: { se: 5, no: 5, dk: 5, fi: 5 }
   },
   { 
