@@ -1356,7 +1356,9 @@ export default function TestCheckoutPage() {
                       onChange={(checked) => {
                         setHasCrossSell(checked);
                         if (checked && !layoutOrder.includes('crossSell')) {
-                          setLayoutOrder([...layoutOrder.slice(0, -1), 'crossSell', 'review']);
+                          // Remove all 'review' entries, then add crossSell and review once
+                          const withoutReview = layoutOrder.filter(id => id !== 'review');
+                          setLayoutOrder([...withoutReview, 'crossSell', 'review']);
                         } else if (!checked) {
                           setLayoutOrder(layoutOrder.filter(id => id !== 'crossSell'));
                         }
