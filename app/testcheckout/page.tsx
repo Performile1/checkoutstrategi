@@ -1435,6 +1435,24 @@ export default function TestCheckoutPage() {
                                           <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
                                             {hasCrossSell ? 'Produkter i varukorgen' : 'Orderöversikt'}
                                           </div>
+                                          {showCartTimer && (
+                                            <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg mb-3">
+                                              <Clock size={20} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                                              <div className="flex-1">
+                                                <div className="font-semibold text-amber-900 dark:text-amber-100">Varukorgen reserverad i 10:00</div>
+                                                <div className="text-sm text-amber-700 dark:text-amber-300">Slutför köpet innan varukorgen släpps</div>
+                                              </div>
+                                            </div>
+                                          )}
+                                          {showSocialProof && (
+                                            <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg mb-3">
+                                              <Users size={20} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                                              <div className="flex-1">
+                                                <div className="font-semibold text-blue-900 dark:text-blue-100">3 personer tittar på denna just nu</div>
+                                                <div className="text-sm text-blue-700 dark:text-blue-300">Populär produkt - köp nu</div>
+                                              </div>
+                                            </div>
+                                          )}
                                           {showLowStockWarning && (
                                             <div className="flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mb-3">
                                               <AlertTriangle size={20} className="text-red-600 dark:text-red-400 flex-shrink-0" />
