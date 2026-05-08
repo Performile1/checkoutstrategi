@@ -565,7 +565,7 @@ export default function TestCheckoutPage() {
 
     // EU return button
     if (showEuReturnButton) {
-      metrics.push({ label: 'EU-ångerknapp', impact: 6, source: 'EU Consumer Rights Directive 2025' });
+      metrics.push({ label: 'EU-ångerknapp', impact: 6, source: 'EU Consumer Rights Directive 2026' });
     }
 
     if (addGiftWrapping) {
@@ -1426,7 +1426,7 @@ export default function TestCheckoutPage() {
                       onChange={setFreeLockerDelivery}
                     />
                     <Toggle
-                      label="EU-ångerknapp (obligatorisk från juni 2025)"
+                      label="EU-ångerknapp (obligatorisk från juni 2026)"
                       description="Visa ångerknapp enligt EU:s nya regler"
                       checked={showEuReturnButton}
                       onChange={setShowEuReturnButton}
