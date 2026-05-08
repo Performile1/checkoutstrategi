@@ -1211,10 +1211,22 @@ export default function TestCheckoutPage() {
                                             </span>
                                           </div>
                                           {isGuestCheckout && (
-                                            <div className="flex items-center gap-2 mt-2">
-                                              <div className="w-4 h-4 rounded border-2 border-slate-400" />
-                                              <span className="text-xs text-slate-600 dark:text-slate-400">Spara mina uppgifter för nästa köp</span>
-                                            </div>
+                                            <>
+                                              <div className="flex items-center gap-2 mt-2">
+                                                <div className="w-4 h-4 rounded border-2 border-slate-400" />
+                                                <span className="text-xs text-slate-600 dark:text-slate-400">Spara mina uppgifter för nästa köp</span>
+                                              </div>
+                                              {showNextPurchaseDiscount && (
+                                                <div className="mt-2 p-2 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded">
+                                                  <div className="text-xs font-semibold text-green-800 dark:text-green-200">
+                                                    Rabatt på nästa köp (Aktiv)
+                                                  </div>
+                                                  <div className="text-xs text-green-700 dark:text-green-300">
+                                                    10% rabatt för att öka kontoskapande
+                                                  </div>
+                                                </div>
+                                              )}
+                                            </>
                                           )}
                                           {!isGuestCheckout && (
                                             <div className="flex items-center gap-2 mt-2">
