@@ -284,7 +284,7 @@ export default function TestCheckoutPage() {
   const [selectedCardProviders, setSelectedCardProviders] = useState<string[]>(['visa', 'mastercard']);
 
   const calculateConversionScore = () => {
-    let score = 30; // Base score (lowered to prevent exceeding 100%)
+    let score = 20; // Base score (lowered to give more room for toggle settings)
 
     // Calculate total order value including extras
     let totalOrderValue = orderValue;
@@ -1039,6 +1039,18 @@ export default function TestCheckoutPage() {
                                       )}
                                       {sectionId === 'payment' && (
                                         <>
+                                          <div className="flex items-center gap-3 mb-3 p-2 bg-slate-100 dark:bg-slate-600 rounded">
+                                            {(() => {
+                                              const player = players.find(p => p.slug === selectedPlayer);
+                                              if (player?.logo) {
+                                                return <img src={player.logo} alt={player.name} className="w-8 h-5" />;
+                                              }
+                                              return <CreditCard size={20} className="text-slate-400" />;
+                                            })()}
+                                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                              {players.find(p => p.slug === selectedPlayer)?.name || 'Ingen provider'}
+                                            </span>
+                                          </div>
                                           <Droppable droppableId="payment-methods" type="PAYMENT_METHOD">
                                             {(provided) => (
                                               <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
@@ -1314,7 +1326,7 @@ export default function TestCheckoutPage() {
               <div className="p-4 max-h-[500px] overflow-y-auto">
                 {activeTab === 'settings' && (
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between group relative">
                       <Toggle
                         label="Gästutcheckning"
                         description="Inget krav på att skapa konto"
@@ -1324,8 +1336,11 @@ export default function TestCheckoutPage() {
                       <span className={`text-xs font-semibold ${isGuestCheckout ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                         {isGuestCheckout ? '+15%' : '-35%'}
                       </span>
+                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                        Tvingat konto = -35%, Gäst = +15%
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between group relative">
                       <Toggle
                         label="Adress-autofill"
                         description="Automatisk ifyllning av adresser"
@@ -1335,8 +1350,11 @@ export default function TestCheckoutPage() {
                       <span className={`text-xs font-semibold ${hasAutofill ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
                         {hasAutofill ? '+12%' : ''}
                       </span>
+                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                        Autofill = +12%
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between group relative">
                       <Toggle
                         label="Visa frakt tidigt"
                         description="Visa fraktkostnader direkt i kassan"
@@ -1346,8 +1364,11 @@ export default function TestCheckoutPage() {
                       <span className={`text-xs font-semibold ${shippingDisplayedEarly ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                         {shippingDisplayedEarly ? '+5%' : '-8%'}
                       </span>
+                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                        Dold frakt = -8%, Visad frakt = +5%
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between group relative">
                       <Toggle
                         label="Post-purchase upsell"
                         description="Erbjud tilläggsprodukter efter köp"
@@ -1357,8 +1378,11 @@ export default function TestCheckoutPage() {
                       <span className={`text-xs font-semibold ${hasUpsell ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
                         {hasUpsell ? '+15% AOV' : ''}
                       </span>
+                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                        Upsell = +15% AOV (ej konvertering)
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between group relative">
                       <Toggle
                         label="Korsförsäljning"
                         description="Visa rekommenderade tillbehör i kassan"
@@ -1366,7 +1390,6 @@ export default function TestCheckoutPage() {
                         onChange={(checked) => {
                           setHasCrossSell(checked);
                           if (checked && !layoutOrder.includes('crossSell')) {
-                            // Remove all 'review' entries, then add crossSell and review once
                             const withoutReview = layoutOrder.filter(id => id !== 'review');
                             setLayoutOrder([...withoutReview, 'crossSell', 'review']);
                           } else if (!checked) {
@@ -1377,6 +1400,9 @@ export default function TestCheckoutPage() {
                       <span className={`text-xs font-semibold ${hasCrossSell ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
                         {hasCrossSell ? '+10% AOV' : ''}
                       </span>
+                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                        Korsförsäljning = +10% AOV (ej konvertering)
+                      </div>
                     </div>
                     {hasCrossSell && (
                       <div className="space-y-3 pl-4 border-l-2 border-slate-200 dark:border-slate-700">
@@ -1415,7 +1441,7 @@ export default function TestCheckoutPage() {
                         </div>
                       </div>
                     )}
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between group relative">
                       <Toggle
                         label="Dölj header/footer"
                         description="Minimal UI för mindre distraktioner"
@@ -1425,6 +1451,9 @@ export default function TestCheckoutPage() {
                       <span className={`text-xs font-semibold ${hideHeaderFooter ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
                         {hideHeaderFooter ? '+3%' : ''}
                       </span>
+                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                        Minimal UI = +3%
+                      </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -1469,7 +1498,7 @@ export default function TestCheckoutPage() {
                         </label>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between group relative">
                       <Toggle
                         label="EU-ångerknapp (obligatorisk från juni 2026)"
                         description="Visa ångerknapp enligt EU:s nya regler"
@@ -1477,7 +1506,6 @@ export default function TestCheckoutPage() {
                         onChange={(checked) => {
                           setShowEuReturnButton(checked);
                           if (checked && !layoutOrder.includes('euReturn')) {
-                            // Add euReturn before review
                             const withoutReview = layoutOrder.filter(id => id !== 'review');
                             setLayoutOrder([...withoutReview, 'euReturn', 'review']);
                           } else if (!checked) {
@@ -1488,10 +1516,13 @@ export default function TestCheckoutPage() {
                       <span className={`text-xs font-semibold ${showEuReturnButton ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
                         {showEuReturnButton ? '+6-8%' : ''}
                       </span>
+                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                        EU-återgång = +6-8% (beroende på position)
+                      </div>
                     </div>
                     <div className="pt-2 border-t border-slate-200 dark:border-slate-700 mt-2">
                       <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3">Extra tjänster</div>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between group relative">
                         <Toggle
                           label="Presentinslagning"
                           description="Lägg till presentinslagning (+10% till ordervärde)"
@@ -1501,8 +1532,11 @@ export default function TestCheckoutPage() {
                         <span className={`text-xs font-semibold ${addGiftWrapping ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
                           {addGiftWrapping ? '+2% AOV' : ''}
                         </span>
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Presentinslagning = +2% konvertering
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between group relative">
                         <Toggle
                           label="Leveransförsäkring"
                           description="Lägg till leveransförsäkring (+5% till ordervärde)"
@@ -1512,8 +1546,11 @@ export default function TestCheckoutPage() {
                         <span className={`text-xs font-semibold ${addInsurance ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
                           {addInsurance ? '+1%' : ''}
                         </span>
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Leveransförsäkring = +1%
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between group relative">
                         <Toggle
                           label="Gåvomeddelande"
                           description="Lägg till gåvomeddelande (+2% till ordervärde)"
@@ -1523,8 +1560,11 @@ export default function TestCheckoutPage() {
                         <span className={`text-xs font-semibold ${addGiftMessage ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
                           {addGiftMessage ? '+1%' : ''}
                         </span>
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Gåvomeddelande = +1%
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between group relative">
                         <Toggle
                           label="Förvalt fraktalternativ"
                           description="Välj automatiskt bästa fraktalternativ"
@@ -1534,6 +1574,9 @@ export default function TestCheckoutPage() {
                         <span className={`text-xs font-semibold ${preselectShipping ? 'text-green-600 dark:text-green-400' : 'text-slate-500'}`}>
                           {preselectShipping ? '+3%' : ''}
                         </span>
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Förvalt frakt = +3%
+                        </div>
                       </div>
                     </div>
                   </div>
