@@ -85,7 +85,7 @@ export default function PlayerPage({ params }: { params: { slug: string } }) {
   return (
     <article className="container-prose py-12">
       <Link href="/players" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-brand-600">
-        <ArrowLeft size={14} /> Alla players
+        <ArrowLeft size={14} /> Alla aktörer
       </Link>
 
       <header className="mt-6 flex flex-wrap items-start justify-between gap-6">

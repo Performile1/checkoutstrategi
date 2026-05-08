@@ -20,7 +20,7 @@ export default function HomePage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/players" className="btn-primary text-lg px-8 py-4">
-              Utforska players <ArrowRight size={16} />
+              Utforska aktörer <ArrowRight size={16} />
             </Link>
             <Link href="/comparison" className="btn-secondary text-lg px-8 py-4">Jämför side-by-side</Link>
           </div>
@@ -38,12 +38,12 @@ export default function HomePage() {
         <div className="flex items-end justify-between flex-wrap gap-4">
           <div>
             <p className="badge">Trust Layer</p>
-            <h2 className="mt-3 text-3xl md:text-4xl font-bold tracking-tight">Players analyserade som G2 / Gartner</h2>
+            <h2 className="mt-3 text-3xl md:text-4xl font-bold tracking-tight">Aktörer analyserade som G2 / Gartner</h2>
             <p className="mt-3 max-w-xl text-slate-600 dark:text-slate-400">
               Varje aktör värderas på samma ramverk: trust angle, konverterings­impact, marknad och affärsmodell.
             </p>
           </div>
-          <Link href="/players" className="text-sm font-semibold text-brand-600 inline-flex items-center gap-1">Alla players <ArrowRight size={14} /></Link>
+          <Link href="/players" className="text-sm font-semibold text-brand-600 inline-flex items-center gap-1">Alla aktörer <ArrowRight size={14} /></Link>
         </div>
         <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {players.slice(0, 6).map((p, i) => <PlayerCard key={p.slug} player={p} index={i} />)}
