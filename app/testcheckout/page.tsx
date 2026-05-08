@@ -111,10 +111,10 @@ type Carrier = {
 const PAYMENT_METHODS: PaymentMethod[] = [
   { 
     id: 'klarna', 
-    name: 'Klarna - Delbetalning', 
+    name: 'Klarna', 
     icon: <CreditCard size={18} />,
     logo: '/logos/klarna.svg',
-    conversionImpact: { se: 8, no: 7, dk: 6, fi: 6 }
+    conversionImpact: { se: 5, no: 5, dk: 4, fi: 4 }
   },
   { 
     id: 'card', 
@@ -128,14 +128,14 @@ const PAYMENT_METHODS: PaymentMethod[] = [
     name: 'Swish', 
     icon: <CreditCard size={18} />,
     logo: '/logos/swish.svg',
-    conversionImpact: { se: 12, no: 0, dk: 0, fi: 0 }
+    conversionImpact: { se: 8, no: 0, dk: 0, fi: 0 }
   },
   { 
     id: 'vipps', 
     name: 'Vipps', 
     icon: <CreditCard size={18} />,
     logo: '/logos/vipps.svg',
-    conversionImpact: { se: 0, no: 12, dk: 0, fi: 0 }
+    conversionImpact: { se: 0, no: 8, dk: 0, fi: 0 }
   },
   { 
     id: 'paypal', 
@@ -152,7 +152,7 @@ const CARRIERS: Carrier[] = [
     name: 'PostNord', 
     logo: '/logos/postnord.svg',
     trustScore: 4.2,
-    marketImpact: { se: 5, no: 3, dk: 4, fi: 4 },
+    marketImpact: { se: 3, no: 2, dk: 3, fi: 3 },
     shippingCosts: { pickup: 0, locker: 39, point: 29, home: 79, mailbox: 19, express: 149 }
   },
   { 
@@ -296,12 +296,12 @@ export default function TestCheckoutPage() {
     if (!isGuestCheckout) {
       score -= 35;
     } else {
-      score += 10; // Guest checkout helps conversion (reduced from 15 to prevent exceeding 100)
+      score += 8; // Guest checkout helps conversion (reduced from 10 to prevent exceeding 100)
     }
 
     // Autofill impact (reduces friction, especially on mobile)
     if (hasAutofill) {
-      score += 10; // Reduced from 12 to prevent exceeding 100
+      score += 8; // Reduced from 10 to prevent exceeding 100
     }
 
     // Hidden shipping costs (biggest reason for cart abandonment)
@@ -313,7 +313,7 @@ export default function TestCheckoutPage() {
 
     // No header/footer (reduces distractions)
     if (hideHeaderFooter) {
-      score += 8; // Reduced from 10 to prevent exceeding 100
+      score += 6; // Reduced from 8 to prevent exceeding 100
     }
 
     // Post-purchase upsell (increases AOV without hurting conversion)
@@ -328,7 +328,7 @@ export default function TestCheckoutPage() {
 
     // Free shipping on all orders
     if (freeShipping) {
-      score += 10; // Reduced from 12 to prevent exceeding 100
+      score += 8; // Reduced from 10 to prevent exceeding 100
     }
 
     // Free home delivery
@@ -539,12 +539,12 @@ export default function TestCheckoutPage() {
     if (!isGuestCheckout) {
       metrics.push({ label: 'Tvingat konto', impact: -35, source: 'Baymard Institute' });
     } else {
-      metrics.push({ label: 'Gästutcheckning', impact: 10, source: 'Baymard Institute' });
+      metrics.push({ label: 'Gästutcheckning', impact: 8, source: 'Baymard Institute' });
     }
 
     // Autofill impact (reduces friction, especially on mobile)
     if (hasAutofill) {
-      metrics.push({ label: 'Autofill', impact: 10, source: 'Nielsen Norman Group' });
+      metrics.push({ label: 'Autofill', impact: 8, source: 'Nielsen Norman Group' });
     }
 
     // Hidden shipping costs (biggest reason for cart abandonment)
@@ -556,7 +556,7 @@ export default function TestCheckoutPage() {
 
     // No header/footer (reduces distractions)
     if (hideHeaderFooter) {
-      metrics.push({ label: 'Dölj header/footer', impact: 8, source: 'UX best practices' });
+      metrics.push({ label: 'Dölj header/footer', impact: 6, source: 'UX best practices' });
     }
 
     // Post-purchase upsell (increases AOV without hurting conversion)
@@ -571,7 +571,7 @@ export default function TestCheckoutPage() {
 
     // Free shipping on all orders
     if (freeShipping) {
-      metrics.push({ label: 'Fri frakt alltid', impact: 10, source: 'E-commerce studies' });
+      metrics.push({ label: 'Fri frakt alltid', impact: 8, source: 'E-commerce studies' });
     }
 
     // Free home delivery
