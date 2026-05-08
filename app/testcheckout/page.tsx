@@ -356,9 +356,9 @@ export default function TestCheckoutPage() {
   const [ctaColor, setCtaColor] = useState<'green' | 'orange' | 'red' | 'low-contrast'>('green');
   const [ctaText, setCtaText] = useState<'complete' | 'pay' | 'confirm'>('complete');
   const [showOrderConfirmation, setShowOrderConfirmation] = useState(false);
-  const [showLowStockWarning, setShowLowStockWarning] = useState(false);
-  const [showCartTimer, setShowCartTimer] = useState(false);
-  const [showSocialProof, setShowSocialProof] = useState(false);
+  const [showLowStockWarning, setShowLowStockWarning] = useState(true);
+  const [showCartTimer, setShowCartTimer] = useState(true);
+  const [showSocialProof, setShowSocialProof] = useState(true);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [returnReason, setReturnReason] = useState('');
   const [showNextPurchaseDiscount, setShowNextPurchaseDiscount] = useState(false);
