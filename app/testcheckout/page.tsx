@@ -390,7 +390,6 @@ export default function TestCheckoutPage() {
       const carrier = CARRIERS.find(c => c.id === carrierId);
       if (carrier && marketKey in carrier.marketImpact) {
         const impact = carrier.marketImpact[marketKey];
-        console.log(`Carrier ${carrier.name} (${marketKey}): ${impact}`);
         score += impact;
       }
     });
@@ -400,7 +399,6 @@ export default function TestCheckoutPage() {
       const method = PAYMENT_METHODS.find(m => m.id === methodId);
       if (method && marketKey in method.conversionImpact) {
         const impact = method.conversionImpact[marketKey];
-        console.log(`Payment ${method.name} (${marketKey}): ${impact}`);
         score += impact;
       }
     });
@@ -410,7 +408,6 @@ export default function TestCheckoutPage() {
       const provider = CARD_PROVIDERS.find(c => c.id === providerId);
       if (provider && marketKey in provider.conversionImpact) {
         const impact = provider.conversionImpact[marketKey];
-        console.log(`Card ${provider.name} (${marketKey}): ${impact}`);
         score += impact;
       }
     });
@@ -524,7 +521,7 @@ export default function TestCheckoutPage() {
         return hasCrossSell ? `${crossSellProductName} (${crossSellDiscount}% rabatt): +10% AOV` : 'Korsförsäljning inaktiverad';
       case 'payment':
         const player = players.find(p => p.slug === selectedPlayer);
-        return player ? `${player.name} (Trust: ${player.conversionImpact}/10)` : 'Ingen provider vald';
+        return player ? player.name : 'Ingen provider vald';
       case 'review':
         return hasUpsell ? 'Post-purchase upsell: +15% AOV' : 'Ingen upsell';
       default:
@@ -887,7 +884,6 @@ export default function TestCheckoutPage() {
                                     <div className="flex items-center gap-2 mb-1">
                                       <span className="font-semibold text-slate-900 dark:text-slate-100">{section.title}</span>
                                       <HelpCircle size={14} className="text-slate-400 group-hover:text-brand-500 transition-colors" />
-                                      <span className="text-xs text-slate-500 dark:text-slate-400">{section.description}</span>
                                     </div>
                                     <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-xs p-2 rounded-lg max-w-xs shadow-lg pointer-events-none">
                                       {getSectionDescription(sectionId)}
@@ -1012,7 +1008,6 @@ export default function TestCheckoutPage() {
                                                             >
                                                               <img src={carrier.logo} alt={carrier.name} className="w-4 h-4" />
                                                               <span>{carrier.name}</span>
-                                                              <span className="text-green-600 dark:text-green-400">★{carrier.trustScore}</span>
                                                             </div>
                                                           )}
                                                         </Draggable>
@@ -1632,7 +1627,6 @@ export default function TestCheckoutPage() {
                             />
                             <div className="flex items-center gap-2 flex-1">
                               <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{carrier.name}</span>
-                              <span className="text-xs text-slate-500">Trust: {carrier.trustScore}/5</span>
                             </div>
                             <div className="text-xs text-slate-500">
                               SE: {carrier.marketImpact.se > 0 ? '+' : ''}{carrier.marketImpact.se}%
