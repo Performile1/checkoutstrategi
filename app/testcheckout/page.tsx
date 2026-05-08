@@ -283,7 +283,7 @@ export default function TestCheckoutPage() {
   const [selectedCardProviders, setSelectedCardProviders] = useState<string[]>(['visa', 'mastercard']);
 
   const calculateConversionScore = () => {
-    let score = 40; // Base score (lowered to show impact more clearly)
+    let score = 30; // Base score (lowered to prevent exceeding 100%)
 
     // Calculate total order value including extras
     let totalOrderValue = orderValue;
@@ -295,77 +295,77 @@ export default function TestCheckoutPage() {
     if (!isGuestCheckout) {
       score -= 35;
     } else {
-      score += 15; // Guest checkout helps conversion
+      score += 10; // Guest checkout helps conversion (reduced from 15 to prevent exceeding 100)
     }
 
     // Autofill impact (reduces friction, especially on mobile)
     if (hasAutofill) {
-      score += 12;
+      score += 10; // Reduced from 12 to prevent exceeding 100
     }
 
     // Hidden shipping costs (biggest reason for cart abandonment)
     if (!shippingDisplayedEarly) {
       score -= 48;
     } else {
-      score += 8;
+      score += 6; // Reduced from 8 to prevent exceeding 100
     }
 
     // No header/footer (reduces distractions)
     if (hideHeaderFooter) {
-      score += 10;
+      score += 8; // Reduced from 10 to prevent exceeding 100
     }
 
     // Post-purchase upsell (increases AOV without hurting conversion)
     if (hasUpsell) {
-      score += 5;
+      score += 4; // Reduced from 5 to prevent exceeding 100
     }
 
     // Free shipping threshold (increases AOV and conversion)
     if (freeShippingThreshold > 0) {
-      score += 8;
+      score += 6; // Reduced from 8 to prevent exceeding 100
     }
 
     // Free shipping on all orders
     if (freeShipping) {
-      score += 12;
+      score += 10; // Reduced from 12 to prevent exceeding 100
     }
 
     // Free home delivery
     if (freeHomeDelivery) {
-      score += 7;
+      score += 5; // Reduced from 7 to prevent exceeding 100
     }
 
     // Free locker delivery
     if (freeLockerDelivery) {
-      score += 5;
+      score += 4; // Reduced from 5 to prevent exceeding 100
     }
 
     // EU return button (mandatory from June 2025)
     if (showEuReturnButton) {
-      score += 8;
+      score += 6; // Reduced from 8 to prevent exceeding 100
     }
     
     // Extra services impact
     if (addGiftWrapping) {
-      score += 3;
+      score += 2; // Reduced from 3 to prevent exceeding 100
     }
     if (addInsurance) {
-      score += 2;
+      score += 1; // Reduced from 2 to prevent exceeding 100
     }
     if (addGiftMessage) {
-      score += 1;
+      score += 1; // Reduced from 1
     }
     
     // Pre-selected shipping option impact
     if (preselectShipping) {
-      score += 4;
+      score += 3; // Reduced from 4 to prevent exceeding 100
     }
 
     // Multiple delivery options (gives customers choice)
     if (selectedDeliveryOptions.length >= 3) {
-      score += 6;
+      score += 5; // Reduced from 6 to prevent exceeding 100
     } else if (selectedDeliveryOptions.length >= 2) {
-      score += 3;
+      score += 2; // Reduced from 3 to prevent exceeding 100
     }
 
     // Carrier trust impact based on market
@@ -517,51 +517,68 @@ export default function TestCheckoutPage() {
   };
 
   const getConversionMetrics = () => {
-    const score = calculateConversionScore();
-    const metrics = [];
-
+    const metrics: { label: string; impact: number; source: string }[] = [];
+    
+    // Guest checkout impact (Baymard: forced account creation is top 3 reason for abandonment)
     if (!isGuestCheckout) {
       metrics.push({ label: 'Tvingat konto', impact: -35, source: 'Baymard Institute' });
     } else {
-      metrics.push({ label: 'Gästutcheckning', impact: 15, source: 'Baymard Institute' });
+      metrics.push({ label: 'Gästutcheckning', impact: 10, source: 'Baymard Institute' });
     }
+
+    // Autofill impact (reduces friction, especially on mobile)
     if (hasAutofill) {
-      metrics.push({ label: 'Autofill', impact: 12, source: 'Nielsen Norman Group' });
+      metrics.push({ label: 'Autofill', impact: 10, source: 'Nielsen Norman Group' });
     }
+
+    // Hidden shipping costs (biggest reason for cart abandonment)
     if (!shippingDisplayedEarly) {
       metrics.push({ label: 'Dolda fraktkostnader', impact: -48, source: 'Baymard Institute' });
     } else {
-      metrics.push({ label: 'Visad frakt tidigt', impact: 8, source: 'CRO best practices' });
+      metrics.push({ label: 'Visad frakt tidigt', impact: 6, source: 'CRO best practices' });
     }
+
+    // No header/footer (reduces distractions)
     if (hideHeaderFooter) {
-      metrics.push({ label: 'Minimal UI', impact: 10, source: 'CRO best practices' });
+      metrics.push({ label: 'Dölj header/footer', impact: 8, source: 'UX best practices' });
     }
+
+    // Post-purchase upsell (increases AOV without hurting conversion)
     if (hasUpsell) {
-      metrics.push({ label: 'Post-purchase upsell', impact: 5, source: 'E-commerce studies' });
+      metrics.push({ label: 'Post-purchase upsell', impact: 4, source: 'E-commerce studies' });
     }
+
+    // Free shipping threshold (increases AOV and conversion)
+    if (freeShippingThreshold > 0) {
+      metrics.push({ label: 'Fri frakt-nedräkning', impact: 6, source: 'E-commerce studies' });
+    }
+
+    // Free shipping on all orders
     if (freeShipping) {
-      metrics.push({ label: 'Fri frakt alltid', impact: 12, source: 'E-commerce studies' });
+      metrics.push({ label: 'Fri frakt alltid', impact: 10, source: 'E-commerce studies' });
     }
+
+    // Free home delivery
     if (freeHomeDelivery) {
-      metrics.push({ label: 'Fri hemleverans', impact: 7, source: 'Delivery experience studies' });
+      metrics.push({ label: 'Fri hemleverans', impact: 5, source: 'Delivery experience studies' });
     }
-    if (freeLockerDelivery) {
-      metrics.push({ label: 'Fri skåpsleverans', impact: 5, source: 'Delivery experience studies' });
-    }
+
+    // EU return button
     if (showEuReturnButton) {
-      metrics.push({ label: 'EU-ångerknapp', impact: 8, source: 'EU Consumer Rights Directive 2025' });
+      metrics.push({ label: 'EU-ångerknapp', impact: 6, source: 'EU Consumer Rights Directive 2025' });
     }
+
     if (addGiftWrapping) {
-      metrics.push({ label: 'Presentinslagning', impact: 3, source: 'Gift experience studies' });
+      metrics.push({ label: 'Presentinslagning', impact: 2, source: 'Gift experience studies' });
     }
     if (addInsurance) {
-      metrics.push({ label: 'Leveransförsäkring', impact: 2, source: 'Shipping trust studies' });
+      metrics.push({ label: 'Leveransförsäkring', impact: 1, source: 'Shipping trust studies' });
     }
     if (addGiftMessage) {
       metrics.push({ label: 'Gåvomeddelande', impact: 1, source: 'Personalization studies' });
     }
     if (preselectShipping) {
-      metrics.push({ label: 'Förvalt fraktalternativ', impact: 4, source: 'UX best practices' });
+      metrics.push({ label: 'Förvalt fraktalternativ', impact: 3, source: 'UX best practices' });
     }
     
     // Card provider impact based on market
@@ -570,15 +587,15 @@ export default function TestCheckoutPage() {
       if (provider && marketKey in provider.conversionImpact) {
         const impact = provider.conversionImpact[marketKey];
         if (impact !== 0) {
-          metrics.push({ label: `${provider.name} (${customerCountry})`, impact, source: 'Payment trust studies' });
+          metrics.push({ label: `${provider.name} (${customerCountry})`, impact: Math.round(impact * 0.6), source: 'Payment trust studies' });
         }
       }
     });
     
     if (selectedDeliveryOptions.length >= 3) {
-      metrics.push({ label: 'Många leveransalternativ', impact: 6, source: 'Ingrid/nShift studies' });
+      metrics.push({ label: 'Många leveransalternativ', impact: 5, source: 'Ingrid/nShift studies' });
     } else if (selectedDeliveryOptions.length >= 2) {
-      metrics.push({ label: 'Flera leveransalternativ', impact: 3, source: 'Ingrid/nShift studies' });
+      metrics.push({ label: 'Flera leveransalternativ', impact: 2, source: 'Ingrid/nShift studies' });
     }
 
     // Carrier trust impact based on market
@@ -588,7 +605,7 @@ export default function TestCheckoutPage() {
       if (carrier && marketKey in carrier.marketImpact) {
         const impact = carrier.marketImpact[marketKey];
         if (impact !== 0) {
-          metrics.push({ label: `${carrier.name} (${customerCountry})`, impact, source: 'Carrier trust studies' });
+          metrics.push({ label: `${carrier.name} (${customerCountry})`, impact: Math.round(impact * 0.7), source: 'Carrier trust studies' });
         }
       }
     });
@@ -615,6 +632,28 @@ export default function TestCheckoutPage() {
       metrics.push({ label: 'Kundinfo först', impact: 5, source: 'UX best practices' });
     }
 
+    // Payment method impact based on market
+    paymentOrder.forEach((methodId) => {
+      const method = PAYMENT_METHODS.find(m => m.id === methodId);
+      if (method && marketKey in method.conversionImpact) {
+        const impact = method.conversionImpact[marketKey];
+        if (impact !== 0) {
+          metrics.push({ label: `${method.name} (${customerCountry})`, impact: Math.round(impact * 0.6), source: 'Payment trust studies' });
+        }
+      }
+    });
+
+    // Provider trust score
+    const player = players.find(p => p.slug === selectedPlayer);
+    if (player) {
+      metrics.push({ label: `${player.name} trust score`, impact: Math.round(player.conversionImpact * 0.7), source: 'Performile analysis' });
+    }
+
+    // Local provider impact
+    if (customerCountry === 'SE' && selectedPlayer === 'klarna') {
+      metrics.push({ label: 'Lokal provider (SE)', impact: 5, source: 'Trust studies' });
+    }
+
     // Payment should be last for optimal conversion
     const lastBlock = layoutOrder[layoutOrder.length - 1];
     if (lastBlock === 'payment') {
@@ -632,32 +671,6 @@ export default function TestCheckoutPage() {
     if (summaryIndex !== -1) {
       metrics.push({ label: 'Orderöversikt synlig', impact: 3, source: 'E-commerce studies' });
     }
-
-    const player = players.find(p => p.slug === selectedPlayer);
-    if (player) {
-      const playerImpact = (player.conversionImpact - 5) * 2;
-      if (playerImpact > 0) {
-        metrics.push({ label: `${player.name} trust score`, impact: playerImpact, source: 'Performile analysis' });
-      } else if (playerImpact < 0) {
-        metrics.push({ label: `${player.name} trust score`, impact: playerImpact, source: 'Performile analysis' });
-      }
-    }
-
-    if (customerCountry === 'SE' && player?.countries.includes('SE')) {
-      metrics.push({ label: 'Lokal provider (SE)', impact: 8, source: 'Trust studies' });
-    } else if (!player?.countries.includes(customerCountry)) {
-      metrics.push({ label: 'Provider ej tillgängligt', impact: -10, source: 'Availability check' });
-    }
-
-    // Micro-copy impact for shipping text
-    selectedDeliveryOptions.forEach((optId) => {
-      const text = shippingTexts[optId] || '';
-      if (/\d{1,2}:\d{2}-\d{1,2}:\d{2}/.test(text)) {
-        metrics.push({ label: 'Specifikt tidsfönster', impact: 12, source: 'Delivery experience studies' });
-      } else if (/(\d-\d\s*dag(ar)?|snart|inom kort)/i.test(text)) {
-        metrics.push({ label: 'Luddig leveranstext', impact: -7, source: 'Baymard Institute' });
-      }
-    });
 
     return metrics;
   };
@@ -848,8 +861,20 @@ export default function TestCheckoutPage() {
                                     <div className="space-y-2">
                                       {sectionId === 'customer' && (
                                         <>
-                                          <div className="h-8 bg-slate-200 dark:bg-slate-600 rounded" />
-                                          <div className="h-8 bg-slate-200 dark:bg-slate-600 rounded" />
+                                          <div className="space-y-2">
+                                            <select
+                                              value={customerCountry}
+                                              onChange={(e) => setCustomerCountry(e.target.value)}
+                                              className="w-full h-8 bg-slate-200 dark:bg-slate-600 rounded px-2 text-sm text-slate-700 dark:text-slate-300 border-0"
+                                            >
+                                              <option value="SE">Sverige</option>
+                                              <option value="NO">Norge</option>
+                                              <option value="DK">Danmark</option>
+                                              <option value="FI">Finland</option>
+                                            </select>
+                                            <div className="h-8 bg-slate-200 dark:bg-slate-600 rounded" />
+                                            <div className="h-8 bg-slate-200 dark:bg-slate-600 rounded" />
+                                          </div>
                                         </>
                                       )}
                                       {sectionId === 'guest' && (
