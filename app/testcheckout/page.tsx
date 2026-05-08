@@ -407,7 +407,6 @@ export default function TestCheckoutPage() {
       const carrier = CARRIERS.find(c => c.id === carrierId);
       if (carrier && marketKey in carrier.marketImpact) {
         const impact = carrier.marketImpact[marketKey];
-        console.log(`Carrier ${carrier.name} (${marketKey}): ${impact}`);
         score += impact;
       }
     });
@@ -417,7 +416,6 @@ export default function TestCheckoutPage() {
       const method = PAYMENT_METHODS.find(m => m.id === methodId);
       if (method && marketKey in method.conversionImpact) {
         const impact = method.conversionImpact[marketKey];
-        console.log(`Payment ${method.name} (${marketKey}): ${impact}`);
         score += impact;
       }
     });
@@ -427,7 +425,6 @@ export default function TestCheckoutPage() {
       const provider = CARD_PROVIDERS.find(c => c.id === providerId);
       if (provider && marketKey in provider.conversionImpact) {
         const impact = provider.conversionImpact[marketKey];
-        console.log(`Card ${provider.name} (${marketKey}): ${impact}`);
         score += impact;
       }
     });
@@ -493,6 +490,11 @@ export default function TestCheckoutPage() {
     if (addGiftWrapping) aov += Math.round(orderValue * 0.10);
     if (addInsurance) aov += Math.round(orderValue * 0.05);
     if (addGiftMessage) aov += Math.round(orderValue * 0.02);
+
+    // Cross-sell increases AOV by 10%
+    if (hasCrossSell) {
+      aov *= 1.10;
+    }
 
     // Free shipping threshold increases AOV by 15-30% (customers add items to reach threshold)
     if (freeShippingThreshold > 0) {
