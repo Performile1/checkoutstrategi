@@ -616,6 +616,7 @@ export default function TestCheckoutPage() {
     }
     
     // Card provider impact based on market
+    const marketKey = customerCountry.toLowerCase() as keyof typeof CARD_PROVIDERS[0]['conversionImpact'];
     selectedCardProviders.forEach((providerId) => {
       const provider = CARD_PROVIDERS.find(c => c.id === providerId);
       if (provider && marketKey in provider.conversionImpact) {
@@ -633,7 +634,6 @@ export default function TestCheckoutPage() {
     }
 
     // Carrier trust impact based on market
-    const marketKey = customerCountry.toLowerCase() as keyof typeof CARRIERS[0]['marketImpact'];
     selectedCarriers.forEach((carrierId) => {
       const carrier = CARRIERS.find(c => c.id === carrierId);
       if (carrier && marketKey in carrier.marketImpact) {
