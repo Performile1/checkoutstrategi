@@ -1440,24 +1440,49 @@ export default function TestCheckoutPage() {
                       checked={hideHeaderFooter}
                       onChange={setHideHeaderFooter}
                     />
-                    <Toggle
-                      label="Fri frakt alltid"
-                      description="Ingen fraktkostnad på alla order"
-                      checked={freeShipping}
-                      onChange={setFreeShipping}
-                    />
-                    <Toggle
-                      label="Fri hemleverans"
-                      description="Gratis hemleverans för kunder"
-                      checked={freeHomeDelivery}
-                      onChange={setFreeHomeDelivery}
-                    />
-                    <Toggle
-                      label="Fri skåpsleverans"
-                      description="Gratis leverans till paketskåp"
-                      checked={freeLockerDelivery}
-                      onChange={setFreeLockerDelivery}
-                    />
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Fri frakt-alternativ (påverkar konvertering)
+                      </label>
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={freeShipping}
+                            onChange={(e) => setFreeShipping(e.target.checked)}
+                            className="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                          />
+                          <div className="flex items-center gap-2 flex-1">
+                            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Fri frakt alltid</span>
+                          </div>
+                          <div className="text-xs text-slate-500">+8%</div>
+                        </label>
+                        <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={freeHomeDelivery}
+                            onChange={(e) => setFreeHomeDelivery(e.target.checked)}
+                            className="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                          />
+                          <div className="flex items-center gap-2 flex-1">
+                            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Fri hemleverans</span>
+                          </div>
+                          <div className="text-xs text-slate-500">+5%</div>
+                        </label>
+                        <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={freeLockerDelivery}
+                            onChange={(e) => setFreeLockerDelivery(e.target.checked)}
+                            className="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                          />
+                          <div className="flex items-center gap-2 flex-1">
+                            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Fri skåpsleverans</span>
+                          </div>
+                          <div className="text-xs text-slate-500">+4%</div>
+                        </label>
+                      </div>
+                    </div>
                     <Toggle
                       label="EU-ångerknapp (obligatorisk från juni 2026)"
                       description="Visa ångerknapp enligt EU:s nya regler"
@@ -1711,7 +1736,7 @@ export default function TestCheckoutPage() {
                       >
                         {players.map((p) => (
                           <option key={p.slug} value={p.slug}>
-                            {p.name} (Trust: {p.conversionImpact}/10)
+                            {p.name}
                           </option>
                         ))}
                       </select>
