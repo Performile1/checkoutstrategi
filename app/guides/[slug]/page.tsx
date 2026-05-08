@@ -5,8 +5,8 @@ import { ArrowLeft } from 'lucide-react';
 
 const guides: Record<string, { title: string; description: string; body: string[] }> = {
   'cro-checkout': {
-    title: 'CRO i kassan – 12 spakar som lyfter konvertering',
-    description: 'Konkreta konverteringsspakar som bevisat fungerat i svenska kassaflöden.',
+    title: 'CRO i kassan – 12 levers som lyfter konvertering',
+    description: 'Konkreta konverteringslevers som bevisat fungerat i svenska kassaflöden.',
     body: [
       'Konvertering i kassan är sällan en enskild knapp – det är 12 små beslut i följd. I den här guiden bryter vi ned varje steg från varukorg till tack-sida.',
       '**1. Pre-fill så mycket som möjligt.** Postnummer, adress, telefonnummer – allt som kan hämtas från ID eller tidigare besök ska vara förifyllt.',
@@ -36,7 +36,7 @@ const guides: Record<string, { title: string; description: string; body: string[
       '**PostNord** är Nordens ledande logistikaktör med checkout-lösningar och fokus på leveransval.',
       '**DHL** är en global logistikjätte med checkout-integrationer för internationell e-handel.',
       '**Bring** är en nordisk logistikaktör med e-handelslösningar och leveransfokus.',
-      '**Key takeaway:** En checkout utan optimerat leveranssteg lämnar 5–15% konvertering på bordet. Det är i praktiken den största enskilda CRO-spaken för fysisk-varor-e-handel idag.',
+      '**Key takeaway:** En checkout utan optimerat leveranssteg lämnar 5–15% konvertering på bordet. Det är i praktiken den största enskilda CRO-lever för fysisk-varor-e-handel idag.',
       'Kombinera gärna med Walley Engage eller motsvarande för post-purchase intäkt – då täcker du hela kedjan från varukorg till återköp.',
     ],
   },

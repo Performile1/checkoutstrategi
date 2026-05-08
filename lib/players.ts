@@ -240,7 +240,7 @@ export const players: Player[] = [
     countries: ['SE', 'NO', 'DK', 'FI', 'DE', 'NL', 'UK'],
     affiliateUrl: 'https://www.svgrid.com/',
     description:
-      'Ingrid bygger Sveriges mest mogna Delivery Experience Platform. Plattformen optimerar steget mellan "lagt i varukorgen" och "levererat" – det skede där flest köp tappas. För e-handel med fysiska varor är delivery experience ett av de största orörda CRO-spakerna.',
+      'Ingrid bygger Sveriges mest mogna Delivery Experience Platform. Plattformen optimerar steget mellan "lagt i varukorgen" och "levererat" – det skede där flest köp tappas. För e-handel med fysiska varor är delivery experience ett av de största orörda CRO-levers.',
     faq: [
       { q: 'Är Ingrid en checkout?', a: 'Nej, Ingrid är en delivery experience platform som integreras i din befintliga checkout (Klarna, Walley, Kustom etc.) och optimerar leveranssteget.' },
       { q: 'Hur mycket ökar konverteringen?', a: 'Mätningar i nordiska e-handelssegment indikerar att smart leveransval kan lyfta checkout-konvertering med 5–15%.' },

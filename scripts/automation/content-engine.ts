@@ -228,7 +228,7 @@ function fallbackBody(item: NewsItem): string {
     ``,
     `## Vad betyder detta för svenska e-handlare?`,
     ``,
-    `Nyheten berör direkt eller indirekt hur besökare beter sig i kassan. Relevanta spaks:`,
+    `Nyheten berör direkt eller indirekt hur besökare beter sig i kassan. Relevanta levers:`,
     ``,
     `- **BNPL-mix:** Klarna, Walley och Qliro kan påverkas olika beroende på signal.`,
     `- **Leverans:** Ingrid och nShift blir extra relevanta när förväntningarna skiftar.`,

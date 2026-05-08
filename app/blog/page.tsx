@@ -18,7 +18,7 @@ export default function BlogPage() {
         <p className="badge">Traffic Engine</p>
         <h1 className="mt-3 text-4xl md:text-5xl font-bold tracking-tight">Blogg</h1>
         <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
-          Djupare analyser, AI-curated nyheter och konkreta CRO-spaks. Uppdateras dagligen via vår Python-pipeline.
+          Djupare analyser, AI-curated nyheter och konkreta CRO-levers. Uppdateras dagligen via vår Python-pipeline.
         </p>
       </div>
 
