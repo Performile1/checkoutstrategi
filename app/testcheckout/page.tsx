@@ -237,6 +237,7 @@ const SECTIONS: CheckoutSection[] = [
   { id: 'shipping', title: 'Leveransval', icon: <Truck size={20} />, description: 'Fraktalternativ och ombud' },
   { id: 'crossSell', title: 'Korsförsäljning', icon: <TrendingUp size={20} />, description: 'Rekommenderade tillbehör' },
   { id: 'payment', title: 'Betalning', icon: <CreditCard size={20} />, description: 'Betalmetoder och kort' },
+  { id: 'euReturn', title: 'EU-Ångerknapp', icon: <RefreshCw size={20} />, description: 'Ångra köp enligt EU-direktiv' },
   { id: 'review', title: 'Orderöversikt', icon: <Package size={20} />, description: 'Sammanfattning av köp' },
 ];
 
@@ -340,9 +341,24 @@ export default function TestCheckoutPage() {
       score += 4; // Reduced from 5 to prevent exceeding 100
     }
 
-    // EU return button (mandatory from June 2025)
+    // EU return button (mandatory from June 2026)
     if (showEuReturnButton) {
-      score += 6; // Reduced from 8 to prevent exceeding 100
+      // Position-based impact: higher impact if placed before payment or near top
+      const euReturnIndex = layoutOrder.indexOf('euReturn');
+      const paymentIndex = layoutOrder.indexOf('payment');
+      let euReturnImpact = 6; // Base impact
+      
+      if (euReturnIndex !== -1) {
+        // If placed before payment, higher impact
+        if (euReturnIndex < paymentIndex) {
+          euReturnImpact = 8;
+        }
+        // If placed in first half of layout, slight bonus
+        if (euReturnIndex < layoutOrder.length / 2) {
+          euReturnImpact += 2;
+        }
+      }
+      score += euReturnImpact;
     }
     
     // Extra services impact
@@ -563,9 +579,27 @@ export default function TestCheckoutPage() {
       metrics.push({ label: 'Fri hemleverans', impact: 5, source: 'Delivery experience studies' });
     }
 
-    // EU return button
+    // EU return button (mandatory from June 2026)
     if (showEuReturnButton) {
-      metrics.push({ label: 'EU-ångerknapp', impact: 6, source: 'EU Consumer Rights Directive 2026' });
+      // Position-based impact
+      const euReturnIndex = layoutOrder.indexOf('euReturn');
+      const paymentIndex = layoutOrder.indexOf('payment');
+      let euReturnImpact = 6; // Base impact
+      let euReturnLabel = 'EU-ångerknapp';
+      
+      if (euReturnIndex !== -1) {
+        // If placed before payment, higher impact
+        if (euReturnIndex < paymentIndex) {
+          euReturnImpact = 8;
+          euReturnLabel = 'EU-ångerknapp (före betalning)';
+        }
+        // If placed in first half of layout, slight bonus
+        if (euReturnIndex < layoutOrder.length / 2) {
+          euReturnImpact += 2;
+          euReturnLabel = 'EU-ångerknapp (tidig i layout)';
+        }
+      }
+      metrics.push({ label: euReturnLabel, impact: euReturnImpact, source: 'EU Consumer Rights Directive 2026' });
     }
 
     if (addGiftWrapping) {
@@ -1070,6 +1104,19 @@ export default function TestCheckoutPage() {
                                           )}
                                         </>
                                       )}
+                                      {sectionId === 'euReturn' && (
+                                        <>
+                                          <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                                            <RefreshCw size={20} className="text-blue-600 dark:text-blue-400" />
+                                            <div className="flex-1">
+                                              <div className="font-semibold text-blue-900 dark:text-blue-100">Ångra köp</div>
+                                              <div className="text-sm text-blue-700 dark:text-blue-300">
+                                                Du har rätt att ångra detta köp inom 14 dagar
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </>
+                                      )}
                                       {sectionId === 'review' && (
                                         <>
                                           <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
@@ -1138,20 +1185,6 @@ export default function TestCheckoutPage() {
                           className="h-full bg-green-500 transition-all"
                           style={{ width: `${(orderValue / freeShippingThreshold) * 100}%` }}
                         />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {showEuReturnButton && (
-                <div className="mx-6 mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <RefreshCw size={20} className="text-blue-600 dark:text-blue-400" />
-                    <div className="flex-1">
-                      <div className="font-semibold text-blue-900 dark:text-blue-100">Ångra köp</div>
-                      <div className="text-sm text-blue-700 dark:text-blue-300">
-                        Du har rätt att ångra detta köp inom 14 dagar
                       </div>
                     </div>
                   </div>
@@ -1429,7 +1462,16 @@ export default function TestCheckoutPage() {
                       label="EU-ångerknapp (obligatorisk från juni 2026)"
                       description="Visa ångerknapp enligt EU:s nya regler"
                       checked={showEuReturnButton}
-                      onChange={setShowEuReturnButton}
+                      onChange={(checked) => {
+                        setShowEuReturnButton(checked);
+                        if (checked && !layoutOrder.includes('euReturn')) {
+                          // Add euReturn before review
+                          const withoutReview = layoutOrder.filter(id => id !== 'review');
+                          setLayoutOrder([...withoutReview, 'euReturn', 'review']);
+                        } else if (!checked) {
+                          setLayoutOrder(layoutOrder.filter(id => id !== 'euReturn'));
+                        }
+                      }}
                     />
                     <div className="pt-2 border-t border-slate-200 dark:border-slate-700 mt-2">
                       <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3">Extra tjänster</div>
