@@ -612,36 +612,34 @@ export default function TestCheckoutPage() {
       metrics.push({ label: 'Förvalt fraktalternativ', impact: 3, source: 'UX best practices' });
     }
     
-    // Card provider impact based on market
+    // Carrier trust impact based on market
     const marketKey = customerCountry.toLowerCase() as keyof typeof CARD_PROVIDERS[0]['conversionImpact'];
-    // Don't show individual card provider impacts in metrics to avoid confusion
-    // selectedCardProviders.forEach((providerId) => {
-    //   const provider = CARD_PROVIDERS.find(c => c.id === providerId);
-    //   if (provider && marketKey in provider.conversionImpact) {
-    //     const impact = provider.conversionImpact[marketKey];
-    //     if (impact !== 0) {
-    //       metrics.push({ label: `${provider.name} (${customerCountry})`, impact, source: 'Payment trust studies' });
-    //     }
-    //   }
-    // });
+    selectedCarriers.forEach((carrierId) => {
+      const carrier = CARRIERS.find(c => c.id === carrierId);
+      if (carrier && marketKey in carrier.marketImpact) {
+        const impact = carrier.marketImpact[marketKey];
+        if (impact !== 0) {
+          metrics.push({ label: `${carrier.name} (${customerCountry})`, impact, source: 'Carrier trust studies' });
+        }
+      }
+    });
+    
+    // Payment method conversion impact based on market
+    paymentOrder.forEach((methodId) => {
+      const method = PAYMENT_METHODS.find(m => m.id === methodId);
+      if (method && marketKey in method.conversionImpact) {
+        const impact = method.conversionImpact[marketKey];
+        if (impact !== 0) {
+          metrics.push({ label: `${method.name} (${customerCountry})`, impact, source: 'Payment trust studies' });
+        }
+      }
+    });
     
     if (selectedDeliveryOptions.length >= 3) {
       metrics.push({ label: 'Många leveransalternativ', impact: 5, source: 'Ingrid/nShift studies' });
     } else if (selectedDeliveryOptions.length >= 2) {
       metrics.push({ label: 'Flera leveransalternativ', impact: 2, source: 'Ingrid/nShift studies' });
     }
-
-    // Carrier trust impact based on market
-    // Don't show individual carrier impacts in metrics to avoid confusion
-    // selectedCarriers.forEach((carrierId) => {
-    //   const carrier = CARRIERS.find(c => c.id === carrierId);
-    //   if (carrier && marketKey in carrier.marketImpact) {
-    //     const impact = carrier.marketImpact[marketKey];
-    //     if (impact !== 0) {
-    //       metrics.push({ label: `${carrier.name} (${customerCountry})`, impact, source: 'Carrier trust studies' });
-    //     }
-    //   }
-    // });
 
     const shippingRatio = shippingCost / orderValue;
     if (shippingRatio > 0.2) {
@@ -873,7 +871,12 @@ export default function TestCheckoutPage() {
                                   </div>
                                   <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-1">
+                                      <span className="font-semibold text-slate-900 dark:text-slate-100">{section.title}</span>
                                       <HelpCircle size={14} className="text-slate-400 group-hover:text-brand-500 transition-colors" />
+                                      <span className="text-xs text-slate-500 dark:text-slate-400">{section.description}</span>
+                                    </div>
+                                    <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-xs p-2 rounded-lg max-w-xs shadow-lg pointer-events-none">
+                                      {getSectionDescription(sectionId)}
                                     </div>
                                     <div className="space-y-2">
                                       {sectionId === 'customer' && (
@@ -1056,6 +1059,11 @@ export default function TestCheckoutPage() {
                                                           <span className="text-sm text-slate-600 dark:text-slate-300">
                                                             {method.name}
                                                           </span>
+                                                          {impact !== 0 && (
+                                                            <span className={`ml-2 text-xs ${impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                                              {impact > 0 ? '+' : ''}{impact}%
+                                                            </span>
+                                                          )}
                                                         </div>
                                                       )}
                                                     </Draggable>
