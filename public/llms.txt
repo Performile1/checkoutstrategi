@@ -1,0 +1,54 @@
+# Performile Checkout Strategy Platform
+
+## Overview
+Performile is a Swedish CRO (Conversion Rate Optimization) platform focused on checkout optimization for e-commerce. The platform provides data-driven insights and tools to optimize checkout flows and increase conversion rates.
+
+## Target Audience
+- E-commerce managers
+- CRO specialists
+- Digital marketing professionals
+- Online retailers in the Nordics (Sweden, Norway, Denmark, Finland)
+
+## Key Features
+- Interactive checkout simulation tool
+- Conversion score calculation based on industry best practices
+- Carrier trust studies and impact analysis
+- Payment method optimization insights
+- Delivery experience optimization
+- EU compliance tools (return button, consumer rights)
+- AOV (Average Order Value) optimization
+- CLV (Customer Lifetime Value) tracking
+
+## Key Concepts
+- **Conversion Score**: A metric (0-100%) that measures checkout optimization level
+- **Trust Studies**: Research on carrier and payment method trust in Nordic markets
+- **Delivery Experience**: Post-purchase optimization for physical goods e-commerce
+- **Levers**: Strategic optimization levers (tools, methods, and techniques) for CRO
+
+## Markets
+Primary focus on Nordic markets:
+- Sweden (SE)
+- Norway (NO)
+- Denmark (DK)
+- Finland (FI)
+
+## Technology Stack
+- Next.js (React framework)
+- TypeScript
+- TailwindCSS
+- Supabase (PostgreSQL)
+- Vercel (hosting)
+
+## Content Strategy
+- Guides on checkout optimization
+- Industry research and case studies
+- Tool comparisons (checkout providers, carriers, payment methods)
+- Nordic e-commerce insights
+
+## SEO Focus
+- Checkout optimization
+- CRO strategies for e-commerce
+- Nordic e-commerce trends
+- Payment method trust
+- Carrier selection optimization
+- Delivery experience management
