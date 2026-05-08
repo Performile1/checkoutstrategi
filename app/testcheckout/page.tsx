@@ -621,7 +621,7 @@ export default function TestCheckoutPage() {
       if (provider && marketKey in provider.conversionImpact) {
         const impact = provider.conversionImpact[marketKey];
         if (impact !== 0) {
-          metrics.push({ label: `${provider.name} (${customerCountry})`, impact: Math.round(impact * 0.6), source: 'Payment trust studies' });
+          metrics.push({ label: `${provider.name} (${customerCountry})`, impact, source: 'Payment trust studies' });
         }
       }
     });
@@ -639,7 +639,7 @@ export default function TestCheckoutPage() {
       if (carrier && marketKey in carrier.marketImpact) {
         const impact = carrier.marketImpact[marketKey];
         if (impact !== 0) {
-          metrics.push({ label: `${carrier.name} (${customerCountry})`, impact: Math.round(impact * 0.7), source: 'Carrier trust studies' });
+          metrics.push({ label: `${carrier.name} (${customerCountry})`, impact, source: 'Carrier trust studies' });
         }
       }
     });
@@ -672,7 +672,7 @@ export default function TestCheckoutPage() {
       if (method && marketKey in method.conversionImpact) {
         const impact = method.conversionImpact[marketKey];
         if (impact !== 0) {
-          metrics.push({ label: `${method.name} (${customerCountry})`, impact: Math.round(impact * 0.6), source: 'Payment trust studies' });
+          metrics.push({ label: `${method.name} (${customerCountry})`, impact, source: 'Payment trust studies' });
         }
       }
     });
@@ -680,7 +680,7 @@ export default function TestCheckoutPage() {
     // Provider trust score
     const player = players.find(p => p.slug === selectedPlayer);
     if (player) {
-      metrics.push({ label: `${player.name} trust score`, impact: Math.round(player.conversionImpact * 0.7), source: 'Performile analysis' });
+      metrics.push({ label: `${player.name} trust score`, impact: player.conversionImpact, source: 'Performile analysis' });
     }
 
     // Local provider impact
