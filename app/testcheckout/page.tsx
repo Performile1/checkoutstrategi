@@ -2116,17 +2116,6 @@ export default function TestCheckoutPage() {
                           Korsförsäljning = +10% AOV (ej konvertering)
                         </div>
                       </div>
-                      <div className="group relative">
-                        <Toggle
-                          label={showEuReturnButton ? `-${getDynamicPercentage(BASE_PERCENTAGES.euReturnButton, 6, SETTINGS_ORDER.length)}% EU-Ångerknapp` : 'EU-Ångerknapp'}
-                          description="Ångra köp enligt EU-direktiv"
-                          checked={showEuReturnButton}
-                          onChange={setShowEuReturnButton}
-                        />
-                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          EU-Ångerknapp = -{getDynamicPercentage(BASE_PERCENTAGES.euReturnButton, 6, SETTINGS_ORDER.length)}% (minskar köp-iv, men obligatoriskt från 19 juni 2026)
-                        </div>
-                      </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
