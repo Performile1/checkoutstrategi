@@ -272,6 +272,23 @@ export default function TestCheckoutPage() {
   const [activeTab, setActiveTab] = useState('settings');
   const [productName, setProductName] = useState('Premium Tröja');
   const [productPrice, setProductPrice] = useState(499);
+
+  // Predefined products for easy selection
+  const PRODUCTS = [
+    { id: 'low', name: 'Basic T-shirt', price: 199 },
+    { id: 'medium', name: 'Premium Tröja', price: 499 },
+    { id: 'high', name: 'Designer Jacka', price: 1299 },
+    { id: 'premium', name: 'Lyx Klocka', price: 2999 },
+  ];
+
+  const handleProductSelect = (productId: string) => {
+    const product = PRODUCTS.find(p => p.id === productId);
+    if (product) {
+      setProductName(product.name);
+      setProductPrice(product.price);
+      setOrderValue(product.price);
+    }
+  };
   const [shippingOrder, setShippingOrder] = useState<string[]>(['pickup', 'home']);
   const [paymentOrder, setPaymentOrder] = useState<string[]>(['klarna', 'card']);
   const [selectedCarriers, setSelectedCarriers] = useState<string[]>(['postnord']);
@@ -1730,6 +1747,27 @@ export default function TestCheckoutPage() {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Välj produkt (påverkar ordervärde och konvertering)
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {PRODUCTS.map((product) => (
+                          <button
+                            key={product.id}
+                            onClick={() => handleProductSelect(product.id)}
+                            className={`p-3 rounded-lg border text-left transition-colors ${
+                              productPrice === product.price
+                                ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/20'
+                                : 'border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
+                            }`}
+                          >
+                            <div className="font-medium text-sm text-slate-700 dark:text-slate-300">{product.name}</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">{product.price} kr</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         Produktnamn
                       </label>
                       <input
@@ -1746,7 +1784,11 @@ export default function TestCheckoutPage() {
                       <input
                         type="number"
                         value={productPrice}
-                        onChange={(e) => setProductPrice(Number(e.target.value))}
+                        onChange={(e) => {
+                          const newPrice = Number(e.target.value);
+                          setProductPrice(newPrice);
+                          setOrderValue(newPrice);
+                        }}
                         className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700"
                       />
                     </div>
