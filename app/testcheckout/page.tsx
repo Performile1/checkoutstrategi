@@ -28,7 +28,10 @@ import {
   Clock,
   Users,
   Shield,
-  QrCode as QRCodeIcon
+  Tag,
+  QrCodeIcon,
+  ChevronRight,
+  Star,
 } from 'lucide-react';
 import { players } from '@/lib/players';
 
@@ -362,6 +365,9 @@ export default function TestCheckoutPage() {
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [returnReason, setReturnReason] = useState('');
   const [showNextPurchaseDiscount, setShowNextPurchaseDiscount] = useState(false);
+  const [showProductDiscount, setShowProductDiscount] = useState(false);
+  const [discountRate, setDiscountRate] = useState(20);
+  const [discountText, setDiscountText] = useState('Köp nu och spara');
 
   // Automatically add/remove blocks from layoutOrder when toggles change
   useEffect(() => {
@@ -486,6 +492,7 @@ export default function TestCheckoutPage() {
     lowStockWarning: 8,
     cartTimer: 5,
     socialProof: 3,
+    productDiscount: 8, // Base discount impact
   };
 
   // Calculate position-based multiplier based on toggle order in settings
@@ -664,6 +671,12 @@ export default function TestCheckoutPage() {
     }
     if (showSocialProof) {
       score += 3; // Social proof leverages herd behavior: +3%
+    }
+
+    // Product discount impact
+    if (showProductDiscount) {
+      const discountImpact = Math.round(discountRate * 0.4); // 40% of discount rate as conversion impact
+      score += discountImpact;
     }
 
     // Multiple delivery options (gives customers choice)
@@ -1488,6 +1501,19 @@ export default function TestCheckoutPage() {
                                           <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
                                             {hasCrossSell ? 'Produkter i varukorgen' : 'Orderöversikt'}
                                           </div>
+                                          {showProductDiscount && (
+                                            <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mb-3">
+                                              <Tag size={20} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                                              <div className="flex-1">
+                                                <div className="font-semibold text-green-900 dark:text-green-100">
+                                                  {discountText} {Math.round(productPrice * discountRate / 100)} kr
+                                                </div>
+                                                <div className="text-sm text-green-700 dark:text-green-300">
+                                                  Spara {discountRate}% på detta köp
+                                                </div>
+                                              </div>
+                                            </div>
+                                          )}
                                           {showCartTimer && (
                                             <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg mb-3">
                                               <Clock size={20} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
@@ -1844,7 +1870,7 @@ export default function TestCheckoutPage() {
                       <div className="text-center">
                         <div className="w-32 h-32 bg-white dark:bg-slate-600 rounded-lg mx-auto mb-2 flex items-center justify-center border-2 border-slate-300 dark:border-slate-500">
                           <div className="text-center">
-                            <QRCodeIcon size={64} className="text-slate-400 dark:text-slate-400 mx-auto" />
+                            <QrCodeIcon size={64} className="text-slate-400 dark:text-slate-400 mx-auto" />
                             <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">QR-Kod</div>
                           </div>
                         </div>
@@ -2624,6 +2650,50 @@ export default function TestCheckoutPage() {
                         }}
                         className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700"
                       />
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                      <div className="group relative">
+                        <Toggle
+                          label={showProductDiscount ? `Produktrabatt (${discountRate}%)` : 'Produktrabatt'}
+                          description="Visa rabatt på produkt i orderöversikt"
+                          checked={showProductDiscount}
+                          onChange={setShowProductDiscount}
+                        />
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Produktrabatt = +{Math.round(discountRate * 0.4)}% konvertering
+                        </div>
+                      </div>
+
+                      {showProductDiscount && (
+                        <div className="space-y-3 mt-3 pl-4 border-l-2 border-slate-200 dark:border-slate-700">
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                              Rabattsats (%)
+                            </label>
+                            <input
+                              type="number"
+                              value={discountRate}
+                              onChange={(e) => setDiscountRate(Number(e.target.value))}
+                              className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 text-sm"
+                              min="0"
+                              max="100"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                              Rabatttext
+                            </label>
+                            <input
+                              type="text"
+                              value={discountText}
+                              onChange={(e) => setDiscountText(e.target.value)}
+                              className="w-full p-2 border border-slate-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 text-sm"
+                              placeholder="Köp nu och spara"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
