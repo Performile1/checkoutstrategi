@@ -1,7 +1,7 @@
-# Performile Checkout Strategy Platform
+# Checkout Strategy Platform
 
 ## Overview
-Performile is a Swedish CRO (Conversion Rate Optimization) platform focused on checkout optimization for e-commerce. The platform provides data-driven insights and tools to optimize checkout flows and increase conversion rates.
+This is a Swedish CRO (Conversion Rate Optimization) platform focused on checkout optimization for e-commerce. The platform provides data-driven insights and tools to optimize checkout flows and increase conversion rates.
 
 ## Target Audience
 - E-commerce managers

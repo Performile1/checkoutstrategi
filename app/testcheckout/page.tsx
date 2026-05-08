@@ -669,7 +669,7 @@ export default function TestCheckoutPage() {
     // Provider trust score
     const player = players.find(p => p.slug === selectedPlayer);
     if (player) {
-      metrics.push({ label: `${player.name} trust score`, impact: player.conversionImpact, source: 'Performile analysis' });
+      metrics.push({ label: `${player.name} trust score`, impact: player.conversionImpact, source: 'CRO analysis' });
     }
 
     // Local provider impact
