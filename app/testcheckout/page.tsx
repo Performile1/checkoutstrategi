@@ -57,19 +57,19 @@ const CARD_PROVIDERS: CardProvider[] = [
   { 
     id: 'visa', 
     name: 'Visa', 
-    logo: undefined,
+    logo: '/logos/visa.svg',
     conversionImpact: { se: 3, no: 3, dk: 3, fi: 3 }
   },
   { 
     id: 'mastercard', 
     name: 'Mastercard', 
-    logo: undefined,
+    logo: '/logos/mastercard.svg',
     conversionImpact: { se: 3, no: 3, dk: 3, fi: 3 }
   },
   { 
     id: 'amex', 
     name: 'American Express', 
-    logo: undefined,
+    logo: '/logos/amex.svg',
     conversionImpact: { se: 1, no: 1, dk: 1, fi: 1 }
   },
 ];
