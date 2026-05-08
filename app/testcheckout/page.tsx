@@ -41,11 +41,50 @@ type DeliveryOption = {
   icon: React.ReactNode;
 };
 
+type CardProvider = {
+  id: string;
+  name: string;
+  logo: string;
+  conversionImpact: {
+    se: number;
+    no: number;
+    dk: number;
+    fi: number;
+  };
+};
+
+const CARD_PROVIDERS: CardProvider[] = [
+  { 
+    id: 'visa', 
+    name: 'Visa', 
+    logo: '/logos/visa.svg',
+    conversionImpact: { se: 3, no: 3, dk: 3, fi: 3 }
+  },
+  { 
+    id: 'mastercard', 
+    name: 'Mastercard', 
+    logo: '/logos/mastercard.svg',
+    conversionImpact: { se: 3, no: 3, dk: 3, fi: 3 }
+  },
+  { 
+    id: 'amex', 
+    name: 'American Express', 
+    logo: '/logos/amex.svg',
+    conversionImpact: { se: 1, no: 1, dk: 1, fi: 1 }
+  },
+];
+
 type PaymentMethod = {
   id: string;
   name: string;
   icon: React.ReactNode;
   logo?: string;
+  conversionImpact: {
+    se: number;
+    no: number;
+    dk: number;
+    fi: number;
+  };
 };
 
 type Carrier = {
@@ -59,13 +98,52 @@ type Carrier = {
     dk: number;
     fi: number;
   };
+  shippingCosts: {
+    pickup: number;
+    locker: number;
+    point: number;
+    home: number;
+    mailbox: number;
+    express: number;
+  };
 };
 
 const PAYMENT_METHODS: PaymentMethod[] = [
-  { id: 'klarna', name: 'Klarna - Delbetalning', icon: <CreditCard size={18} /> },
-  { id: 'card', name: 'Kort', icon: <CreditCard size={18} /> },
-  { id: 'swish', name: 'Swish', icon: <CreditCard size={18} /> },
-  { id: 'paypal', name: 'PayPal', icon: <CreditCard size={18} /> },
+  { 
+    id: 'klarna', 
+    name: 'Klarna - Delbetalning', 
+    icon: <CreditCard size={18} />,
+    logo: '/logos/klarna.svg',
+    conversionImpact: { se: 8, no: 7, dk: 6, fi: 6 }
+  },
+  { 
+    id: 'card', 
+    name: 'Kort', 
+    icon: <CreditCard size={18} />,
+    logo: '/logos/card.svg',
+    conversionImpact: { se: 5, no: 5, dk: 5, fi: 5 }
+  },
+  { 
+    id: 'swish', 
+    name: 'Swish', 
+    icon: <CreditCard size={18} />,
+    logo: '/logos/swish.svg',
+    conversionImpact: { se: 12, no: 0, dk: 0, fi: 0 }
+  },
+  { 
+    id: 'vipps', 
+    name: 'Vipps', 
+    icon: <CreditCard size={18} />,
+    logo: '/logos/vipps.svg',
+    conversionImpact: { se: 0, no: 12, dk: 0, fi: 0 }
+  },
+  { 
+    id: 'paypal', 
+    name: 'PayPal', 
+    icon: <CreditCard size={18} />,
+    logo: '/logos/paypal.svg',
+    conversionImpact: { se: 3, no: 3, dk: 3, fi: 3 }
+  },
 ];
 
 const CARRIERS: Carrier[] = [
@@ -74,63 +152,72 @@ const CARRIERS: Carrier[] = [
     name: 'PostNord', 
     logo: '/logos/postnord.svg',
     trustScore: 4.2,
-    marketImpact: { se: 5, no: 3, dk: 4, fi: 4 }
+    marketImpact: { se: 5, no: 3, dk: 4, fi: 4 },
+    shippingCosts: { pickup: 0, locker: 39, point: 29, home: 79, mailbox: 19, express: 149 }
   },
   { 
     id: 'dhl', 
     name: 'DHL', 
     logo: '/logos/dhl.svg',
     trustScore: 1.4,
-    marketImpact: { se: -8, no: -5, dk: -6, fi: -7 }
+    marketImpact: { se: -8, no: -5, dk: -6, fi: -7 },
+    shippingCosts: { pickup: 0, locker: 49, point: 39, home: 89, mailbox: 29, express: 169 }
   },
   { 
     id: 'bring', 
     name: 'Bring', 
     logo: '/logos/bring.svg',
     trustScore: 4.0,
-    marketImpact: { se: 2, no: 5, dk: 4, fi: 3 }
+    marketImpact: { se: 2, no: 5, dk: 4, fi: 3 },
+    shippingCosts: { pickup: 0, locker: 45, point: 35, home: 85, mailbox: 25, express: 159 }
   },
   { 
     id: 'citymail', 
     name: 'CityMail', 
     logo: '/logos/citymail.svg',
     trustScore: 4.5,
-    marketImpact: { se: 4, no: 2, dk: 3, fi: 2 }
+    marketImpact: { se: 4, no: 2, dk: 3, fi: 2 },
+    shippingCosts: { pickup: 0, locker: 35, point: 25, home: 75, mailbox: 15, express: 139 }
   },
   { 
     id: 'airmee', 
     name: 'Airmee', 
     logo: '/logos/airmee.svg',
     trustScore: 4.1,
-    marketImpact: { se: 3, no: 2, dk: 2, fi: 2 }
+    marketImpact: { se: 3, no: 2, dk: 2, fi: 2 },
+    shippingCosts: { pickup: 0, locker: 0, point: 0, home: 49, mailbox: 0, express: 99 }
   },
   { 
     id: 'earlybird', 
     name: 'Earlybird', 
     logo: '/logos/earlybird.svg',
     trustScore: 3.8,
-    marketImpact: { se: 2, no: 2, dk: 2, fi: 2 }
+    marketImpact: { se: 2, no: 2, dk: 2, fi: 2 },
+    shippingCosts: { pickup: 0, locker: 0, point: 0, home: 59, mailbox: 0, express: 119 }
   },
   { 
     id: 'budbee', 
     name: 'Budbee', 
     logo: '/logos/budbee.svg',
     trustScore: 4.6,
-    marketImpact: { se: 4, no: 3, dk: 3, fi: 3 }
+    marketImpact: { se: 4, no: 3, dk: 3, fi: 3 },
+    shippingCosts: { pickup: 0, locker: 29, point: 0, home: 69, mailbox: 0, express: 129 }
   },
   { 
     id: 'instabox', 
     name: 'Instabox', 
     logo: '/logos/instabox.svg',
     trustScore: 4.4,
-    marketImpact: { se: 4, no: 3, dk: 3, fi: 3 }
+    marketImpact: { se: 4, no: 3, dk: 3, fi: 3 },
+    shippingCosts: { pickup: 0, locker: 29, point: 0, home: 69, mailbox: 0, express: 129 }
   },
   { 
     id: 'helthjem', 
     name: 'Helthjem', 
     logo: '/logos/helthjem.svg',
     trustScore: 4.3,
-    marketImpact: { se: 2, no: 6, dk: 3, fi: 2 }
+    marketImpact: { se: 2, no: 6, dk: 3, fi: 2 },
+    shippingCosts: { pickup: 0, locker: 0, point: 0, home: 79, mailbox: 0, express: 149 }
   },
 ];
 
@@ -189,9 +276,20 @@ export default function TestCheckoutPage() {
   const [selectedCarriers, setSelectedCarriers] = useState<string[]>(['postnord']);
   const [carrierOrder, setCarrierOrder] = useState<string[]>(['postnord']);
   const [showEuReturnButton, setShowEuReturnButton] = useState(false);
+  const [addGiftWrapping, setAddGiftWrapping] = useState(false);
+  const [addInsurance, setAddInsurance] = useState(false);
+  const [addGiftMessage, setAddGiftMessage] = useState(false);
+  const [preselectShipping, setPreselectShipping] = useState(false);
+  const [selectedCardProviders, setSelectedCardProviders] = useState<string[]>(['visa', 'mastercard']);
 
   const calculateConversionScore = () => {
     let score = 40; // Base score (lowered to show impact more clearly)
+
+    // Calculate total order value including extras
+    let totalOrderValue = orderValue;
+    if (addGiftWrapping) totalOrderValue += Math.round(orderValue * 0.10);
+    if (addInsurance) totalOrderValue += Math.round(orderValue * 0.05);
+    if (addGiftMessage) totalOrderValue += Math.round(orderValue * 0.02);
 
     // Guest checkout impact (Baymard: forced account creation is top 3 reason for abandonment)
     if (!isGuestCheckout) {
@@ -242,6 +340,27 @@ export default function TestCheckoutPage() {
       score += 5;
     }
 
+    // EU return button (mandatory from June 2025)
+    if (showEuReturnButton) {
+      score += 8;
+    }
+    
+    // Extra services impact
+    if (addGiftWrapping) {
+      score += 3;
+    }
+    if (addInsurance) {
+      score += 2;
+    }
+    if (addGiftMessage) {
+      score += 1;
+    }
+    
+    // Pre-selected shipping option impact
+    if (preselectShipping) {
+      score += 4;
+    }
+
     // Multiple delivery options (gives customers choice)
     if (selectedDeliveryOptions.length >= 3) {
       score += 6;
@@ -249,8 +368,39 @@ export default function TestCheckoutPage() {
       score += 3;
     }
 
+    // Carrier trust impact based on market
+    const marketKey = customerCountry.toLowerCase() as keyof typeof CARRIERS[0]['marketImpact'];
+    selectedCarriers.forEach((carrierId) => {
+      const carrier = CARRIERS.find(c => c.id === carrierId);
+      if (carrier && marketKey in carrier.marketImpact) {
+        const impact = carrier.marketImpact[marketKey];
+        console.log(`Carrier ${carrier.name} (${marketKey}): ${impact}`);
+        score += impact;
+      }
+    });
+
+    // Payment method conversion impact based on market
+    paymentOrder.forEach((methodId) => {
+      const method = PAYMENT_METHODS.find(m => m.id === methodId);
+      if (method && marketKey in method.conversionImpact) {
+        const impact = method.conversionImpact[marketKey];
+        console.log(`Payment ${method.name} (${marketKey}): ${impact}`);
+        score += impact;
+      }
+    });
+
+    // Card provider conversion impact based on market
+    selectedCardProviders.forEach((providerId) => {
+      const provider = CARD_PROVIDERS.find(c => c.id === providerId);
+      if (provider && marketKey in provider.conversionImpact) {
+        const impact = provider.conversionImpact[marketKey];
+        console.log(`Card ${provider.name} (${marketKey}): ${impact}`);
+        score += impact;
+      }
+    });
+
     // Shipping cost vs order value (high shipping cost relative to order value hurts conversion)
-    const shippingRatio = shippingCost / orderValue;
+    const shippingRatio = shippingCost / totalOrderValue;
     if (shippingRatio > 0.2) {
       score -= 15; // Shipping cost is >20% of order value
     } else if (shippingRatio > 0.1) {
@@ -401,6 +551,30 @@ export default function TestCheckoutPage() {
     if (showEuReturnButton) {
       metrics.push({ label: 'EU-ångerknapp', impact: 8, source: 'EU Consumer Rights Directive 2025' });
     }
+    if (addGiftWrapping) {
+      metrics.push({ label: 'Presentinslagning', impact: 3, source: 'Gift experience studies' });
+    }
+    if (addInsurance) {
+      metrics.push({ label: 'Leveransförsäkring', impact: 2, source: 'Shipping trust studies' });
+    }
+    if (addGiftMessage) {
+      metrics.push({ label: 'Gåvomeddelande', impact: 1, source: 'Personalization studies' });
+    }
+    if (preselectShipping) {
+      metrics.push({ label: 'Förvalt fraktalternativ', impact: 4, source: 'UX best practices' });
+    }
+    
+    // Card provider impact based on market
+    selectedCardProviders.forEach((providerId) => {
+      const provider = CARD_PROVIDERS.find(c => c.id === providerId);
+      if (provider && marketKey in provider.conversionImpact) {
+        const impact = provider.conversionImpact[marketKey];
+        if (impact !== 0) {
+          metrics.push({ label: `${provider.name} (${customerCountry})`, impact, source: 'Payment trust studies' });
+        }
+      }
+    });
+    
     if (selectedDeliveryOptions.length >= 3) {
       metrics.push({ label: 'Många leveransalternativ', impact: 6, source: 'Ingrid/nShift studies' });
     } else if (selectedDeliveryOptions.length >= 2) {
@@ -706,6 +880,19 @@ export default function TestCheckoutPage() {
                                                 {shippingOrder.map((optId, idx) => {
                                                   const opt = DELIVERY_OPTIONS.find(o => o.id === optId);
                                                   if (!opt) return null;
+                                                  
+                                                  // Get cost based on selected carrier
+                                                  let cost = opt.cost;
+                                                  if (selectedCarriers.length > 0) {
+                                                    const firstCarrier = CARRIERS.find(c => c.id === selectedCarriers[0]);
+                                                    if (firstCarrier) {
+                                                      cost = firstCarrier.shippingCosts[optId as keyof typeof firstCarrier.shippingCosts];
+                                                    }
+                                                  }
+                                                  
+                                                  // Check if this should be pre-selected
+                                                  const isSelected = preselectShipping && idx === 0;
+                                                  
                                                   return (
                                                     <Draggable key={opt.id} draggableId={opt.id} index={idx}>
                                                       {(provided) => (
@@ -713,13 +900,21 @@ export default function TestCheckoutPage() {
                                                           ref={provided.innerRef}
                                                           {...provided.draggableProps}
                                                           {...provided.dragHandleProps}
-                                                          className="h-auto bg-slate-200 dark:bg-slate-600 rounded p-3 cursor-move"
+                                                          className={`h-auto bg-slate-200 dark:bg-slate-600 rounded p-3 cursor-move ${isSelected ? 'ring-2 ring-green-500' : ''}`}
                                                         >
                                                           <div className="flex items-center gap-2 mb-1">
-                                                            <div className="w-4 h-4 rounded-full border-2 border-slate-400" />
+                                                            <div className={`w-4 h-4 rounded-full border-2 ${isSelected ? 'border-green-500 bg-green-500' : 'border-slate-400'}`} />
                                                             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                                                              {opt.icon} {opt.name} - {opt.cost} kr
+                                                              {opt.icon} {opt.name} - {cost} kr
                                                             </span>
+                                                            {selectedCarriers.length > 0 && (
+                                                              <span className="text-xs text-slate-500">
+                                                                ({CARRIERS.find(c => c.id === selectedCarriers[0])?.name})
+                                                              </span>
+                                                            )}
+                                                            {isSelected && (
+                                                              <span className="text-xs text-green-600 dark:text-green-400 ml-2">Förvald</span>
+                                                            )}
                                                           </div>
                                                           <div className="text-xs text-slate-600 dark:text-slate-400 pl-6">
                                                             {shippingTexts[optId] || ''}
@@ -754,8 +949,9 @@ export default function TestCheckoutPage() {
                                                               ref={provided.innerRef}
                                                               {...provided.draggableProps}
                                                               {...provided.dragHandleProps}
-                                                              className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-slate-500 rounded text-xs font-medium text-slate-700 dark:text-slate-300 cursor-move"
+                                                              className="flex items-center gap-2 px-2 py-1 bg-white dark:bg-slate-500 rounded text-xs font-medium text-slate-700 dark:text-slate-300 cursor-move"
                                                             >
+                                                              <img src={carrier.logo} alt={carrier.name} className="w-4 h-4" />
                                                               <span>{carrier.name}</span>
                                                               <span className="text-green-600 dark:text-green-400">★{carrier.trustScore}</span>
                                                             </div>
@@ -799,9 +995,12 @@ export default function TestCheckoutPage() {
                                             {(provided) => (
                                               <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
                                                 {paymentOrder.map((methodId, idx) => {
-                                                  const player = players.find(p => p.slug === selectedPlayer);
+                                                  const method = PAYMENT_METHODS.find(m => m.id === methodId);
+                                                  if (!method) return null;
+                                                  const marketKey = customerCountry.toLowerCase() as keyof typeof method.conversionImpact;
+                                                  const impact = method.conversionImpact[marketKey];
                                                   return (
-                                                    <Draggable key={methodId} draggableId={methodId} index={idx}>
+                                                    <Draggable key={method.id} draggableId={method.id} index={idx}>
                                                       {(provided) => (
                                                         <div
                                                           ref={provided.innerRef}
@@ -810,11 +1009,16 @@ export default function TestCheckoutPage() {
                                                           className="h-8 bg-slate-200 dark:bg-slate-600 rounded flex items-center px-3 cursor-move"
                                                         >
                                                           <div className="w-4 h-4 rounded-full border-2 border-slate-400 mr-2" />
+                                                          {method.logo && (
+                                                            <img src={method.logo} alt={method.name} className="w-4 h-4 mr-2" />
+                                                          )}
                                                           <span className="text-sm text-slate-600 dark:text-slate-300">
-                                                            {methodId === 'klarna' && player ? player.name : methodId === 'card' ? 'Kort' : methodId === 'swish' ? 'Swish' : 'PayPal'}
+                                                            {method.name}
                                                           </span>
-                                                          {player && methodId === 'klarna' && (
-                                                            <span className="ml-2 text-xs text-green-600 dark:text-green-400">★{player.conversionImpact}/10</span>
+                                                          {impact !== 0 && (
+                                                            <span className={`ml-2 text-xs ${impact > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                                              {impact > 0 ? '+' : ''}{impact}%
+                                                            </span>
                                                           )}
                                                         </div>
                                                       )}
@@ -825,10 +1029,27 @@ export default function TestCheckoutPage() {
                                               </div>
                                             )}
                                           </Droppable>
+                                          {selectedCardProviders.length > 0 && (
+                                            <div className="mt-3 p-2 bg-slate-100 dark:bg-slate-600 rounded">
+                                              <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">Kort som accepteras:</div>
+                                              <div className="flex flex-wrap gap-2">
+                                                {selectedCardProviders.map((providerId) => {
+                                                  const provider = CARD_PROVIDERS.find(p => p.id === providerId);
+                                                  if (!provider) return null;
+                                                  return (
+                                                    <img key={provider.id} src={provider.logo} alt={provider.name} className="w-8 h-5" title={provider.name} />
+                                                  );
+                                                })}
+                                              </div>
+                                            </div>
+                                          )}
                                         </>
                                       )}
                                       {sectionId === 'review' && (
                                         <>
+                                          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
+                                            {hasCrossSell ? 'Produkter i varukorgen' : 'Orderöversikt'}
+                                          </div>
                                           <div className="flex items-start gap-3 p-3 bg-slate-100 dark:bg-slate-600 rounded">
                                             <div className="w-16 h-16 bg-slate-300 dark:bg-slate-500 rounded flex-shrink-0 flex items-center justify-center">
                                               <Package size={24} className="text-slate-400 dark:text-slate-400" />
@@ -881,6 +1102,11 @@ export default function TestCheckoutPage() {
                       <div className="font-semibold text-green-900 dark:text-green-100">Fri frakt inom kort!</div>
                       <div className="text-sm text-green-700 dark:text-green-300">
                         Köp för {freeShippingThreshold - orderValue} kr till för fri frakt
+                        {selectedCarriers.length > 0 && (
+                          <span className="text-xs ml-2">
+                            (spara {CARRIERS.find(c => c.id === selectedCarriers[0])?.shippingCosts[shippingOrder[0] as keyof typeof CARRIERS[0]['shippingCosts']] || shippingCost} kr på frakten)
+                          </span>
+                        )}
                       </div>
                       <div className="mt-2 h-2 bg-green-200 dark:bg-green-800 rounded-full overflow-hidden">
                         <div 
@@ -1178,6 +1404,33 @@ export default function TestCheckoutPage() {
                       checked={showEuReturnButton}
                       onChange={setShowEuReturnButton}
                     />
+                    <div className="pt-2 border-t border-slate-200 dark:border-slate-700 mt-2">
+                      <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3">Extra tjänster</div>
+                      <Toggle
+                        label="Presentinslagning"
+                        description="Lägg till presentinslagning (+10% till ordervärde)"
+                        checked={addGiftWrapping}
+                        onChange={setAddGiftWrapping}
+                      />
+                      <Toggle
+                        label="Leveransförsäkring"
+                        description="Lägg till leveransförsäkring (+5% till ordervärde)"
+                        checked={addInsurance}
+                        onChange={setAddInsurance}
+                      />
+                      <Toggle
+                        label="Gåvomeddelande"
+                        description="Lägg till gåvomeddelande (+2% till ordervärde)"
+                        checked={addGiftMessage}
+                        onChange={setAddGiftMessage}
+                      />
+                      <Toggle
+                        label="Förvalt fraktalternativ"
+                        description="Förvälj billigaste fraktalternativ (+4% konvertering)"
+                        checked={preselectShipping}
+                        onChange={setPreselectShipping}
+                      />
+                    </div>
                   </div>
                 )}
 
@@ -1289,6 +1542,35 @@ export default function TestCheckoutPage() {
                             </div>
                             <div className="text-xs text-slate-500">
                               SE: {carrier.marketImpact.se > 0 ? '+' : ''}{carrier.marketImpact.se}%
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Kortleverantörer (påverkar konvertering per marknad)
+                      </label>
+                      <div className="space-y-2">
+                        {CARD_PROVIDERS.map((provider) => (
+                          <label key={provider.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={selectedCardProviders.includes(provider.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedCardProviders([...selectedCardProviders, provider.id]);
+                                } else {
+                                  setSelectedCardProviders(selectedCardProviders.filter(id => id !== provider.id));
+                                }
+                              }}
+                              className="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                            />
+                            <div className="flex items-center gap-2 flex-1">
+                              <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{provider.name}</span>
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              SE: {provider.conversionImpact.se > 0 ? '+' : ''}{provider.conversionImpact.se}%
                             </div>
                           </label>
                         ))}
