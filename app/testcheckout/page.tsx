@@ -472,6 +472,11 @@ export default function TestCheckoutPage() {
   const calculateAOV = () => {
     let aov = orderValue;
 
+    // Extra services increase order value
+    if (addGiftWrapping) aov += Math.round(orderValue * 0.10);
+    if (addInsurance) aov += Math.round(orderValue * 0.05);
+    if (addGiftMessage) aov += Math.round(orderValue * 0.02);
+
     // Free shipping threshold increases AOV by 15-30% (customers add items to reach threshold)
     if (freeShippingThreshold > 0) {
       aov *= 1.2;
