@@ -8,12 +8,25 @@ import {
   Clock, Users, Shield, Tag, QrCodeIcon, Download, GripVertical, Lock,
   Star, ShoppingCart, Map as MapIcon, Monitor, Shirt, Sofa, Coffee,
   Smartphone, Building2, Leaf, ShieldCheck, Timer, Wallet, Fingerprint,
-  Share2, Printer, ArrowRightLeft, HeartHandshake, FileText, Award, Info
+  Share2, Printer, ArrowRightLeft, HeartHandshake, FileText, Award,
+  UsersRound, PackageCheck, Info
 } from 'lucide-react';
 
 // --- TYPER OCH DATA ---
 type CheckoutSection = { id: string; title: string; icon: React.ReactNode; description: string; };
 type DeliveryOption = { id: string; name: string; icon: React.ReactNode; maxWeight: number; allowedSizes: string[] };
+
+type Player = { slug: string; name: string; logoUrl: string; marketImpact: { se: number; no: number; dk: number; fi: number; }; isCompleteCheckout: boolean; };
+
+const PLAYERS: Player[] = [
+  { slug: 'klarna', name: 'Klarna Checkout', logoUrl: '/logos/klarna.png', marketImpact: { se: 5, no: 5, dk: 4, fi: 4 }, isCompleteCheckout: true },
+  { slug: 'qliro', name: 'Qliro', logoUrl: '/logos/qliro.png', marketImpact: { se: 3, no: 2, dk: 1, fi: 2 }, isCompleteCheckout: true },
+  { slug: 'svea', name: 'Svea Checkout', logoUrl: '/logos/svea.png', marketImpact: { se: 4, no: 3, dk: 1, fi: 2 }, isCompleteCheckout: true },
+  { slug: 'walley', name: 'Walley Checkout', logoUrl: '/logos/walley.png', marketImpact: { se: 4, no: 3, dk: 1, fi: 2 }, isCompleteCheckout: true },
+  { slug: 'kustom', name: 'Kustom (Egenbyggd)', logoUrl: '', marketImpact: { se: 2, no: 2, dk: 2, fi: 2 }, isCompleteCheckout: false },
+  { slug: 'adyen', name: 'Adyen Checkout', logoUrl: '/logos/adyen.png', marketImpact: { se: 2, no: 2, dk: 2, fi: 2 }, isCompleteCheckout: false },
+  { slug: 'stripe', name: 'Stripe', logoUrl: '/logos/stripe.png', marketImpact: { se: 1, no: 1, dk: 1, fi: 1 }, isCompleteCheckout: false },
+];
 
 const CARD_PROVIDERS = [
   { id: 'visa', name: 'Visa', logo: '/logos/visa.svg', conversionImpact: { se: 3, no: 3, dk: 3, fi: 3 } },
@@ -103,7 +116,6 @@ export default function TestCheckoutPage() {
   const selectedProduct = PRODUCTS.find(p => p.id === selectedProductId) || PRODUCTS[1];
   const [showProductDiscount, setShowProductDiscount] = useState(false);
   const [discountRate, setDiscountRate] = useState(20);
-  const [discountText, setDiscountText] = useState('Köp nu och spara');
   const [enableSubscription, setEnableSubscription] = useState(false);
   const [hasCrossSell, setHasCrossSell] = useState(false);
   const [showProductTrustBadge, setShowProductTrustBadge] = useState(false);
@@ -131,7 +143,7 @@ export default function TestCheckoutPage() {
   const [selectedPlayer, setSelectedPlayer] = useState('klarna');
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>(['klarna', 'card', 'swish']);
   const [selectedCardProviders, setSelectedCardProviders] = useState<string[]>(['visa', 'mastercard']);
-  const [paymentOrder, setPaymentOrder] = useState<string[]>(['klarna', 'card', 'swish', 'vipps', 'paypal']);
+  const [paymentOrder, setPaymentOrder] = useState<string[]>(['klarna', 'card', 'swish', 'vipps', 'paypal', 'qliro', 'svea', 'walley']);
   const [showExpressWallets, setShowExpressWallets] = useState(true);
   
   // -- STATE FOMO & TILLÄGG --
@@ -148,11 +160,20 @@ export default function TestCheckoutPage() {
   const [ctaColor, setCtaColor] = useState<'green' | 'orange' | 'red' | 'low-contrast'>('green');
   const [ctaText, setCtaText] = useState<'complete' | 'pay' | 'confirm'>('complete');
 
+  // Interactive Live Preview States (För att användaren ska kunna klicka i preview)
+  const [userAddedGiftWrap, setUserAddedGiftWrap] = useState(false);
+  const [userAddedInsurance, setUserAddedInsurance] = useState(false);
+  const [userAddedMessage, setUserAddedMessage] = useState(false);
+
   // -- STATE: ORDER CONFIRMATION --
   const [hasUpsell, setHasUpsell] = useState(true);
+  const [ocShowAccountCreation, setOcShowAccountCreation] = useState(true);
+  const [ocAccountCtaText, setOcAccountCtaText] = useState('Kom in i värmen');
   const [showNextPurchaseDiscount, setShowNextPurchaseDiscount] = useState(true);
   const [showSocialShare, setShowSocialShare] = useState(false);
   const [showReferralProgram, setShowReferralProgram] = useState(false);
+  const [showOrderTracking, setShowOrderTracking] = useState(true);
+  const [ocShowReturnButton, setOcShowReturnButton] = useState(false);
 
   // -- STATE: RETURN PAGE --
   const [returnWindow, setReturnWindow] = useState<'14' | '30' | '100' | '365'>('30');
@@ -160,6 +181,7 @@ export default function TestCheckoutPage() {
   const [returnMethod, setReturnMethod] = useState<'qr' | 'print' | 'both'>('both');
   const [allowExchange, setAllowExchange] = useState(true);
   const [returnReason, setReturnReason] = useState('');
+  const [returnItemScope, setReturnItemScope] = useState<'all' | 'specific'>('all');
   
   // -- STATE: EXPORT --
   const [exportName, setExportName] = useState('');
@@ -167,16 +189,7 @@ export default function TestCheckoutPage() {
   const [exportCompany, setExportCompany] = useState('');
 
   // Dynamisk valuta
-  const getCurrency = (country: string) => {
-    switch(country) {
-      case 'NO': return 'NOK';
-      case 'DK': return 'DKK';
-      case 'FI': return '€';
-      default: return 'kr';
-    }
-  };
-  const currency = getCurrency(customerCountry);
-
+  const currency = customerCountry === 'NO' ? 'NOK' : customerCountry === 'DK' ? 'DKK' : customerCountry === 'FI' ? '€' : 'kr';
   const isRuralPostalCode = postalCode.startsWith('8') || postalCode.startsWith('9');
   
   const availableCarriers = selectedCarriers.filter(carrierId => {
@@ -195,29 +208,28 @@ export default function TestCheckoutPage() {
     return true;
   });
 
-  // Synkronisera sorteringen i Frakt-boxen
+  // Synkronisera sorteringen
   const finalShippingOrder = shippingOrder.filter(id => availableDeliveryOptions.includes(id));
-  availableDeliveryOptions.forEach(id => {
-    if (!finalShippingOrder.includes(id)) finalShippingOrder.push(id);
-  });
+  availableDeliveryOptions.forEach(id => { if (!finalShippingOrder.includes(id)) finalShippingOrder.push(id); });
 
-  // Synkronisera sorteringen i Betal-boxen
-  const finalPaymentOrder = paymentOrder.filter(id => selectedPaymentMethods.includes(id));
-  selectedPaymentMethods.forEach(id => {
-    if (!finalPaymentOrder.includes(id)) finalPaymentOrder.push(id);
-  });
+  // Hantera Betalmetoder baserat på vald Kassa (Player)
+  const activePlayer = PLAYERS.find(p => p.slug === selectedPlayer);
+  let availablePaymentMethods = [...selectedPaymentMethods];
+  
+  if (activePlayer?.isCompleteCheckout) {
+    availablePaymentMethods = availablePaymentMethods.filter(m => !PLAYERS.find(p => p.slug === m));
+    availablePaymentMethods.unshift(activePlayer.slug); 
+  }
+
+  const finalPaymentOrder = paymentOrder.filter(id => availablePaymentMethods.includes(id));
+  availablePaymentMethods.forEach(id => { if (!finalPaymentOrder.includes(id)) finalPaymentOrder.push(id); });
+
 
   const actualShippingCost = isRuralPostalCode ? baseShippingCost + 50 : baseShippingCost;
 
   // -- LOGIK & BERÄKNINGAR --
   const getIndustryBenchmark = (industry: string) => {
-    switch(industry) {
-      case 'elektronik': return 0.04; 
-      case 'kläder': return 0.07;
-      case 'hem': return 0.12; 
-      case 'mat': return 0.18;
-      default: return 0.10;
-    }
+    switch(industry) { case 'elektronik': return 0.04; case 'kläder': return 0.07; case 'hem': return 0.12; case 'mat': return 0.18; default: return 0.10; }
   };
 
   const calculateAOV = () => {
@@ -225,9 +237,10 @@ export default function TestCheckoutPage() {
     if (showProductDiscount) aov = Math.round(aov * (1 - discountRate / 100));
     if (hasUpsell) aov += 199; 
     if (hasCrossSell) aov += 79; 
-    if (addGiftWrapping) aov += 49;
-    if (addInsurance) aov += 19;
-    if (addGiftMessage) aov += 29;
+    
+    if (userAddedGiftWrap && addGiftWrapping) aov += 49;
+    if (userAddedInsurance && addInsurance) aov += 19;
+    if (userAddedMessage && addGiftMessage) aov += 29;
 
     if (freeShippingThreshold > 0 && aov < freeShippingThreshold) {
       const missing = freeShippingThreshold - aov;
@@ -240,20 +253,27 @@ export default function TestCheckoutPage() {
 
   const calculateCLV = () => {
     let aov = calculateAOV();
-    let purchasesPerYear = 2.0; 
+    let purchasesPerYear = 1.5; 
     
-    if (enableSubscription && selectedProduct.consumable) purchasesPerYear = 8; 
-    else if (!isGuestCheckout) purchasesPerYear += 1.0; 
+    if (enableSubscription && selectedProduct.consumable) purchasesPerYear += 4; 
+    else if (!isGuestCheckout) purchasesPerYear += 0.8; 
     
-    if (rememberShipping) purchasesPerYear += 0.5; 
-    if (showNextPurchaseDiscount) purchasesPerYear += 0.4;
-    if (showReferralProgram) purchasesPerYear += 0.3;
+    if (rememberShipping) purchasesPerYear += 0.4; 
+    if (showNextPurchaseDiscount) purchasesPerYear += 0.3;
+    if (showReferralProgram) purchasesPerYear += 0.2;
     
-    if (returnCost === 'free') purchasesPerYear += 0.3;
-    if (returnMethod === 'qr' || returnMethod === 'both') purchasesPerYear += 0.2;
-    if (returnWindow === '100' || returnWindow === '365') purchasesPerYear += 0.2;
+    if (returnCost === 'free') purchasesPerYear += 0.2;
+    if (returnMethod === 'qr' || returnMethod === 'both') purchasesPerYear += 0.1;
+    if (returnWindow === '100' || returnWindow === '365') purchasesPerYear += 0.1;
 
     return Math.round(aov * purchasesPerYear);
+  };
+
+  const calculateCACReduction = () => {
+    let reduction = 0;
+    if (showReferralProgram) reduction += 12; 
+    if (showSocialShare) reduction += 3; 
+    return reduction;
   };
 
   // CHECKOUT METRICS
@@ -301,8 +321,8 @@ export default function TestCheckoutPage() {
     if (allowMapSelection && availableDeliveryOptions.includes('point')) score += 4; 
     if (preselectShipping) score += 2;
     if (rememberShipping) score += 4; 
-    if (ecoSvanen || ecoKompenserad || ecoGreen) score += 2; // Lite feel-good konvertering
-    if (showShippingReviews) score += 2; // Ökar tillit till frakten
+    if (ecoSvanen || ecoKompenserad || ecoGreen) score += 2; 
+    if (showShippingReviews) score += 2; 
 
     const marketKey = customerCountry.toLowerCase() as 'se' | 'no' | 'dk' | 'fi';
     let carrierTrustScore = 0;
@@ -313,10 +333,13 @@ export default function TestCheckoutPage() {
     score += Math.min(carrierTrustScore, 8); 
 
     let paymentTrustScore = 0;
-    selectedPaymentMethods.forEach(mid => {
+    availablePaymentMethods.forEach(mid => {
       const m = PAYMENT_METHODS.find(x => x.id === mid);
       if (m && m.conversionImpact[marketKey]) paymentTrustScore += m.conversionImpact[marketKey];
     });
+    if (activePlayer && activePlayer.marketImpact && activePlayer.marketImpact[marketKey]) {
+        paymentTrustScore += activePlayer.marketImpact[marketKey];
+    }
     score += Math.min(paymentTrustScore, 12); 
 
     if (showLowStockWarning) score += 3;
@@ -330,7 +353,9 @@ export default function TestCheckoutPage() {
 
     if (hasCrossSell) score -= 2; 
     if (showEuReturnButton) score -= 5; 
+    
     if (addInsurance) score -= 1; 
+    if (addGiftWrapping) score -= 1;
     if (showPackagingOptions) score += 1; 
 
     if (ctaColor === 'green') score += 2;
@@ -358,37 +383,48 @@ export default function TestCheckoutPage() {
     return Math.min(retention, 95);
   };
 
-  const calculateReturningCustomer = () => {
-    let rate = 25;
-    if (showNextPurchaseDiscount) rate += 5;
-    if (showReferralProgram) rate += 3;
-    if (returnCost === 'free') rate += 4;
-    return Math.min(rate, 60);
-  };
-
-  const calculateSupportTickets = () => {
-    let tickets = 5;
-    if (returnCost === 'free') tickets += 3;
-    if (returnWindow === '365') tickets += 2;
-    if (allowExchange) tickets -= 1;
-    return Math.max(tickets, 2);
-  };
-
-  const getSectionDescription = (sectionId: string) => {
+  // NY HOVER-LOGIK FÖR TOOLTIPS (Returnerar ett objekt med desc, impact och source)
+  const getSectionTooltipData = (sectionId: string) => {
     switch (sectionId) {
-      case 'expressWallets': return 'Expresskassor hoppar över formulär, +8% på mobil om placerad först.';
-      case 'customer': return hasLightningAutofill ? 'Blixtsnabb autofill (E-post+Postnummer). Oerhört effektivt.' : addressAutocomplete ? 'Autofill/Sök aktivt. Minskar friktion.' : 'Manuell inmatning ökar felmarginaler.';
-      case 'guest': return isGuestCheckout ? 'Gästutcheckning. Minskar avhopp rejält.' : 'Tvingat konto skapar extrem friktion.';
-      case 'shipping': return rememberShipping ? 'Tidigare fraktval ihågkommet! Snabbspår för kunden.' : `${availableDeliveryOptions.length} tillgängliga alternativ för ${postalCode} (${selectedProduct.weight}kg).`;
-      case 'payment': return 'Erbjuder du rätt betalsätt för din marknad?';
-      case 'review': return `Driv in merförsäljning med fri-frakt trösklar.`;
-      case 'deliveryTimer': return 'Faktisk brådska konverterar bäst.';
-      case 'trustBadge': return 'Bygger förtroende och minskar tvekan.';
-      case 'packaging': return 'Ökar AOV och bygger varumärke.';
-      case 'crossSell': return 'Att sälja tillbehör ökar AOV, men lägger till ett distraherande element i kassan.';
-      case 'giftWrapping': return 'Grymt för presentperioder. Höjer AOV enkelt.';
-      case 'giftMessage': return 'Skapar en emotionell koppling och adderar mervärde till köpet.';
-      default: return 'En del av checkout-flödet.';
+      case 'expressWallets': 
+        return { desc: 'Expresskassor hoppar över formulär helt och hållet.', impact: '+8% på mobil om placerad först', source: 'Baymard Institute & Stripe' };
+      case 'customer': 
+        if (hasLightningAutofill) return { desc: 'Blixtsnabb autofill med endast E-post+Postnummer.', impact: '+9% konvertering', source: 'Klarna / Walley Insights' };
+        if (addressAutocomplete) return { desc: 'Autofyll via Google Maps-sökning. Minskar friktion.', impact: '+4% konvertering', source: 'Google Maps Platform Data' };
+        return { desc: 'Manuell inmatning av adress.', impact: '-5% konvertering (ökad friktion)', source: 'Baymard Institute' };
+      case 'guest': 
+        if (isGuestCheckout) return { desc: 'Gästutcheckning tillåter köp utan konto.', impact: '+12% konvertering', source: 'Baymard (Top 2 reason for abandonment)' };
+        return { desc: 'Tvingat konto skapar extrem friktion.', impact: '-18% konvertering', source: 'Baymard Institute' };
+      case 'shipping': 
+        return { desc: rememberShipping ? 'Tidigare fraktval är redan ihågkommet!' : `${availableDeliveryOptions.length} tillgängliga alternativ för ${postalCode}.`, impact: 'Valfrihet ger upp till +10%', source: 'nShift / Ingrid Checkout Data' };
+      case 'payment': 
+        return { desc: `Visar betalningsalternativ för ${customerCountry}.`, impact: 'Lokala betalsätt ger upp till +12%', source: 'Svea / Klarna / Adyen Reports' };
+      case 'review': 
+        return { desc: 'Tydlig summering av kostnader och eventuella rabatter.', impact: 'Dolda avgifter sänker med -48%', source: 'Baymard Institute' };
+      case 'deliveryTimer': 
+        return { desc: 'Tydlig nytta: Beställ inom X tid för snabb frakt.', impact: '+3% konvertering', source: 'CXL / VWO Ecommerce Studies' };
+      case 'trustBadge': 
+        return { desc: 'Bygger förtroende och minskar tvekan hos nya kunder.', impact: '+3% konvertering', source: 'Trustpilot & Spiegel Research' };
+      case 'packaging': 
+        return { desc: 'Erbjud miljöval eller diskret förpackning.', impact: '+1% konv, ökad kundnöjdhet', source: 'PostNord E-handelsbarometern' };
+      case 'crossSell': 
+        return { desc: 'Rekommenderar tillbehör innan kassan slutförs.', impact: `+10% AOV, men -2% Konvertering`, source: 'Shopify / McKinsey' };
+      case 'giftWrapping': 
+        return { desc: 'Erbjuder lyxig inslagning för presenter.', impact: 'Ökar AOV under högtider', source: 'BigCommerce Data' };
+      case 'giftMessage': 
+        return { desc: 'Lägg till en personlig hälsning.', impact: 'Ökar AOV och emotionell koppling', source: 'Bain & Company' };
+      case 'insurance':
+        return { desc: 'Låter kunden teckna extra skydd för leveransen.', impact: '-1% Konv (friktion), men ökar marginal', source: 'Qliro / E-commerce trends' };
+      case 'lowStock': 
+        return { desc: 'Visar att produkten snart är slutsåld.', impact: '+3% konv (Brådska/Urgency)', source: 'CXL / Marcus Taylor' };
+      case 'cartTimer': 
+        return { desc: 'Visar att varukorgen är reserverad i X minuter.', impact: '+1% konv (Stress)', source: 'Baymard Institute' };
+      case 'socialProof': 
+        return { desc: 'Visar hur många som tittar eller har köpt nyligen.', impact: '+2% konvertering', source: 'Booking.com / Agoda UX Patterns' };
+      case 'euReturn':
+        return { desc: 'Lagenligt krav (EU 2026) att visa ångerrätt i kassan.', impact: '-5% konv (Skapar köp-tvekan)', source: 'EU Consumer Rights Directive' };
+      default: 
+        return { desc: 'En del av checkout-flödet.', impact: 'Neutral', source: 'Standard E-handel' };
     }
   };
 
@@ -440,6 +476,7 @@ export default function TestCheckoutPage() {
   const currentCLV = calculateCLV();
   const currentReturnRate = calculateReturnRate();
   const currentReturnRetention = calculateReturnRetention();
+  const currentCACReduction = calculateCACReduction();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 pb-20">
@@ -461,7 +498,6 @@ export default function TestCheckoutPage() {
               <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap hidden sm:block">Live Preview</h2>
               <div className="flex items-center gap-4 w-full sm:w-auto">
                 
-                {/* Device Toggle */}
                 <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg shrink-0">
                   <button onClick={() => setDeviceView('desktop')} className={`p-1.5 rounded-md transition-colors ${deviceView === 'desktop' ? 'bg-white dark:bg-slate-700 shadow-sm text-brand-600' : 'text-slate-400 hover:text-slate-600'}`}>
                     <Monitor size={18} />
@@ -473,7 +509,6 @@ export default function TestCheckoutPage() {
 
                 <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 hidden sm:block" />
 
-                {/* View Tabs */}
                 <div className="flex gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-lg w-full sm:w-auto overflow-x-auto hide-scrollbar">
                   {(['checkout', 'orderConfirmation', 'return', 'export'] as const).map(view => (
                     <button
@@ -493,9 +528,7 @@ export default function TestCheckoutPage() {
               </div>
             </div>
 
-            {/* Enclosing container for Mobile/Desktop Frame */}
             <div className={`transition-all duration-500 mx-auto bg-slate-950 ${deviceView === 'mobile' ? 'w-[375px] rounded-[3rem] border-[14px] border-slate-900 shadow-2xl overflow-hidden ring-1 ring-slate-800' : 'w-full rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden'}`}>
-              
               <div className="bg-white dark:bg-slate-800 h-full w-full relative">
                 
                 {/* --- VY: CHECKOUT --- */}
@@ -518,6 +551,9 @@ export default function TestCheckoutPage() {
                             {layoutOrder.map((sectionId, index) => {
                               const section = SECTIONS.find(s => s.id === sectionId);
                               if (!section) return null;
+                              
+                              const tooltipInfo = getSectionTooltipData(sectionId);
+
                               return (
                                 <Draggable key={section.id} draggableId={section.id} index={index}>
                                   {(provided, snapshot) => (
@@ -537,10 +573,16 @@ export default function TestCheckoutPage() {
                                           <div className="flex items-center gap-2 mb-3">
                                             <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm sm:text-base">{section.title}</h3>
                                             
+                                            {/* NY STRUKTURERAD TOOLTIP MED DATA! */}
                                             <div className="group/tooltip relative inline-flex items-center justify-center">
                                               <HelpCircle size={14} className="text-slate-400 hover:text-brand-500 transition-colors cursor-help" />
-                                              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 p-3 bg-slate-900 text-white text-xs leading-relaxed rounded-lg shadow-2xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all text-center pointer-events-none z-[100] border border-slate-700">
-                                                {getSectionDescription(sectionId)}
+                                              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 p-3 bg-slate-900 text-white text-xs leading-relaxed rounded-lg shadow-2xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all text-left pointer-events-none z-[100] border border-slate-700">
+                                                <div className="font-semibold text-brand-400 mb-1">{section.title}</div>
+                                                <p className="mb-2 text-slate-300">{tooltipInfo.desc}</p>
+                                                <div className="flex flex-col gap-1 mt-2 pt-2 border-t border-slate-700/50">
+                                                  <span className={`font-bold ${tooltipInfo.impact.includes('-') && !tooltipInfo.impact.includes('+') ? 'text-red-400' : 'text-green-400'}`}>{tooltipInfo.impact}</span>
+                                                  <span className="text-[10px] text-slate-500 italic">Källa: {tooltipInfo.source}</span>
+                                                </div>
                                                 <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
                                               </div>
                                             </div>
@@ -660,7 +702,6 @@ export default function TestCheckoutPage() {
                                                                   <span className="text-sm font-semibold text-slate-900 dark:text-white">{isFree ? '0 kr' : `${actualShippingCost} kr`}</span>
                                                                 </div>
                                                               </div>
-                                                              {/* ECO BADGES OM DET ÄR AKTIVT OCH MAN VALT ATT VISA DEM */}
                                                               {(ecoSvanen || ecoKompenserad || ecoGreen) && (
                                                                 <div className="flex gap-1.5 mt-2 ml-10">
                                                                   {ecoSvanen && <span className="text-[9px] font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded flex items-center gap-1"><Leaf size={10}/> Svanenmärkt</span>}
@@ -716,7 +757,7 @@ export default function TestCheckoutPage() {
                                                     <div className="font-semibold text-slate-800 dark:text-slate-200 text-sm">Premium Tillbehör</div>
                                                     <div className="mt-2 flex items-center justify-between">
                                                       <div className="flex items-center gap-2">
-                                                        <span className="font-bold text-slate-900 dark:text-white">79 kr</span>
+                                                        <span className="font-bold text-slate-900 dark:text-white">79 {currency}</span>
                                                       </div>
                                                       <button className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-md text-xs font-medium hover:border-brand-500 transition-colors shadow-sm">Lägg till</button>
                                                     </div>
@@ -728,20 +769,19 @@ export default function TestCheckoutPage() {
                                             {sectionId === 'payment' && (
                                               <>
                                                 <div className="flex items-center gap-3 mb-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
-                                                  <div className="w-10 h-6 flex items-center justify-center bg-white dark:bg-slate-800 rounded border border-slate-100 dark:border-slate-600 px-1">
+                                                  <div className="w-12 h-8 flex items-center justify-center bg-white dark:bg-slate-800 rounded border border-slate-100 dark:border-slate-600 px-1 overflow-hidden shrink-0">
                                                     {(() => {
-                                                      // const player = players?.find(p => p.slug === selectedPlayer);
-                                                      // Om det är Kustom/Stripe etc saknas logo, visa namnet i text eller icon
-                                                      if (selectedPlayer === 'kustom') return <span className="text-[8px] font-bold">KUSTOM</span>;
-                                                      if (selectedPlayer === 'stripe') return <span className="text-[8px] font-bold text-indigo-500">STRIPE</span>;
-                                                      if (selectedPlayer === 'qliro') return <span className="text-[10px] font-bold text-slate-800">Qliro</span>;
-                                                      if (selectedPlayer === 'svea') return <span className="text-[10px] font-bold text-blue-600">SVEA</span>;
-                                                      if (selectedPlayer === 'walley') return <span className="text-[10px] font-bold text-slate-800">walley</span>;
-                                                      return <CreditCard size={14} className="text-slate-400" />;
+                                                      const player = PLAYERS.find(p => p.slug === selectedPlayer);
+                                                      if (selectedPlayer === 'kustom') return <span className="text-[9px] font-bold text-slate-600">KUSTOM</span>;
+                                                      if (selectedPlayer === 'stripe') return <span className="text-[10px] font-bold text-indigo-500">STRIPE</span>;
+                                                      if (selectedPlayer === 'qliro') return <span className="text-[11px] font-bold text-slate-800">Qliro</span>;
+                                                      if (selectedPlayer === 'svea') return <span className="text-[11px] font-bold text-blue-600">SVEA</span>;
+                                                      if (selectedPlayer === 'walley') return <span className="text-[11px] font-bold text-slate-800">walley</span>;
+                                                      return player?.logoUrl ? <img src={player.logoUrl} alt={player.name} className="h-4 object-contain" /> : <CreditCard size={14} className="text-slate-400" />;
                                                     })()}
                                                   </div>
                                                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                                                    Betalning via {selectedPlayer}
+                                                    Betalning via {PLAYERS.find(p => p.slug === selectedPlayer)?.name || 'Kassa'}
                                                   </span>
                                                 </div>
                                                 
@@ -750,11 +790,20 @@ export default function TestCheckoutPage() {
                                                     <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
                                                       {finalPaymentOrder.map((methodId, idx) => {
                                                         const method = PAYMENT_METHODS.find(m => m.id === methodId);
-                                                        if (!method) return null;
-                                                        const marketKey = customerCountry.toLowerCase() as keyof typeof method.conversionImpact;
-                                                        const impact = method.conversionImpact[marketKey];
+                                                        const isPlayerMethod = !method;
+                                                        
+                                                        const nameToDisplay = isPlayerMethod ? PLAYERS.find(p => p.slug === methodId)?.name : method?.name;
+                                                        const logoToDisplay = isPlayerMethod ? PLAYERS.find(p => p.slug === methodId)?.logoUrl : method?.logo;
+                                                        const iconToDisplay = isPlayerMethod ? <CreditCard size={18} /> : method?.icon;
+
+                                                        if (!nameToDisplay) return null;
+
+                                                        const marketKey = customerCountry.toLowerCase() as keyof typeof CARD_PROVIDERS[0]['conversionImpact'];
+                                                        let impact = 0;
+                                                        if (method) impact = method.conversionImpact[marketKey];
+
                                                         return (
-                                                          <Draggable key={method.id} draggableId={method.id} index={idx}>
+                                                          <Draggable key={methodId} draggableId={methodId} index={idx}>
                                                             {(provided, snapshot) => (
                                                               <div 
                                                                 ref={provided.innerRef} 
@@ -763,13 +812,16 @@ export default function TestCheckoutPage() {
                                                                 className={`flex items-center p-3 bg-white dark:bg-slate-800 rounded-lg border ${snapshot.isDragging ? 'border-brand-500 shadow-lg z-50' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'} transition-all group`}
                                                               >
                                                                 <div className="mr-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 cursor-grab active:cursor-grabbing"><GripVertical size={16} /></div>
-                                                                <div className="w-5 h-5 rounded-full border-2 border-slate-300 dark:border-slate-600 mr-3" />
-                                                                {method.logo ? (
-                                                                  <FallbackImage src={method.logo} alt={method.name} className="h-5 w-auto max-w-[40px] object-contain mr-3" />
+                                                                <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${idx === 0 ? 'border-brand-500' : 'border-slate-300 dark:border-slate-600'}`}>
+                                                                  {idx === 0 && <div className="w-2.5 h-2.5 rounded-full bg-brand-500" />}
+                                                                </div>
+                                                                
+                                                                {logoToDisplay ? (
+                                                                  <FallbackImage src={logoToDisplay} alt={nameToDisplay} className="h-5 w-auto max-w-[40px] object-contain mr-3" />
                                                                 ) : (
-                                                                  <div className="w-8 flex justify-center text-slate-400 mr-3">{method.icon}</div>
+                                                                  <div className="w-8 flex justify-center text-slate-400 mr-3">{iconToDisplay}</div>
                                                                 )}
-                                                                <span className="text-sm font-medium text-slate-700 dark:text-slate-200 flex-1">{method.name}</span>
+                                                                <span className="text-sm font-medium text-slate-700 dark:text-slate-200 flex-1">{nameToDisplay}</span>
                                                                 {impact !== 0 && (
                                                                   <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${impact > 0 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
                                                                     {impact > 0 ? '+' : ''}{impact}%
@@ -811,7 +863,7 @@ export default function TestCheckoutPage() {
                                                   <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/30 rounded-lg mb-4">
                                                     <Tag size={18} className="text-green-600 dark:text-green-500 shrink-0" />
                                                     <div>
-                                                      <div className="text-sm font-semibold text-green-900 dark:text-green-100">{discountText}</div>
+                                                      <div className="text-sm font-semibold text-green-900 dark:text-green-100">Köp nu och spara</div>
                                                       <div className="text-xs text-green-700 dark:text-green-400 mt-0.5">Spara {discountRate}% på din beställning</div>
                                                     </div>
                                                   </div>
@@ -871,6 +923,26 @@ export default function TestCheckoutPage() {
                                                       </div>
                                                     )}
 
+                                                    {/* User Interacted Totals (Giftwrap etc) */}
+                                                    {userAddedGiftWrap && addGiftWrapping && (
+                                                      <div className="flex justify-between text-sm text-purple-600 dark:text-purple-400">
+                                                        <span>Presentinslagning</span>
+                                                        <span>49 {currency}</span>
+                                                      </div>
+                                                    )}
+                                                    {userAddedInsurance && addInsurance && (
+                                                      <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
+                                                        <span>Försäkring</span>
+                                                        <span>19 {currency}</span>
+                                                      </div>
+                                                    )}
+                                                    {userAddedMessage && addGiftMessage && (
+                                                      <div className="flex justify-between text-sm text-pink-600 dark:text-pink-400">
+                                                        <span>Presentkort</span>
+                                                        <span>29 {currency}</span>
+                                                      </div>
+                                                    )}
+
                                                     <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
                                                       <span>Frakt</span>
                                                       <span>{(freeShippingThreshold > 0 && currentAOV >= freeShippingThreshold) ? `0 ${currency}` : `${actualShippingCost} ${currency}`}</span>
@@ -883,7 +955,7 @@ export default function TestCheckoutPage() {
                                                     )}
                                                     <div className="flex justify-between font-bold text-lg text-slate-900 dark:text-white mt-2 pt-2 border-t border-slate-200 dark:border-slate-700">
                                                       <span>Att betala</span>
-                                                      <span>{(freeShippingThreshold > 0 && currentAOV >= freeShippingThreshold) ? currentAOV : currentAOV + actualShippingCost} {currency}</span>
+                                                      <span>{currentAOV + ((freeShippingThreshold > 0 && currentAOV >= freeShippingThreshold) ? 0 : actualShippingCost)} {currency}</span>
                                                     </div>
                                                   </div>
                                                 </div>
@@ -922,28 +994,41 @@ export default function TestCheckoutPage() {
 
                                             {/* INSURANCE/GIFT/RETURN BLOCKS */}
                                             {sectionId === 'insurance' && addInsurance && (
-                                              <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg">
-                                                <Shield size={20} className="text-slate-500 shrink-0" />
-                                                <div className="flex-1"><div className="text-sm font-semibold text-slate-800 dark:text-slate-200">Leveransförsäkring (+19 kr)</div></div>
-                                                <div className="w-5 h-5 rounded border-2 border-slate-300 dark:border-slate-600" />
+                                              <div onClick={() => setUserAddedInsurance(!userAddedInsurance)} className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer ${userAddedInsurance ? 'bg-slate-100 dark:bg-slate-800 border-slate-400 shadow-sm' : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 hover:bg-slate-100'}`}>
+                                                <Shield size={20} className={userAddedInsurance ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400'} shrink-0 />
+                                                <div className="flex-1"><div className={`text-sm font-semibold ${userAddedInsurance ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-300'}`}>Leveransförsäkring (+19 {currency})</div></div>
+                                                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${userAddedInsurance ? 'border-slate-800 bg-slate-800 dark:border-white dark:bg-white' : 'border-slate-300 dark:border-slate-600'}`}>
+                                                  {userAddedInsurance && <CheckCircle2 size={14} className="text-white dark:text-slate-900" />}
+                                                </div>
                                               </div>
                                             )}
 
                                             {sectionId === 'giftWrapping' && addGiftWrapping && (
-                                              <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800/30 rounded-lg">
-                                                <Package size={20} className="text-purple-600 shrink-0" />
-                                                <div className="flex-1"><div className="text-sm font-semibold text-purple-900 dark:text-purple-100">Presentinslagning (+49 kr)</div></div>
-                                                <div className="w-5 h-5 rounded border-2 border-purple-300 dark:border-purple-700" />
+                                              <div onClick={() => setUserAddedGiftWrap(!userAddedGiftWrap)} className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer ${userAddedGiftWrap ? 'bg-purple-50 dark:bg-purple-900/30 border-purple-400 shadow-sm' : 'bg-purple-50/50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800/30 hover:bg-purple-50'}`}>
+                                                <Package size={20} className={userAddedGiftWrap ? 'text-purple-600' : 'text-purple-400'} shrink-0 />
+                                                <div className="flex-1"><div className={`text-sm font-semibold ${userAddedGiftWrap ? 'text-purple-900 dark:text-purple-100' : 'text-purple-800/70 dark:text-purple-300/70'}`}>Presentinslagning (+49 {currency})</div></div>
+                                                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${userAddedGiftWrap ? 'border-purple-600 bg-purple-600' : 'border-purple-300 dark:border-purple-700'}`}>
+                                                  {userAddedGiftWrap && <CheckCircle2 size={14} className="text-white" />}
+                                                </div>
                                               </div>
                                             )}
                                             
                                             {sectionId === 'giftMessage' && addGiftMessage && (
-                                              <div className="flex items-center gap-3 p-3 bg-pink-50 dark:bg-pink-900/10 border border-pink-200 dark:border-pink-800/30 rounded-lg">
-                                                <DollarSign size={20} className="text-pink-600 shrink-0" />
-                                                <div className="flex-1"><div className="text-sm font-semibold text-pink-900 dark:text-pink-100">Skriv ett presentkort (+29 kr)</div></div>
+                                              <div onClick={() => setUserAddedMessage(!userAddedMessage)} className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer ${userAddedMessage ? 'bg-pink-50 dark:bg-pink-900/30 border-pink-400 shadow-sm' : 'bg-pink-50/50 dark:bg-pink-900/10 border-pink-200 dark:border-pink-800/30 hover:bg-pink-50'}`}>
+                                                <DollarSign size={20} className={userAddedMessage ? 'text-pink-600' : 'text-pink-400'} shrink-0 />
+                                                <div className="flex-1"><div className={`text-sm font-semibold ${userAddedMessage ? 'text-pink-900 dark:text-pink-100' : 'text-pink-800/70 dark:text-pink-300/70'}`}>Skriv ett presentkort (+29 {currency})</div></div>
+                                                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${userAddedMessage ? 'border-pink-600 bg-pink-600' : 'border-pink-300 dark:border-pink-700'}`}>
+                                                  {userAddedMessage && <CheckCircle2 size={14} className="text-white" />}
+                                                </div>
                                               </div>
                                             )}
 
+                                            {sectionId === 'euReturn' && showEuReturnButton && (
+                                              <div className="flex items-center justify-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors">
+                                                <RefreshCw size={16} className="text-slate-500" />
+                                                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Ångra köp (14 dagar)</span>
+                                              </div>
+                                            )}
                                           </div>
                                         </div>
                                       </div>
@@ -989,6 +1074,33 @@ export default function TestCheckoutPage() {
                       <p className="text-slate-600 dark:text-slate-400">Orderbekräftelse är skickad till din e-post.</p>
                     </div>
 
+                    {showOrderTracking && (
+                      <div className="bg-white dark:bg-slate-800 rounded-xl p-5 mb-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <div className="flex items-center gap-3 mb-4">
+                          <PackageCheck className="text-brand-500" size={24} />
+                          <div className="font-semibold text-slate-900 dark:text-slate-100">Följ din leverans</div>
+                        </div>
+                        <div className="relative pt-4">
+                          <div className="absolute top-6 left-4 right-4 h-1 bg-slate-200 dark:bg-slate-700 rounded" />
+                          <div className="absolute top-6 left-4 w-1/3 h-1 bg-brand-500 rounded" />
+                          <div className="flex justify-between relative z-10">
+                            <div className="flex flex-col items-center gap-2">
+                              <div className="w-5 h-5 rounded-full bg-brand-500 text-white flex items-center justify-center"><CheckCircle2 size={12}/></div>
+                              <span className="text-[10px] font-bold text-slate-900 dark:text-white">Packas</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-2">
+                              <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-slate-800" />
+                              <span className="text-[10px] font-bold text-slate-400">På väg</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-2">
+                              <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-slate-800" />
+                              <span className="text-[10px] font-bold text-slate-400">Framme</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {hasUpsell && (
                       <div className="mb-6 p-5 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/10 border border-amber-200 dark:border-amber-800/50 rounded-2xl shadow-sm">
                         <div className="flex items-center gap-2 mb-3 text-amber-800 dark:text-amber-400 font-bold text-sm uppercase tracking-wide">
@@ -1010,26 +1122,12 @@ export default function TestCheckoutPage() {
                       </div>
                     )}
 
-                    <div className="bg-white dark:bg-slate-800 rounded-xl p-5 mb-6 border border-slate-200 dark:border-slate-700 shadow-sm">
-                      <div className="font-semibold text-slate-900 dark:text-slate-100 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2">Orderöversikt</div>
-                      <div className="flex items-start gap-4">
-                        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 flex-shrink-0 flex items-center justify-center">
-                          {selectedProduct.icon}
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-medium text-slate-800 dark:text-slate-200">{selectedProduct.name}</div>
-                          <div className="text-sm text-slate-600 dark:text-slate-400">{selectedProduct.price} {currency}</div>
-                          <div className="text-xs text-slate-500 mt-1">Antal: 1</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {isGuestCheckout && (
+                    {isGuestCheckout && ocShowAccountCreation && (
                       <div className="bg-slate-900 dark:bg-slate-800 rounded-xl p-6 text-white shadow-xl mb-6">
                         <div className="flex items-center gap-3 mb-4">
                           <div className="w-10 h-10 bg-brand-500/20 rounded-full flex items-center justify-center"><User size={20} className="text-brand-400" /></div>
                           <div>
-                            <div className="font-bold text-lg">Spara dina uppgifter</div>
+                            <div className="font-bold text-lg">{ocAccountCtaText}</div>
                             <div className="text-sm text-slate-300">Skapa konto med ett klick för smidigare köp.</div>
                           </div>
                         </div>
@@ -1043,7 +1141,7 @@ export default function TestCheckoutPage() {
                         
                         <div className="flex gap-2">
                           <input type="password" placeholder="Välj ett lösenord" className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500" />
-                          <button className="px-6 py-3 bg-brand-600 text-white rounded-lg text-sm font-bold hover:bg-brand-500 transition-colors">Skapa konto</button>
+                          <button className="px-6 py-3 bg-brand-600 text-white rounded-lg text-sm font-bold hover:bg-brand-500 transition-colors">Spara</button>
                         </div>
                       </div>
                     )}
@@ -1060,13 +1158,35 @@ export default function TestCheckoutPage() {
                       </div>
                     )}
 
+                    <div className="bg-white dark:bg-slate-800 rounded-xl p-5 mb-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+                      <div className="font-semibold text-slate-900 dark:text-slate-100 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2">Orderöversikt</div>
+                      <div className="flex items-start gap-4">
+                        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 flex-shrink-0 flex items-center justify-center">
+                          {selectedProduct.icon}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-medium text-slate-800 dark:text-slate-200">{selectedProduct.name}</div>
+                          <div className="text-sm text-slate-600 dark:text-slate-400">{selectedProduct.price} {currency}</div>
+                          <div className="text-xs text-slate-500 mt-1">Antal: 1</div>
+                        </div>
+                      </div>
+                    </div>
+
                     {showSocialShare && (
-                      <div className="text-center">
+                      <div className="text-center mb-6">
                         <div className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">Dela ditt köp</div>
                         <div className="flex justify-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-brand-100 hover:text-brand-600 cursor-pointer transition-colors"><Share2 size={18} /></div>
                         </div>
                       </div>
+                    )}
+
+                    {ocShowReturnButton && (
+                       <div className="text-center">
+                        <button onClick={() => setActiveView('return')} className="text-sm font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline underline-offset-4">
+                          Vill du ångra/returnera ditt köp? Klicka här.
+                        </button>
+                       </div>
                     )}
                   </div>
                 )}
@@ -1079,11 +1199,46 @@ export default function TestCheckoutPage() {
                         <RefreshCw size={36} className="text-slate-600 dark:text-slate-400" />
                       </div>
                       <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">Retur & Byte</h2>
-                      <p className="text-slate-600 dark:text-slate-400">Hantera din retur enkelt och smidigt helt digitalt.</p>
+                      <p className="text-slate-600 dark:text-slate-400">Välj vilka produkter du vill returnera.</p>
                     </div>
 
                     <div className="bg-white dark:bg-slate-800 rounded-xl p-5 mb-6 border border-slate-200 dark:border-slate-700 shadow-sm">
-                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Varför vill du returnera produkten?</label>
+                      <div className="font-semibold text-slate-900 dark:text-slate-100 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2 flex justify-between">
+                        <span>Din order (#19482)</span>
+                        <span className="text-sm font-normal text-brand-600">Välj {returnItemScope === 'specific' ? 'artiklar' : 'allt'}</span>
+                      </div>
+                      
+                      <label className="flex items-start gap-4 cursor-pointer group">
+                        <div className="pt-4">
+                          <input type="checkbox" checked={true} readOnly className="w-5 h-5 text-brand-600 rounded border-slate-300" />
+                        </div>
+                        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 flex-shrink-0 flex items-center justify-center group-hover:border-brand-300 transition-colors">
+                          {selectedProduct.icon}
+                        </div>
+                        <div className="flex-1 py-1">
+                          <div className="font-medium text-slate-800 dark:text-slate-200">{selectedProduct.name}</div>
+                          <div className="text-sm text-slate-500 mt-1">{selectedProduct.price} {currency}</div>
+                        </div>
+                      </label>
+
+                      {returnItemScope === 'specific' && hasUpsell && (
+                        <label className="flex items-start gap-4 cursor-pointer group mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50">
+                          <div className="pt-4">
+                            <input type="checkbox" className="w-5 h-5 text-brand-600 rounded border-slate-300" />
+                          </div>
+                          <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 flex-shrink-0 flex items-center justify-center group-hover:border-brand-300 transition-colors">
+                            <Package size={24} className="text-slate-400" />
+                          </div>
+                          <div className="flex-1 py-1">
+                            <div className="font-medium text-slate-800 dark:text-slate-200">Mystery Box (Upsell)</div>
+                            <div className="text-sm text-slate-500 mt-1">199 {currency}</div>
+                          </div>
+                        </label>
+                      )}
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-800 rounded-xl p-5 mb-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Varför vill du returnera?</label>
                       <select value={returnReason} onChange={(e) => setReturnReason(e.target.value)} className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white shadow-sm focus:ring-2 focus:ring-brand-500 outline-none">
                         <option value="">Välj en orsak...</option>
                         <option value="wrong-size">Fel storlek</option>
@@ -1098,10 +1253,10 @@ export default function TestCheckoutPage() {
                       <div className="bg-brand-50 dark:bg-brand-900/10 rounded-xl p-5 mb-6 border border-brand-200 dark:border-brand-800/50">
                         <div className="flex items-center gap-3 mb-2">
                           <ArrowRightLeft className="text-brand-600 dark:text-brand-400" size={20} />
-                          <h3 className="font-bold text-brand-900 dark:text-brand-100">Byt till en annan storlek?</h3>
+                          <h3 className="font-bold text-brand-900 dark:text-brand-100">Byt till en annan produkt?</h3>
                         </div>
                         <p className="text-sm text-brand-700 dark:text-brand-300 mb-4">Byten är alltid helt gratis och vi skickar den nya varan direkt.</p>
-                        <button className="w-full py-3 bg-brand-600 text-white rounded-lg font-semibold hover:bg-brand-500 transition-colors shadow-sm">Välj ny storlek (Gratis retur)</button>
+                        <button className="w-full py-3 bg-brand-600 text-white rounded-lg font-semibold hover:bg-brand-500 transition-colors shadow-sm">Välj ny vara (Gratis retur)</button>
                       </div>
                     )}
 
@@ -1227,11 +1382,11 @@ export default function TestCheckoutPage() {
                   </div>
                   <div>
                     <div className="text-[10px] font-bold uppercase tracking-widest text-green-300/70 mb-1">Återköpsgrad</div>
-                    <div className="text-2xl font-black text-white">{calculateReturningCustomer()}<span className="text-sm text-green-400/80 ml-1">%</span></div>
+                    <div className="text-2xl font-black text-white">{Math.round(25 + (showNextPurchaseDiscount ? 5 : 0) + (showReferralProgram ? 3 : 0) + (returnCost === 'free' ? 4 : 0))}<span className="text-sm text-green-400/80 ml-1">%</span></div>
                   </div>
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-green-300/70 mb-1">AOV Boost</div>
-                    <div className="text-2xl font-black text-white">+{currentAOV - selectedProduct.price}<span className="text-sm text-green-400/80 ml-1">{currency}</span></div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-green-300/70 mb-1">Sänkt CAC</div>
+                    <div className="text-2xl font-black text-white">-{currentCACReduction}<span className="text-sm text-green-400/80 ml-1">%</span></div>
                   </div>
                 </div>
               </div>
@@ -1256,7 +1411,7 @@ export default function TestCheckoutPage() {
                   </div>
                   <div>
                     <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Support / 100 ordrar</div>
-                    <div className="text-2xl font-black text-white">{calculateSupportTickets()}</div>
+                    <div className="text-2xl font-black text-white">{Math.round(5 + (returnCost === 'free' ? 3 : 0) + (returnWindow === '365' ? 2 : 0) + (allowExchange ? -1 : 0))}</div>
                   </div>
                 </div>
               </div>
@@ -1416,7 +1571,7 @@ export default function TestCheckoutPage() {
                             <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Leveranssätt & Checkout-Logik</h3>
                             <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-xl border border-slate-100 dark:border-slate-700/50 space-y-5">
                               <Toggle label="Förvälj billigaste frakt" description="Minskar kognitiv last om inget annat är valt" checked={preselectShipping} onChange={setPreselectShipping} />
-                              <Toggle label="Kom ihåg fraktval" description="Återkommande kunder får sitt skåp förvalt (+ CLV)" checked={rememberShipping} onChange={setRememberShipping} />
+                              <Toggle label="Kom ihåg fraktval" description="Återkommande kunder får sitt skåp förvalt (+ CLV/CVR)" checked={rememberShipping} onChange={setRememberShipping} />
                               <Toggle label="Visa omdömen för frakt" description="Stärker okända speditörer (ex. ★ 4.8)" checked={showShippingReviews} onChange={setShowShippingReviews} />
                               
                               <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
@@ -1527,7 +1682,7 @@ export default function TestCheckoutPage() {
                                 <div className="grid grid-cols-2 gap-4 pt-2">
                                   <div>
                                     <label className="block text-xs font-semibold text-slate-500 mb-2">Rabatt-copy</label>
-                                    <input type="text" value={discountText} onChange={(e) => setDiscountText(e.target.value)} className="w-full h-10 px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none" />
+                                    <input type="text" value="Köp nu och spara" readOnly className="w-full h-10 px-3 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none" />
                                   </div>
                                   <div>
                                     <label className="block text-xs font-semibold text-slate-500 mb-2">Rabattsats (%)</label>
@@ -1546,30 +1701,29 @@ export default function TestCheckoutPage() {
                             <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Checkout Motor / Kassa</h3>
                             <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-xl border border-slate-100 dark:border-slate-700/50">
                               <select value={selectedPlayer} onChange={(e) => setSelectedPlayer(e.target.value)} className="w-full h-12 px-4 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-base font-medium focus:ring-2 focus:ring-brand-500 outline-none">
-                                <option value="klarna">Klarna Checkout</option>
-                                <option value="qliro">Qliro</option>
-                                <option value="svea">Svea Checkout</option>
-                                <option value="walley">Walley Checkout</option>
-                                <option value="kustom">Kustom (Egenbyggd kassa)</option>
-                                <option value="adyen">Adyen Checkout</option>
-                                <option value="stripe">Stripe</option>
+                                {PLAYERS.map(p => <option key={p.slug} value={p.slug}>{p.name}</option>)}
                               </select>
-                              <p className="text-xs text-slate-500 mt-3">Olika providers har olika marknadsförtroende beroende på land.</p>
+                              <p className="text-xs text-slate-500 mt-3">Om du väljer en "Complete Checkout" (ex. Klarna/Walley) agerar de primär betalmetod automatiskt.</p>
                             </div>
                           </div>
 
                           <div>
                             <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Lokala Betalsätt</h3>
                             <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-xl border border-slate-100 dark:border-slate-700/50 grid grid-cols-1 gap-3">
-                              {PAYMENT_METHODS.map((method) => (
-                                <label key={method.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedPaymentMethods.includes(method.id) ? 'bg-white dark:bg-slate-800 border-brand-500 shadow-sm ring-1 ring-brand-500' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
-                                  <input type="checkbox" checked={selectedPaymentMethods.includes(method.id)} onChange={(e) => { if (e.target.checked) setSelectedPaymentMethods([...selectedPaymentMethods, method.id]); else setSelectedPaymentMethods(selectedPaymentMethods.filter(id => id !== method.id)); }} className="w-4 h-4 text-brand-600 rounded border-slate-300" />
-                                  {method.logo ? <FallbackImage src={method.logo} alt={method.name} className="h-6 w-12 object-contain" /> : <div className="w-12 flex justify-center text-slate-400">{method.icon}</div>}
-                                  <div className="flex-1">
-                                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">{method.name}</span>
-                                  </div>
-                                </label>
-                              ))}
+                              {PAYMENT_METHODS.map((method) => {
+                                // Göm valbara metoder om de har samma namn som den kompletta checkout-motorn vi just valde
+                                if (activePlayer?.isCompleteCheckout && activePlayer.slug === method.id) return null;
+                                
+                                return (
+                                  <label key={method.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedPaymentMethods.includes(method.id) ? 'bg-white dark:bg-slate-800 border-brand-500 shadow-sm ring-1 ring-brand-500' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
+                                    <input type="checkbox" checked={selectedPaymentMethods.includes(method.id)} onChange={(e) => { if (e.target.checked) setSelectedPaymentMethods([...selectedPaymentMethods, method.id]); else setSelectedPaymentMethods(selectedPaymentMethods.filter(id => id !== method.id)); }} className="w-4 h-4 text-brand-600 rounded border-slate-300" />
+                                    {method.logo ? <FallbackImage src={method.logo} alt={method.name} className="h-6 w-12 object-contain" /> : <div className="w-12 flex justify-center text-slate-400">{method.icon}</div>}
+                                    <div className="flex-1">
+                                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">{method.name}</span>
+                                    </div>
+                                  </label>
+                                )
+                              })}
                             </div>
                           </div>
 
@@ -1605,18 +1759,35 @@ export default function TestCheckoutPage() {
                       <div>
                         <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-500" /> Lojalitet & Kontoskapande (LTV)</h3>
                         <div className="space-y-5 bg-slate-50 dark:bg-slate-900/50 p-5 rounded-xl border border-slate-100 dark:border-slate-700/50">
-                          <Toggle label="Erbjud konto (om gäst)" description="Låt gästkunder spara lösenord för att få ett konto" checked={isGuestCheckout} onChange={() => {}} />
-                          <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                            <Toggle label="Rabatt vid kontoskapande" description="Ge incitament (ex 10%) att skapa konto direkt" checked={showNextPurchaseDiscount} onChange={setShowNextPurchaseDiscount} />
-                          </div>
+                          <Toggle label="Erbjud konto (om gäst)" description="Låt gästkunder spara lösenord för att få ett konto" checked={ocShowAccountCreation} onChange={setOcShowAccountCreation} />
+                          
+                          {ocShowAccountCreation && (
+                            <div className="pl-4 ml-2 border-l-2 border-slate-200 dark:border-slate-700 space-y-4">
+                              <Toggle label="Rabatt vid kontoskapande" description="Ge incitament (ex 10%) att skapa konto direkt" checked={showNextPurchaseDiscount} onChange={setShowNextPurchaseDiscount} />
+                              <div>
+                                <label className="block text-xs font-semibold text-slate-500 mb-2">Rubrik (Copy)</label>
+                                <select value={ocAccountCtaText} onChange={(e) => setOcAccountCtaText(e.target.value)} className="w-full h-10 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-sm px-3 focus:ring-2 focus:ring-brand-500 outline-none">
+                                  <option value="Spara dina uppgifter">Spara dina uppgifter (Klassisk)</option>
+                                  <option value="Kom in i värmen">Kom in i värmen (Välkomnande)</option>
+                                  <option value="Få rabatt som medlem">Få rabatt som medlem (Incitament)</option>
+                                  <option value="Följ din order enkelt">Följ din order enkelt (Nytta)</option>
+                                </select>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
 
                       <div>
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500" /> Organisk Tillväxt</h3>
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500" /> Trygghet & Tillväxt</h3>
                         <div className="space-y-5 bg-slate-50 dark:bg-slate-900/50 p-5 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                          <Toggle label="Order Tracking (Live)" description="Låt kunden se att ordern packas" checked={showOrderTracking} onChange={setShowOrderTracking} />
                           <Toggle label="Värvningsprogram (Referral)" description="Ge X kr - Få X kr när de bjuder in en vän" checked={showReferralProgram} onChange={setShowReferralProgram} />
                           <Toggle label="Social Sharing" description="Låt kunden dela sitt köp på sociala medier" checked={showSocialShare} onChange={setShowSocialShare} />
+                          
+                          <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                             <Toggle label="Ångerrätt/Retur Länk" description="Lagenligt krav 2026 att ha en tydlig 'Ångra'-knapp." checked={ocShowReturnButton} onChange={setOcShowReturnButton} />
+                          </div>
                         </div>
                       </div>
 
@@ -1634,6 +1805,14 @@ export default function TestCheckoutPage() {
                         <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-xl border border-slate-100 dark:border-slate-700/50 space-y-5">
                           
                           <div>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Vilka varor kan returneras?</label>
+                            <div className="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-lg">
+                              <button onClick={() => setReturnItemScope('all')} className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors ${returnItemScope === 'all' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500'}`}>Hela ordern alltid</button>
+                              <button onClick={() => setReturnItemScope('specific')} className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors ${returnItemScope === 'specific' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500'}`}>Välj specifika varor</button>
+                            </div>
+                          </div>
+
+                          <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Returfönster (Dagar)</label>
                             <select value={returnWindow} onChange={(e) => setReturnWindow(e.target.value as any)} className="w-full h-10 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-sm px-3 focus:ring-2 focus:ring-brand-500 outline-none">
                               <option value="14">14 Dagar (Lagkrav EU)</option>
@@ -1641,7 +1820,6 @@ export default function TestCheckoutPage() {
                               <option value="100">100 Dagar (Konkurrensfördel)</option>
                               <option value="365">365 Dagar (Maximal trygghet)</option>
                             </select>
-                            <p className="text-[10px] text-slate-500 mt-2">Längre returfönster ökar konverteringen i kassan OCH minskar ironiskt nog andelen returer eftersom stressen försvinner.</p>
                           </div>
 
                           <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
