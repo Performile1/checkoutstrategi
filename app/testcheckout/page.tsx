@@ -292,68 +292,112 @@ export default function TestCheckoutPage() {
   };
 
   const calculateConversionScore = () => {
-    let score = 20;
-    const totalOrderValue = orderValue + (addGiftWrapping ? orderValue * 0.10 : 0) + (addInsurance ? orderValue * 0.05 : 0) + (addGiftMessage ? orderValue * 0.02 : 0);
-    const SETTINGS_ORDER = layoutOrder;
+    // 1. BASELINE: En standard checkout (enligt Baymard Institute)
+    let score = 45;
 
-    if (!isGuestCheckout) score -= 35;
-    else score += getDynamicPercentage(BASE_PERCENTAGES.guestCheckout, SETTINGS_ORDER.indexOf('guest'), SETTINGS_ORDER.length);
-    if (hasAutofill) score += getDynamicPercentage(BASE_PERCENTAGES.autofill, SETTINGS_ORDER.indexOf('customer'), SETTINGS_ORDER.length);
-    if (!shippingDisplayedEarly) score -= 48;
-    else score += getDynamicPercentage(BASE_PERCENTAGES.shippingDisplayedEarly, SETTINGS_ORDER.indexOf('shipping'), SETTINGS_ORDER.length);
-    if (hideHeaderFooter) score += BASE_PERCENTAGES.hideHeaderFooter;
-    if (hasUpsell) score += BASE_PERCENTAGES.upsell;
-    if (freeShippingThreshold > 0) score += BASE_PERCENTAGES.freeShipping;
-    if (freeShipping) score += BASE_PERCENTAGES.freeShipping;
-    if (freeHomeDelivery) score += BASE_PERCENTAGES.freeHomeDelivery;
-    if (freeLockerDelivery) score += BASE_PERCENTAGES.freeLockerDelivery;
-    if (showEuReturnButton) score -= getDynamicPercentage(BASE_PERCENTAGES.euReturnButton, SETTINGS_ORDER.indexOf('euReturn'), SETTINGS_ORDER.length);
-    if (addGiftWrapping) score += getDynamicPercentage(BASE_PERCENTAGES.giftWrapping, SETTINGS_ORDER.indexOf('giftWrapping'), SETTINGS_ORDER.length);
-    if (addInsurance) score += getDynamicPercentage(BASE_PERCENTAGES.insurance, SETTINGS_ORDER.indexOf('insurance'), SETTINGS_ORDER.length);
-    if (addGiftMessage) score += getDynamicPercentage(BASE_PERCENTAGES.giftMessage, SETTINGS_ORDER.indexOf('giftMessage'), SETTINGS_ORDER.length);
-    if (preselectShipping) score += BASE_PERCENTAGES.preselectShipping;
+    // -- 2. ORDNING & LAYOUT (Drag and drop påverkan) --
+    const customerIdx = layoutOrder.indexOf('customer');
+    const shippingIdx = layoutOrder.indexOf('shipping');
+    const paymentIdx = layoutOrder.indexOf('payment');
+    const guestIdx = layoutOrder.indexOf('guest');
+    const couponIdx = layoutOrder.indexOf('coupon');
 
-    if (ctaColor === 'green') score += 3;
-    else if (ctaColor === 'orange' || ctaColor === 'red') score += (orderValue < 500) ? 2 : -2;
-    else if (ctaColor === 'low-contrast') score -= 8;
-    if (ctaText === 'pay') score -= 2;
-    else if (ctaText === 'confirm') score += 1;
+    if (customerIdx === 0) score += 3;
+    else if (customerIdx > 2) score -= 8;
 
-    if (showLowStockWarning) score += 8;
-    if (showCartTimer) { score += 5; score -= 2; }
-    if (showSocialProof) score += 3;
-    if (showProductDiscount) score += Math.round(discountRate * 0.4);
-    if (selectedDeliveryOptions.length >= 3) score += 5;
-    else if (selectedDeliveryOptions.length >= 2) score += 2;
+    if (paymentIdx !== -1 && shippingIdx !== -1 && paymentIdx < shippingIdx) {
+      score -= 15; // Betalning före frakt = UX katastrof
+    }
 
-    const marketKey = customerCountry.toLowerCase() as keyof typeof CARD_PROVIDERS[0]['conversionImpact'];
-    selectedCarriers.forEach((carrierId) => {
-      const carrier = CARRIERS.find(c => c.id === carrierId);
-      if (carrier && marketKey in carrier.marketImpact) score += carrier.marketImpact[marketKey];
-    });
-    paymentOrder.forEach((methodId) => {
-      const method = PAYMENT_METHODS.find(m => m.id === methodId);
-      if (method && marketKey in method.conversionImpact) score += method.conversionImpact[marketKey];
-    });
-    selectedCardProviders.forEach((providerId) => {
-      const provider = CARD_PROVIDERS.find(c => c.id === providerId);
-      if (provider && marketKey in provider.conversionImpact) score += provider.conversionImpact[marketKey];
-    });
+    if (guestIdx !== -1 && guestIdx < 3) score += 2;
+    else if (guestIdx > 4) score -= 3;
+
+    if (couponIdx !== -1 && paymentIdx !== -1 && couponIdx < paymentIdx) score -= 3;
+
+    // -- 3. GRUNDLÄGGANDE UX --
+    if (isGuestCheckout) score += 12;
+    else score -= 18;
+    if (hasAutofill) score += 6;
+    if (hideHeaderFooter) score += 4;
+
+    // -- 4. FRAKT & LOGISTIK --
+    let totalOrderValue = orderValue;
+    if (addGiftWrapping) totalOrderValue += 49;
+    if (addInsurance) totalOrderValue += 19;
 
     const shippingRatio = shippingCost / totalOrderValue;
-    if (shippingRatio > 0.2) score -= 15;
-    else if (shippingRatio > 0.1) score -= 5;
-    else if (shippingRatio < 0.05) score += 5;
+    if (freeShipping || (freeShippingThreshold > 0 && totalOrderValue >= freeShippingThreshold)) {
+      score += 10;
+    } else if (shippingRatio > 0.2) {
+      score -= 15;
+    } else if (shippingRatio > 0.1) {
+      score -= 5;
+    } else {
+      score += 2;
+    }
 
-    if (layoutOrder.indexOf('payment') < layoutOrder.indexOf('shipping')) score -= 8;
-    if (layoutOrder.indexOf('customer') !== 0) score -= 3;
+    if (selectedDeliveryOptions.length >= 3) score += 5;
+    else if (selectedDeliveryOptions.length === 1) score -= 4;
 
+    const marketKey = customerCountry.toLowerCase() as keyof typeof CARD_PROVIDERS[0]['conversionImpact'];
+
+    // Transportörernas lokala trust-impact (ex. PostNord i SE vs DHL)
+    selectedCarriers.forEach((carrierId) => {
+      const carrier = CARRIERS.find(c => c.id === carrierId);
+      if (carrier && marketKey in carrier.marketImpact) {
+        score += carrier.marketImpact[marketKey];
+      }
+    });
+
+    // -- 5. TRUST & BETALNING --
     const player = players.find(p => p.slug === selectedPlayer);
-    if (player) score += player.marketImpact[marketKey as keyof typeof player.marketImpact];
-    if (customerCountry === 'SE' && player?.countries.includes('SE')) score += 8;
-    else if (!player?.countries.includes(customerCountry)) score -= 10;
+    if (player && player.marketImpact && marketKey in player.marketImpact) {
+      score += player.marketImpact[marketKey as keyof typeof player.marketImpact];
+    } else {
+      score -= 5;
+    }
 
-    return Math.min(Math.max(score, 0), 100);
+    // Specifika betalmetoder (ex. Swish ger extrem boost i SE, Vipps i NO)
+    selectedPaymentMethods.forEach((methodId) => {
+      const method = PAYMENT_METHODS.find(m => m.id === methodId);
+      if (method && marketKey in method.conversionImpact) {
+        score += method.conversionImpact[marketKey];
+      }
+    });
+
+    // Kortutgivare
+    selectedCardProviders.forEach((providerId) => {
+      const provider = CARD_PROVIDERS.find(c => c.id === providerId);
+      if (provider && marketKey in provider.conversionImpact) {
+        score += provider.conversionImpact[marketKey];
+      }
+    });
+
+    // -- 6. FOMO, URGENCY & KAMPANJ --
+    if (showLowStockWarning) score += 3;
+    if (showSocialProof) score += 2;
+    if (showCartTimer) score += 2;
+    if (showProductDiscount) score += Math.min(Math.round(discountRate * 0.3), 8);
+
+    // -- 7. TILLÄGG (FRIKTION VS AOV) --
+    // Cross-sell i varukorgen drar upp ordervärdet, men kan sänka konverteringen
+    // genom att distrahera kunden (mikrofriktion).
+    if (hasCrossSell) score -= 2;
+
+    // (Post-purchase Upsell sker EFTER kassan, så den påverkar varken positivt
+    // eller negativt på just checkout-konverteringen, bara på AOV).
+
+    // -- 8. CTA & DESIGN --
+    if (ctaColor === 'green') score += 2;
+    else if (ctaColor === 'low-contrast') score -= 8;
+    if (ctaText === 'pay') score -= 3;
+    else if (ctaText === 'complete' || ctaText === 'confirm') score += 1;
+
+    // -- 9. REGELVERK (FRIKTION) --
+    if (showEuReturnButton) score -= 5; // Negativ effekt att belysa ångerrätt precis vid köp
+
+    // Säkerställ att kalkylen landar mellan 0 och 100% oavsett extremvärden
+    return Math.min(Math.max(Math.round(score), 0), 100);
   };
 
   const calculateAOV = () => {
