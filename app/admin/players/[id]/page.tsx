@@ -117,8 +117,7 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
         throw new Error(data.error || 'Kunde inte uppdatera aktören');
       }
 
-      router.push('/admin/players');
-      router.refresh();
+      window.location.href = '/admin/players';
     } catch (err) {
       setError((err as Error).message);
       setSaving(false);

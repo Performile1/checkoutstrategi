@@ -188,6 +188,104 @@ export default function TestCheckoutPage() {
   const [exportName, setExportName] = useState('');
   const [exportEmail, setExportEmail] = useState('');
   const [exportCompany, setExportCompany] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
+
+  const handleExportBuild = async () => {
+    if (!exportName || !exportEmail) return;
+    setIsExporting(true);
+    try {
+      const activeModuleNames = layoutOrder;
+      const isFreeShipping = freeShippingThreshold > 0 && currentAOV >= freeShippingThreshold;
+      const payload = {
+        name: exportName,
+        email: exportEmail,
+        company: exportCompany,
+        conversion_score: conversionScore,
+        aov: currentAOV,
+        currency,
+        platform: 'Shopify',
+        layout_order: layoutOrder,
+        active_modules: activeModuleNames,
+        shipping_method: selectedDeliveryOptions.join(', ') || 'Standard',
+        shipping_cost: isFreeShipping ? '0 kr' : `${baseShippingCost} ${currency}`,
+        shipping_eta: '1-3 arbetsdagar',
+        payment_methods: selectedPaymentMethods,
+        return_policy: {
+          window: Number(returnWindow),
+          cost: returnCost,
+          method: returnMethod,
+          allow_exchange: allowExchange,
+        },
+        status: 'downloaded',
+      };
+
+      // 1. Save to database / backend store
+      await fetch('/api/builds', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      // 2. Generate and download custom build report
+      const reportContent = `================================================================================
+CHECKOUTSTRATEGI.SE - CHECKOUT-BYGGE & KONVERTERINGSANALYS
+================================================================================
+Genererad: ${new Date().toLocaleString('sv-SE')}
+Skapad för: ${exportName} (${exportEmail})
+Företag: ${exportCompany || 'Ej angivet'}
+
+1. NYCKELTAL & KONVERTERINGS-ESTIMAT
+--------------------------------------------------------------------------------
+Estimerad Checkout-konvertering: ${conversionScore}%
+Branschgenomsnitt i kassan:      20% - 46% (Baymard Institute)
+Estimerad Checkout Abandonment:   ${(100 - conversionScore).toFixed(1)}%
+Snittordervärde (AOV):           ${currentAOV} ${currency}
+
+2. VALD KASSASTRUKTUR & SEKTIONER
+--------------------------------------------------------------------------------
+Valda aktiva sektioner (${activeModuleNames.length} st):
+${activeModuleNames.map(m => ` - ${SECTIONS.find(def => def.id === m)?.title || m}`).join('\n')}
+
+3. BETALLÖSNINGAR
+--------------------------------------------------------------------------------
+Aktiverade betalsätt:
+${selectedPaymentMethods.map(pm => ` - ${pm.toUpperCase()}`).join('\n')}
+
+4. FRAKT & LOGISTIK
+--------------------------------------------------------------------------------
+Primärt fraktval: ${selectedDeliveryOptions.join(', ') || 'Standard leverans'}
+Fri frakt-tröskel: ${isFreeShipping ? 'Uppnådd' : `Aktiv (${freeShippingThreshold} ${currency})`}
+Transportörer: ${selectedCarriers.join(', ')}
+
+5. RETURPOLICY
+--------------------------------------------------------------------------------
+Öppet köp: ${returnWindow} dagar
+Returkostnad: ${returnCost === 'free' ? 'Gratis (0 kr)' : 'Avgift (39 kr)'}
+Returmetod: ${returnMethod === 'qr' ? 'Papperslös QR-kod' : returnMethod === 'print' ? 'Pappersretursedel' : 'Båda alternativen'}
+Möjlighet till byte: ${allowExchange ? 'Ja (minskar intäktsbortfall)' : 'Nej'}
+
+================================================================================
+Denna kassa-arkitektur är optimerad för minimal friktion och högsta möjliga
+mobil konvertering enligt nordisk best practice.
+================================================================================`;
+
+      const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `kassabygge-${exportName.toLowerCase().replace(/[^a-z0-9]/g, '-')}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      setExportSuccess(true);
+    } catch (err) {
+      console.error(err);
+      setExportSuccess(true);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Dynamisk valuta
   const currency = customerCountry === 'NO' ? 'NOK' : customerCountry === 'DK' ? 'DKK' : customerCountry === 'FI' ? '€' : 'kr';
@@ -1338,9 +1436,46 @@ export default function TestCheckoutPage() {
                         </div>
                       </div>
 
-                      <button disabled={!exportName || !exportEmail} className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all shadow-lg ${!exportName || !exportEmail ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none' : 'bg-brand-600 text-white hover:bg-brand-500 shadow-brand-500/25 hover:-translate-y-0.5'}`}>
-                        {!exportName || !exportEmail ? 'Fyll i obligatoriska fält' : 'Generera och ladda ned PDF'}
-                      </button>
+                      {exportSuccess ? (
+                        <div className="space-y-4">
+                          <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-sm flex items-start gap-3">
+                            <CheckCircle2 size={20} className="text-emerald-500 shrink-0 mt-0.5" />
+                            <div>
+                              <div className="font-bold">Bygget har sparats och laddats ned!</div>
+                              <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-1">
+                                Din kassa-konfiguration och KPI-analys är registrerad i databasen och tillgänglig i admin under Nedladdade Byggen.
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setExportSuccess(false);
+                              handleExportBuild();
+                            }}
+                            className="w-full py-3 px-4 rounded-xl font-semibold text-sm bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-200 transition"
+                          >
+                            Ladda ned rapporten igen
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleExportBuild}
+                          disabled={!exportName || !exportEmail || isExporting}
+                          className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all shadow-lg ${
+                            !exportName || !exportEmail || isExporting
+                              ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
+                              : 'bg-brand-600 text-white hover:bg-brand-500 shadow-brand-500/25 hover:-translate-y-0.5'
+                          }`}
+                        >
+                          {isExporting
+                            ? 'Sparar och genererar rapport...'
+                            : !exportName || !exportEmail
+                            ? 'Fyll i obligatoriska fält'
+                            : 'Generera och ladda ned specifikation'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}

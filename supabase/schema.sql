@@ -87,6 +87,33 @@ CREATE INDEX IF NOT EXISTS idx_reviews_approved ON reviews(approved);
 CREATE INDEX IF NOT EXISTS idx_reviews_rating ON reviews(rating);
 
 -- ==================================
+-- BUILDS TABLE (Nedladdade och sparade byggen från CheckoutLab)
+-- ==================================
+CREATE TABLE IF NOT EXISTS builds (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  company TEXT,
+  conversion_score NUMERIC NOT NULL DEFAULT 35,
+  aov NUMERIC NOT NULL DEFAULT 750,
+  currency TEXT NOT NULL DEFAULT 'SEK',
+  platform TEXT DEFAULT 'shopify',
+  layout_order JSONB NOT NULL DEFAULT '[]'::jsonb,
+  active_modules JSONB NOT NULL DEFAULT '[]'::jsonb,
+  shipping_method TEXT,
+  shipping_cost TEXT,
+  shipping_eta TEXT,
+  payment_methods JSONB NOT NULL DEFAULT '[]'::jsonb,
+  return_policy JSONB DEFAULT '{}'::jsonb,
+  notes TEXT,
+  status TEXT NOT NULL DEFAULT 'downloaded',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_builds_email ON builds(email);
+CREATE INDEX IF NOT EXISTS idx_builds_created_at ON builds(created_at DESC);
+
+-- ==================================
 -- ROW LEVEL SECURITY (RLS)
 -- ==================================
 
@@ -94,6 +121,13 @@ CREATE INDEX IF NOT EXISTS idx_reviews_rating ON reviews(rating);
 ALTER TABLE players ENABLE ROW LEVEL SECURITY;
 ALTER TABLE blog_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE builds ENABLE ROW LEVEL SECURITY;
+
+-- Builds: Service role can all, authenticated admin can select
+DROP POLICY IF EXISTS "Admins can view builds" ON builds;
+CREATE POLICY "Admins can view builds"
+  ON builds FOR ALL
+  USING (true);
 
 -- Players: Public read, admin write
 DROP POLICY IF EXISTS "Players are viewable by everyone" ON players;

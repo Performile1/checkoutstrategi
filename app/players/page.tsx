@@ -1,15 +1,18 @@
 import type { Metadata } from 'next';
-import { players } from '@/lib/players';
+import { getStoredPlayers } from '@/lib/players-store';
 import { PlayerCard } from '@/components/PlayerCard';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
-  title: 'Checkout Players – jämför Klarna, Walley, Kustom, Qliro, Ingrid & nShift',
+  title: 'Checkout Players – jämför Klarna, Walley, Kustom, Qliro, Ingrid, Dintero & fler',
   description:
     'Oberoende analys av de viktigaste checkout- och leveransleverantörerna i Norden. Trust-cards, konverteringsvärderingar och affärslogik.',
   alternates: { canonical: '/players' },
 };
 
-export default function PlayersPage() {
+export default async function PlayersPage() {
+  const players = await getStoredPlayers();
   const playerCount = players.length;
   const countText = playerCount === 1 ? 'En aktör' : `${playerCount} aktörer`;
 
@@ -25,7 +28,7 @@ export default function PlayersPage() {
 
       <div className="mt-10 grid gap-6 md:grid-cols-3 lg:grid-cols-3">
         {players.map((p, i) => (
-          <PlayerCard key={p.slug} player={p} index={i} />
+          <PlayerCard key={p.slug || p.id} player={p} index={i} />
         ))}
       </div>
     </section>

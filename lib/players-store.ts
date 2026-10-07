@@ -66,18 +66,21 @@ let memoryPlayers: StoredPlayer[] | null = null;
 
 function safeWritePlayers(playersList: StoredPlayer[]): void {
   memoryPlayers = playersList;
+  // 1. Try writing to process.cwd() content/players.json
   try {
     const dir = path.dirname(PLAYERS_FILE);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(PLAYERS_FILE, JSON.stringify(playersList, null, 2), 'utf8');
   } catch {
-    // If process.cwd() is read-only (like Vercel serverless), try /tmp
-    try {
-      const tmpPath = path.join('/tmp', 'checkout_players.json');
-      fs.writeFileSync(tmpPath, JSON.stringify(playersList, null, 2), 'utf8');
-    } catch {
-      // Memory cache is active
-    }
+    // Read-only filesystem, safe to ignore
+  }
+
+  // 2. Always also write to /tmp as persistent serverless cache
+  try {
+    const tmpPath = path.join('/tmp', 'checkout_players.json');
+    fs.writeFileSync(tmpPath, JSON.stringify(playersList, null, 2), 'utf8');
+  } catch {
+    // Memory cache remains active
   }
 }
 
@@ -86,39 +89,50 @@ function initPlayers(): StoredPlayer[] {
     return memoryPlayers;
   }
 
-  // 1. Try reading from project PLAYERS_FILE
+  const map = new Map<string, StoredPlayer>();
+
+  // 1. Seed static players
+  for (const sp of staticPlayers) {
+    const norm = normalizePlayer(sp);
+    map.set(norm.id, norm);
+  }
+
+  // 2. Merge from project PLAYERS_FILE
   try {
     if (fs.existsSync(PLAYERS_FILE)) {
       const content = fs.readFileSync(PLAYERS_FILE, 'utf8');
       const parsed = JSON.parse(content);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        memoryPlayers = parsed.map(normalizePlayer);
-        return memoryPlayers;
+        for (const p of parsed) {
+          const norm = normalizePlayer(p);
+          map.set(norm.id, norm);
+        }
       }
     }
   } catch {
-    // continue to /tmp
+    // continue
   }
 
-  // 2. Try reading from /tmp fallback
+  // 3. Merge from /tmp fallback
   try {
     const tmpPath = path.join('/tmp', 'checkout_players.json');
     if (fs.existsSync(tmpPath)) {
       const content = fs.readFileSync(tmpPath, 'utf8');
       const parsed = JSON.parse(content);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        memoryPlayers = parsed.map(normalizePlayer);
-        return memoryPlayers;
+        for (const p of parsed) {
+          const norm = normalizePlayer(p);
+          map.set(norm.id, norm);
+        }
       }
     }
   } catch {
-    // continue to static
+    // continue
   }
 
-  // 3. Seed with static players
-  const seeded = staticPlayers.map(normalizePlayer);
-  safeWritePlayers(seeded);
-  return seeded;
+  const result = Array.from(map.values());
+  memoryPlayers = result;
+  return result;
 }
 
 export async function getStoredPlayers(): Promise<StoredPlayer[]> {
@@ -135,8 +149,14 @@ export async function getStoredPlayers(): Promise<StoredPlayer[]> {
       const { data, error } = await supabase.from('players').select('*').order('name');
       if (!error && data && data.length > 0) {
         const mapped = data.map(normalizePlayer);
-        memoryPlayers = mapped;
-        return mapped;
+        // Also merge local players so static/local additions aren't lost
+        const local = initPlayers();
+        const map = new Map<string, StoredPlayer>();
+        for (const p of local) map.set(p.id, p);
+        for (const p of mapped) map.set(p.id, p);
+        const merged = Array.from(map.values());
+        memoryPlayers = merged;
+        return merged;
       }
     } catch {
       // fallback to local/memory store
@@ -153,7 +173,8 @@ export async function getStoredPlayer(idOrSlug: string): Promise<StoredPlayer | 
 
 export async function saveStoredPlayer(playerData: any): Promise<StoredPlayer> {
   const normalized = normalizePlayer(playerData);
-  const players = [...initPlayers()];
+  const currentPlayers = await getStoredPlayers();
+  const players = [...currentPlayers];
   const index = players.findIndex((p) => p.id === normalized.id || p.slug === normalized.slug);
 
   if (index >= 0) {
@@ -202,7 +223,7 @@ export async function saveStoredPlayer(playerData: any): Promise<StoredPlayer> {
 }
 
 export async function deleteStoredPlayer(idOrSlug: string): Promise<boolean> {
-  const players = initPlayers();
+  const players = await getStoredPlayers();
   const filtered = players.filter((p) => p.id !== idOrSlug && p.slug !== idOrSlug);
   safeWritePlayers(filtered);
 

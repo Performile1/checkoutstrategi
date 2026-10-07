@@ -931,26 +931,116 @@ export const players: Player[] = [
       { q: 'Är Adyen för svenska e-handel?', a: 'Adyen har stark närvaro globalt men är mer enterprise-fokuserad. För mindre svenska e-handlare kan Klarna eller Walley vara enklare alternativ.' },
     ],
   },
+  {
+    slug: 'dintero',
+    name: 'Dintero',
+    tagline: 'Nordisk checkout och betalningsorkestrering med smart routing och delade betalningar.',
+    logoUrl: '/logos/dintero.svg',
+    websiteUrl: 'https://www.dintero.com',
+    brandColor: 'bg-indigo-600',
+    category: 'Betallösning',
+    targetMarket: 'B2B/B2C',
+    conversionImpact: 8,
+    marketImpact: { se: 7, no: 9, dk: 6, fi: 5 },
+    trustAngle: 'Multi-provider orchestration & Split Payments',
+    pros: [
+      'Samlar ledande nordiska betalsätt (Swish, Vipps, Walley, Klarna, kort) under ett avtal',
+      'Stöd för Split Payments – perfekt för marknadsplatser och multi-vendor-plattformar',
+      'Transparent prissättning utan bindningstider eller fasta månadsavgifter för baspaket',
+      'Mycket stark närvaro i Norge och Sverige med hög mobil konvertering',
+    ],
+    cons: [
+      'Lägre konsumentkännedom i Sverige jämfört med Klarna',
+      'Färre färdiga niche-plugins jämfört med äldre internationella gateways',
+    ],
+    keyFeatures: [
+      'Betalningsorkestrering och multi-provider checkout',
+      'Split Payments för marknadsplatser',
+      'Vipps, Swish, Walley, MobilePay och internationella kort',
+      'Embedded kassa och hosted checkout',
+      'Omfattande merchant dashboard och utvecklarvänligt API',
+    ],
+    platforms: ['Shopify', 'WooCommerce', 'Magento', 'Shopware', 'Custom'],
+    pricing: 'Från 1,2% + 1,50 SEK per transaktion. Ingen fast månadskostnad för standardkonton.',
+    countries: ['SE', 'NO', 'DK', 'FI'],
+    affiliateUrl: 'https://www.dintero.com',
+    description:
+      'Dintero är en snabbt växande nordisk checkout- och betalningsorkestreringslösning grundad i Norge med stark etablering i Sverige. Plattformen gör det möjligt för e-handlare och marknadsplatser att samla alla populära betalsätt – inklusive Swish, Vipps, Walley, Klarna och kort – under ett enda avtal och en integration. Med unika funktioner som Split Payments och anpassningsbara kassaflöden minimerar Dintero friktion och maximerar konverteringen.',
+    faq: [
+      {
+        q: 'Vad skiljer Dintero från vanliga checkout-lösningar som Klarna?',
+        a: 'Dintero agerar som en orkestrerare där du kan erbjuda flera betalmetoder (som Swish, Vipps, Walley och kort) i en gemensam checkout, samt utnyttja funktioner som Split Payments för marknadsplatser.',
+      },
+      {
+        q: 'Har Dintero stöd för Swish och Vipps?',
+        a: 'Ja, Dintero har fullt inbyggt stöd för både svenska Swish och norska Vipps, vilket ger maximal konvertering för nordiska konsumenter.',
+      },
+      {
+        q: 'Passar Dintero för B2B?',
+        a: 'Ja, via integration med fakturapartners som Walley kan Dintero hantera både B2B- och B2C-betalningar i samma kassaflöde.',
+      },
+    ],
+    reviews: [
+      {
+        reviewerName: 'Morten Hansen',
+        reviewerCompany: 'Nordic Market Hub',
+        webshopUrl: 'https://nordicmarkethub.no',
+        rating: 5,
+        title: 'Split payments och Vipps/Swish i en kassa räddade vår lansering',
+        content:
+          'Vi behövde en lösning som hanterade både svenska och norska kunder sömlöst samt delade upp utbetalningar till våra säljare. Dintero fungerar klockrent.',
+      },
+    ],
+  },
 ];
 
-function getActivePlayers(): Player[] {
+export function getActivePlayers(): Player[] {
   try {
     if (typeof window === 'undefined') {
       const fs = require('fs');
       const path = require('path');
       const file = path.join(process.cwd(), 'content', 'players.json');
+      const tmpPath = path.join('/tmp', 'checkout_players.json');
+
+      const map = new Map<string, Player>();
+      for (const p of players) map.set(p.slug, p);
+
       if (fs.existsSync(file)) {
-        const raw = fs.readFileSync(file, 'utf8');
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
+        try {
+          const raw = fs.readFileSync(file, 'utf8');
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            for (const p of parsed) {
+              if (p && (p.slug || p.id)) map.set(p.slug || p.id, p);
+            }
+          }
+        } catch {}
+      }
+
+      if (fs.existsSync(tmpPath)) {
+        try {
+          const raw = fs.readFileSync(tmpPath, 'utf8');
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            for (const p of parsed) {
+              if (p && (p.slug || p.id)) map.set(p.slug || p.id, p);
+            }
+          }
+        } catch {}
+      }
+
+      if (map.size > 0) {
+        return Array.from(map.values());
       }
     }
   } catch {
     // fallback
   }
   return players;
+}
+
+export function getAllPlayers(): Player[] {
+  return getActivePlayers();
 }
 
 export function getPlayer(slug: string): Player | undefined {

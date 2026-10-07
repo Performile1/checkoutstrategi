@@ -1,0 +1,5 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#4338ca" rx="28"/>
+  <circle cx="100" cy="70" r="18" fill="#a5b4fc" opacity="0.9"/>
+  <text x="100" y="132" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="800" fill="#ffffff" text-anchor="middle" letter-spacing="1">Dintero</text>
+</svg>
