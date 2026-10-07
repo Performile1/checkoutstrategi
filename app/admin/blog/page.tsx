@@ -1,20 +1,17 @@
 import { redirect } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import { Plus, Edit, Trash2, Calendar } from 'lucide-react';
 import { getAllPosts } from '@/lib/blog';
+import { supabase } from '@/lib/supabase';
 import type { Metadata } from 'next';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Hantera Blogginlägg - Admin Dashboard',
   description: 'Skapa, redigera och ta bort blogginlägg.',
   alternates: { canonical: '/admin/blog' },
 };
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export default async function AdminBlogPage() {
   const { data: { user } } = await supabase.auth.getUser();

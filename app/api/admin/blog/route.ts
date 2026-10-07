@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
@@ -11,11 +11,6 @@ function ensureDir() {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user || user.user_metadata?.role !== 'admin') {
