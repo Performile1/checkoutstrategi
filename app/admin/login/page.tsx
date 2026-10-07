@@ -16,28 +16,27 @@ export default function AdminLoginPage() {
     setLoading(true);
     setError('');
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (error) {
-      setError(error.message);
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        setError(data.error || 'Felaktiga inloggningsuppgifter');
+        setLoading(false);
+        return;
+      }
+
+      router.push('/admin');
+      router.refresh();
+    } catch {
+      setError('Ett nätverksfel uppstod. Försök igen.');
       setLoading(false);
-      return;
     }
-
-    // Check if user has admin role
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user?.user_metadata?.role !== 'admin') {
-      await supabase.auth.signOut();
-      setError('Du har inte admin-åtkomst');
-      setLoading(false);
-      return;
-    }
-
-    router.push('/admin');
-    router.refresh();
   };
 
   return (

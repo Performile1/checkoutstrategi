@@ -1,21 +1,19 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Edit, Trash2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { getAdminUser } from '@/lib/auth';
+import { getStoredPlayers } from '@/lib/players-store';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminPlayersPage() {
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAdminUser();
 
-  if (!user || user.user_metadata?.role !== 'admin') {
+  if (!user) {
     redirect('/admin/login');
   }
 
-  const { data: players } = await supabase
-    .from('players')
-    .select('*')
-    .order('name');
+  const players = await getStoredPlayers();
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">

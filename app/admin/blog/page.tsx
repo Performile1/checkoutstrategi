@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Edit, Trash2, Calendar } from 'lucide-react';
 import { getAllPosts } from '@/lib/blog';
-import { supabase } from '@/lib/supabase';
+import { getAdminUser } from '@/lib/auth';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
@@ -14,9 +14,9 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminBlogPage() {
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAdminUser();
 
-  if (!user || user.user_metadata?.role !== 'admin') {
+  if (!user) {
     redirect('/admin/login');
   }
 

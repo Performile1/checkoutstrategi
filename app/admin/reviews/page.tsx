@@ -2,7 +2,8 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Check, X, Trash2, Star, ExternalLink } from 'lucide-react';
 import type { Metadata } from 'next';
-import { supabase } from '@/lib/supabase';
+import { getAdminUser } from '@/lib/auth';
+import { getStoredReviews } from '@/lib/reviews-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,26 +14,14 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminReviewsPage() {
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAdminUser();
 
-  if (!user || user.user_metadata?.role !== 'admin') {
+  if (!user) {
     redirect('/admin/login');
   }
 
-  // Fetch all reviews with player info
-  const { data: reviews } = await supabase
-    .from('reviews')
-    .select(`
-      *,
-      players (name, slug)
-    `)
-    .order('created_at', { ascending: false });
-
-  // Fetch players for dropdown
-  const { data: players } = await supabase
-    .from('players')
-    .select('id, name, slug')
-    .order('name');
+  // Fetch all reviews
+  const reviews = await getStoredReviews();
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">

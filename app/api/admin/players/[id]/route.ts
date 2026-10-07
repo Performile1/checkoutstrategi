@@ -1,24 +1,19 @@
-import { supabase } from '@/lib/supabase';
 import { NextRequest, NextResponse } from 'next/server';
+import { getAdminUser } from '@/lib/auth';
+import { getStoredPlayer, saveStoredPlayer, deleteStoredPlayer } from '@/lib/players-store';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user || user.user_metadata?.role !== 'admin') {
+  const user = await getAdminUser();
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { data: player, error } = await supabase
-    .from('players')
-    .select('*')
-    .eq('id', params.id)
-    .single();
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  const player = await getStoredPlayer(params.id);
+  if (!player) {
+    return NextResponse.json({ error: 'Player not found' }, { status: 404 });
   }
 
   return NextResponse.json(player);
@@ -28,46 +23,43 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user || user.user_metadata?.role !== 'admin') {
+  const user = await getAdminUser();
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = await request.json();
-
-  const { data: player, error } = await supabase
-    .from('players')
-    .update(body)
-    .eq('id', params.id)
-    .select()
-    .single();
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  try {
+    const body = await request.json();
+    const updated = await saveStoredPlayer({ ...body, id: params.id });
+    return NextResponse.json(updated);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Kunde inte uppdatera aktören' }, { status: 500 });
   }
-
-  return NextResponse.json(player);
 }
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user || user.user_metadata?.role !== 'admin') {
+  const user = await getAdminUser();
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { error } = await supabase
-    .from('players')
-    .delete()
-    .eq('id', params.id);
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
+  await deleteStoredPlayer(params.id);
   return NextResponse.json({ success: true });
+}
+
+// Support browser form deletion via POST method with _method="DELETE"
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  return DELETE(request, { params }).then((res) => {
+    const acceptHeader = request.headers.get('accept') || '';
+    if (acceptHeader.includes('text/html')) {
+      return NextResponse.redirect(new URL('/admin/players', request.url), { status: 303 });
+    }
+    return res;
+  });
 }

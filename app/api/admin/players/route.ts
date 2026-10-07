@@ -1,24 +1,28 @@
-import { supabase } from '@/lib/supabase';
 import { NextRequest, NextResponse } from 'next/server';
+import { getAdminUser } from '@/lib/auth';
+import { getStoredPlayers, saveStoredPlayer } from '@/lib/players-store';
 
-export async function POST(request: NextRequest) {
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user || user.user_metadata?.role !== 'admin') {
+export async function GET() {
+  const user = await getAdminUser();
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = await request.json();
+  const players = await getStoredPlayers();
+  return NextResponse.json(players);
+}
 
-  const { data: player, error } = await supabase
-    .from('players')
-    .insert(body)
-    .select()
-    .single();
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+export async function POST(request: NextRequest) {
+  const user = await getAdminUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  return NextResponse.json(player);
+  try {
+    const body = await request.json();
+    const saved = await saveStoredPlayer(body);
+    return NextResponse.json(saved);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Kunde inte spara spelare' }, { status: 500 });
+  }
 }

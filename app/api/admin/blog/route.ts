@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getAdminUser } from '@/lib/auth';
 import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
@@ -11,9 +11,9 @@ function ensureDir() {
 }
 
 export async function POST(request: NextRequest) {
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAdminUser();
 
-  if (!user || user.user_metadata?.role !== 'admin') {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

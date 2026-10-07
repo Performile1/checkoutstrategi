@@ -36,32 +36,39 @@ export default function NewPlayerPage() {
     setError('');
 
     try {
-      const { error } = await supabase.from('players').insert({
-        slug: formData.slug,
-        name: formData.name,
-        tagline: formData.tagline,
-        logo_url: formData.logo_url,
-        website_url: formData.website_url,
-        brand_color: formData.brand_color,
-        category: formData.category,
-        target_market: formData.target_market,
-        conversion_impact: formData.conversion_impact,
-        trust_angle: formData.trust_angle,
-        pros: formData.pros.split('\n').filter(Boolean),
-        cons: formData.cons.split('\n').filter(Boolean),
-        key_features: formData.key_features.split('\n').filter(Boolean),
-        platforms: formData.platforms.split(',').map(p => p.trim()).filter(Boolean),
-        pricing: formData.pricing,
-        countries: formData.countries.split(',').map(c => c.trim()),
-        affiliate_url: formData.affiliate_url,
-        description: formData.description,
-        faq: formData.faq.split('\n\n').map(block => {
-          const [q, a] = block.split('\n');
-          return { q: q?.replace(/^Q:\s*/i, '') || '', a: a?.replace(/^A:\s*/i, '') || '' };
-        }).filter(f => f.q && f.a),
+      const response = await fetch('/api/admin/players', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: formData.slug,
+          name: formData.name,
+          tagline: formData.tagline,
+          logo_url: formData.logo_url,
+          website_url: formData.website_url,
+          brand_color: formData.brand_color,
+          category: formData.category,
+          target_market: formData.target_market,
+          conversion_impact: formData.conversion_impact,
+          trust_angle: formData.trust_angle,
+          pros: formData.pros.split('\n').filter(Boolean),
+          cons: formData.cons.split('\n').filter(Boolean),
+          key_features: formData.key_features.split('\n').filter(Boolean),
+          platforms: formData.platforms.split(',').map(p => p.trim()).filter(Boolean),
+          pricing: formData.pricing,
+          countries: formData.countries.split(',').map(c => c.trim()),
+          affiliate_url: formData.affiliate_url,
+          description: formData.description,
+          faq: formData.faq.split('\n\n').map(block => {
+            const [q, a] = block.split('\n');
+            return { q: q?.replace(/^Q:\s*/i, '') || '', a: a?.replace(/^A:\s*/i, '') || '' };
+          }).filter(f => f.q && f.a),
+        }),
       });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Kunde inte skapa aktören');
+      }
 
       router.push('/admin/players');
       router.refresh();

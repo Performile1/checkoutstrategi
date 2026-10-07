@@ -1,30 +1,23 @@
-import { getSupabaseClient } from '@/lib/supabase';
 import { NextRequest, NextResponse } from 'next/server';
+import { getAdminUser } from '@/lib/auth';
+import { deleteStoredReview } from '@/lib/reviews-store';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const supabase = getSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY);
-
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user || user.user_metadata?.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { error } = await supabase
-      .from('reviews')
-      .delete()
-      .eq('id', params.id);
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  const user = await getAdminUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  await deleteStoredReview(params.id);
+
+  // If request came from an HTML form submit, redirect back
+  const acceptHeader = request.headers.get('accept') || '';
+  if (acceptHeader.includes('text/html')) {
+    return NextResponse.redirect(new URL('/admin/reviews', request.url), { status: 303 });
+  }
+
+  return NextResponse.json({ success: true });
 }

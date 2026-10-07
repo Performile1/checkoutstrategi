@@ -37,34 +37,32 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
 
   const loadPlayer = async () => {
     try {
-      const { data: player, error } = await supabase
-        .from('players')
-        .select('*')
-        .eq('id', params.id)
-        .single();
-
-      if (error) throw error;
+      const response = await fetch(`/api/admin/players/${params.id}`);
+      if (!response.ok) throw new Error('Kunde inte läsa in aktören');
+      const player = await response.json();
 
       setFormData({
         slug: player.slug,
         name: player.name,
         tagline: player.tagline,
-        logo_url: player.logo_url,
-        website_url: player.website_url,
-        brand_color: player.brand_color,
-        category: player.category,
-        target_market: player.target_market,
-        conversion_impact: player.conversion_impact,
-        trust_angle: player.trust_angle,
+        logo_url: player.logo_url || player.logoUrl || '',
+        website_url: player.website_url || player.websiteUrl || '',
+        brand_color: player.brand_color || player.brandColor || 'bg-brand-500',
+        category: player.category || 'Checkout',
+        target_market: player.target_market || player.targetMarket || 'B2C',
+        conversion_impact: player.conversion_impact ?? player.conversionImpact ?? 7,
+        trust_angle: player.trust_angle || player.trustAngle || '',
         pros: Array.isArray(player.pros) ? player.pros.join('\n') : '',
         cons: Array.isArray(player.cons) ? player.cons.join('\n') : '',
-        key_features: Array.isArray(player.key_features) ? player.key_features.join('\n') : '',
+        key_features: Array.isArray(player.key_features || player.keyFeatures)
+          ? (player.key_features || player.keyFeatures).join('\n')
+          : '',
         platforms: Array.isArray(player.platforms) ? player.platforms.join(', ') : '',
-        pricing: player.pricing,
+        pricing: player.pricing || '',
         countries: Array.isArray(player.countries) ? player.countries.join(', ') : '',
-        affiliate_url: player.affiliate_url,
-        description: player.description,
-        faq: Array.isArray(player.faq) 
+        affiliate_url: player.affiliate_url || player.affiliateUrl || '',
+        description: player.description || '',
+        faq: Array.isArray(player.faq)
           ? player.faq.map((f: { q: string; a: string }) => `Q: ${f.q}\nA: ${f.a}`).join('\n\n')
           : '',
       });
@@ -81,9 +79,10 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
     setError('');
 
     try {
-      const { error } = await supabase
-        .from('players')
-        .update({
+      const response = await fetch(`/api/admin/players/${params.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           slug: formData.slug,
           name: formData.name,
           tagline: formData.tagline,
@@ -106,10 +105,13 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
             const [q, a] = block.split('\n');
             return { q: q?.replace(/^Q:\s*/i, '') || '', a: a?.replace(/^A:\s*/i, '') || '' };
           }).filter(f => f.q && f.a),
-        })
-        .eq('id', params.id);
+        }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Kunde inte uppdatera aktören');
+      }
 
       router.push('/admin/players');
       router.refresh();

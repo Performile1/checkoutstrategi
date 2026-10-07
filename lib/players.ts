@@ -933,10 +933,30 @@ export const players: Player[] = [
   },
 ];
 
+function getActivePlayers(): Player[] {
+  try {
+    if (typeof window === 'undefined') {
+      const fs = require('fs');
+      const path = require('path');
+      const file = path.join(process.cwd(), 'content', 'players.json');
+      if (fs.existsSync(file)) {
+        const raw = fs.readFileSync(file, 'utf8');
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    }
+  } catch {
+    // fallback
+  }
+  return players;
+}
+
 export function getPlayer(slug: string): Player | undefined {
-  return players.find((p) => p.slug === slug);
+  return getActivePlayers().find((p) => p.slug === slug);
 }
 
 export function getPlayerSlugs(): string[] {
-  return players.map((p) => p.slug);
+  return getActivePlayers().map((p) => p.slug);
 }

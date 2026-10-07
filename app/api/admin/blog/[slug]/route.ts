@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getAdminUser } from '@/lib/auth';
 import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
@@ -14,9 +14,8 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user || user.user_metadata?.role !== 'admin') {
+  const user = await getAdminUser();
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -42,9 +41,8 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user || user.user_metadata?.role !== 'admin') {
+  const user = await getAdminUser();
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -75,9 +73,8 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user || user.user_metadata?.role !== 'admin') {
+  const user = await getAdminUser();
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -92,4 +89,18 @@ export async function DELETE(
   fs.unlinkSync(file);
 
   return NextResponse.json({ success: true });
+}
+
+// Support browser form deletion via POST method with _method="DELETE"
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { slug: string } }
+) {
+  return DELETE(request, { params }).then((res) => {
+    const acceptHeader = request.headers.get('accept') || '';
+    if (acceptHeader.includes('text/html')) {
+      return NextResponse.redirect(new URL('/admin/blog', request.url), { status: 303 });
+    }
+    return res;
+  });
 }

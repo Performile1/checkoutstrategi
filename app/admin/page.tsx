@@ -2,7 +2,10 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, FileText, Users, LogOut, Settings } from 'lucide-react';
 import type { Metadata } from 'next';
-import { supabase } from '@/lib/supabase';
+import { getAdminUser } from '@/lib/auth';
+import { getStoredPlayers } from '@/lib/players-store';
+import { getAllPosts } from '@/lib/blog';
+import { getStoredReviews } from '@/lib/reviews-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,18 +16,22 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminPage() {
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAdminUser();
 
-  if (!user || user.user_metadata?.role !== 'admin') {
+  if (!user) {
     redirect('/admin/login');
   }
 
-  // Fetch stats
-  const [{ count: playersCount }, { count: postsCount }, { count: reviewsCount }] = await Promise.all([
-    supabase.from('players').select('*', { count: 'exact', head: true }),
-    supabase.from('blog_posts').select('*', { count: 'exact', head: true }),
-    supabase.from('reviews').select('*', { count: 'exact', head: true }),
+  // Fetch real stats from stores
+  const [playersList, postsList, reviewsList] = await Promise.all([
+    getStoredPlayers(),
+    Promise.resolve(getAllPosts()),
+    getStoredReviews(),
   ]);
+
+  const playersCount = playersList.length;
+  const postsCount = postsList.length;
+  const reviewsCount = reviewsList.length;
 
   const handleLogout = async () => {
     'use server';
