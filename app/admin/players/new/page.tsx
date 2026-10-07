@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { AdminGuard, getAdminAuthHeaders } from '@/components/AdminGuard';
 
 export default function NewPlayerPage() {
   const router = useRouter();
@@ -36,9 +36,10 @@ export default function NewPlayerPage() {
     setError('');
 
     try {
+      const authHeaders = getAdminAuthHeaders();
       const response = await fetch('/api/admin/players', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({
           slug: formData.slug,
           name: formData.name,
@@ -79,7 +80,8 @@ export default function NewPlayerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <AdminGuard>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         <div className="container-prose py-4">
           <h1 className="text-xl font-bold">Lägg till ny player</h1>
@@ -324,5 +326,6 @@ export default function NewPlayerPage() {
         </form>
       </div>
     </div>
+    </AdminGuard>
   );
 }

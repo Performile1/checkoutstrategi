@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ADMIN_COOKIE_NAME } from '@/lib/auth';
+import { ADMIN_COOKIE_NAME, createAdminToken } from '@/lib/auth';
 import { getSupabaseClient } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
@@ -62,26 +62,23 @@ export async function POST(request: NextRequest) {
     }
 
     if (isAuthenticated) {
-      const sessionData = {
-        email: userEmail,
-        role: 'admin',
-        createdAt: new Date().toISOString(),
-      };
-      const token = Buffer.from(JSON.stringify(sessionData)).toString('base64');
+      const token = createAdminToken(userEmail);
 
       const response = NextResponse.json({
         success: true,
+        token,
         user: { email: userEmail, role: 'admin' },
       });
 
+      const isHttps = request.url.startsWith('https://') || process.env.NODE_ENV === 'production';
       response.cookies.set({
         name: ADMIN_COOKIE_NAME,
         value: token,
         httpOnly: true,
         path: '/',
-        secure: process.env.NODE_ENV === 'production',
+        secure: isHttps,
         sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
+        maxAge: 60 * 60 * 24 * 30, // 30 days
       });
 
       return response;

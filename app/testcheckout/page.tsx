@@ -1703,7 +1703,7 @@ export default function TestCheckoutPage() {
                               <select value={selectedPlayer} onChange={(e) => setSelectedPlayer(e.target.value)} className="w-full h-12 px-4 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-base font-medium focus:ring-2 focus:ring-brand-500 outline-none">
                                 {PLAYERS.map(p => <option key={p.slug} value={p.slug}>{p.name}</option>)}
                               </select>
-                              <p className="text-xs text-slate-500 mt-3">Om du väljer en "Complete Checkout" (ex. Klarna/Walley) agerar de primär betalmetod automatiskt.</p>
+                              <p className="text-xs text-slate-500 mt-3">Om du väljer en &quot;Complete Checkout&quot; (ex. Klarna/Walley) agerar de primär betalmetod automatiskt.</p>
                             </div>
                           </div>
 

@@ -1,47 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminUser } from '@/lib/auth';
-import fs from 'node:fs';
-import path from 'node:path';
-import matter from 'gray-matter';
-
-const POSTS_DIR = path.join(process.cwd(), 'content', 'blog');
-
-function ensureDir() {
-  if (!fs.existsSync(POSTS_DIR)) fs.mkdirSync(POSTS_DIR, { recursive: true });
-}
+import { getPost, saveBlogPost, deleteBlogPost } from '@/lib/blog';
+import { getSupabaseClient } from '@/lib/supabase';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  const user = await getAdminUser();
+  const user = await getAdminUser(request);
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  ensureDir();
-  const candidates = ['mdx', 'md'].map((ext) => path.join(POSTS_DIR, `${params.slug}.${ext}`));
-  const file = candidates.find((p) => fs.existsSync(p));
-  
-  if (!file) {
+  const post = getPost(params.slug);
+  if (!post) {
     return NextResponse.json({ error: 'Post not found' }, { status: 404 });
   }
-  
-  const raw = fs.readFileSync(file, 'utf8');
-  const { data, content } = matter(raw);
-  
-  return NextResponse.json({
-    slug: params.slug,
-    ...data,
-    content,
-  });
+
+  return NextResponse.json(post);
 }
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  const user = await getAdminUser();
+  const user = await getAdminUser(request);
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -49,22 +32,38 @@ export async function PUT(
   const body = await request.json();
   const { title, description, date, author, tags, cover, content } = body;
 
-  const frontmatter: Record<string, any> = {
+  saveBlogPost(params.slug, content || '', {
     title,
-    description,
+    description: description || '',
     date: date || new Date().toISOString(),
-  };
+    author: author || 'AI-analytikern',
+    tags: tags || [],
+    cover: cover || '',
+  });
 
-  if (author) frontmatter.author = author;
-  if (tags && tags.length > 0) frontmatter.tags = tags;
-  if (cover) frontmatter.cover = cover;
-
-  const raw = matter.stringify(content || '', frontmatter);
-  ensureDir();
-  
-  // Write to .mdx file
-  const filePath = path.join(POSTS_DIR, `${params.slug}.mdx`);
-  fs.writeFileSync(filePath, raw, 'utf8');
+  // Sync to Supabase
+  const hasSupabase = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  );
+  if (hasSupabase) {
+    try {
+      const supabase = getSupabaseClient(process.env.SUPABASE_SERVICE_ROLE_KEY);
+      await supabase.from('blog_posts').upsert({
+        slug: params.slug,
+        title,
+        description: description || '',
+        content: content || '',
+        author: author || 'AI-analytikern',
+        tags: tags || [],
+        cover_url: cover || null,
+        draft: false,
+        published_at: date ? new Date(date).toISOString() : new Date().toISOString(),
+      }, { onConflict: 'slug' });
+    } catch {
+      // ignore
+    }
+  }
 
   return NextResponse.json({ success: true, slug: params.slug });
 }
@@ -73,20 +72,25 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  const user = await getAdminUser();
+  const user = await getAdminUser(request);
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  ensureDir();
-  const candidates = ['mdx', 'md'].map((ext) => path.join(POSTS_DIR, `${params.slug}.${ext}`));
-  const file = candidates.find((p) => fs.existsSync(p));
-  
-  if (!file) {
-    return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+  deleteBlogPost(params.slug);
+
+  const hasSupabase = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  );
+  if (hasSupabase) {
+    try {
+      const supabase = getSupabaseClient(process.env.SUPABASE_SERVICE_ROLE_KEY);
+      await supabase.from('blog_posts').delete().eq('slug', params.slug);
+    } catch {
+      // ignore
+    }
   }
-  
-  fs.unlinkSync(file);
 
   return NextResponse.json({ success: true });
 }
@@ -104,3 +108,4 @@ export async function POST(
     return res;
   });
 }
+

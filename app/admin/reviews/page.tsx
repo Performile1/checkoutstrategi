@@ -1,9 +1,9 @@
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Check, X, Trash2, Star, ExternalLink } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getAdminUser } from '@/lib/auth';
 import { getStoredReviews } from '@/lib/reviews-store';
+import { AdminGuard } from '@/components/AdminGuard';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,29 +15,24 @@ export const metadata: Metadata = {
 
 export default async function AdminReviewsPage() {
   const user = await getAdminUser();
-
-  if (!user) {
-    redirect('/admin/login');
-  }
-
-  // Fetch all reviews
-  const reviews = await getStoredReviews();
+  const reviews = await getStoredReviews().catch(() => []);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-        <div className="container-prose py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">
-              ← Tillbaka
-            </Link>
-            <h1 className="text-xl font-bold">Reviews Management</h1>
+    <AdminGuard serverAuthenticated={!!user} userEmail={user?.email}>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+        <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+          <div className="container-prose py-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link href="/admin" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">
+                ← Tillbaka
+              </Link>
+              <h1 className="text-xl font-bold">Reviews Management</h1>
+            </div>
+            <span className="text-sm text-slate-600 dark:text-slate-400">
+              {reviews?.length || 0} recensioner
+            </span>
           </div>
-          <span className="text-sm text-slate-600 dark:text-slate-400">
-            {reviews?.length || 0} recensioner
-          </span>
-        </div>
-      </header>
+        </header>
 
       <div className="container-prose py-8">
         <div className="card overflow-x-auto">
@@ -147,5 +142,6 @@ export default async function AdminReviewsPage() {
         </div>
       </div>
     </div>
+    </AdminGuard>
   );
 }

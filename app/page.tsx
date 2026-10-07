@@ -157,7 +157,7 @@ function Testimonial({ name, company, rating, text }: { name: string; company: s
           <Star key={i} size={16} className="fill-yellow-400 text-yellow-400" />
         ))}
       </div>
-      <p className="text-slate-700 dark:text-slate-300 mb-4">"{text}"</p>
+      <p className="text-slate-700 dark:text-slate-300 mb-4">&quot;{text}&quot;</p>
       <div>
         <p className="font-semibold text-slate-900 dark:text-slate-100">{name}</p>
         <p className="text-sm text-slate-500 dark:text-slate-400">{company}</p>

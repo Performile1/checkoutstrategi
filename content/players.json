@@ -1,0 +1,1596 @@
+[
+  {
+    "slug": "klarna",
+    "name": "Klarna",
+    "tagline": "Marknadens mest igenkända checkout med BNPL i kärnan.",
+    "logoUrl": "/logos/klarna.png",
+    "websiteUrl": "https://www.klarna.com",
+    "brandColor": "bg-pink-500",
+    "category": "Betallösning",
+    "targetMarket": "B2C",
+    "conversionImpact": 9,
+    "marketImpact": {
+      "se": 8,
+      "no": 7,
+      "dk": 6,
+      "fi": 6
+    },
+    "trustAngle": "Brand recognition & frictionless BNPL",
+    "pros": [
+      "Hög igenkänning ökar trygghet i kassan",
+      "Stark suite för delbetalning och faktura",
+      "Brett internationellt stöd",
+      "Mogen merchant-portal med insikter"
+    ],
+    "cons": [
+      "Högre transaktionskostnader än vissa konkurrenter",
+      "Mindre customizable UI än Kustom",
+      "Beroende av Klarnas branding i kassan"
+    ],
+    "keyFeatures": [
+      "BNPL (faktura, delbetalning, konto)",
+      "One-click & express checkout",
+      "Inbyggd riskbedömning",
+      "Klarna app & loyalty-flöden",
+      "Omnichannel: in-store + online"
+    ],
+    "platforms": [
+      "Shopify",
+      "WooCommerce",
+      "Magento",
+      "BigCommerce",
+      "Salesforce Commerce",
+      "Custom"
+    ],
+    "pricing": "Transaktionsbaserad. Förhandlas per merchant.",
+    "countries": [
+      "SE",
+      "NO",
+      "DK",
+      "FI",
+      "DE",
+      "UK",
+      "US",
+      "+15"
+    ],
+    "affiliateUrl": "https://www.klarna.com/business/",
+    "description": "Klarna är den globalt dominerande checkout-aktören med rötter i Sverige. Erbjudandet kombinerar betallösning, BNPL och en konsumentapp som driver återkommande köp. För svenska e-handlare är Klarna ofta default-valet, men beslutet bör vägas mot marginalpåverkan och behov av branding-kontroll.",
+    "faq": [
+      {
+        "q": "Är Klarna bäst för svensk e-handel?",
+        "a": "Klarna har starkast igenkänning i Sverige men inte alltid bäst marginal. För högre AOV eller B2B-flöden kan Walley eller Qliro vara mer kostnadseffektivt."
+      },
+      {
+        "q": "Stödjer Klarna B2B?",
+        "a": "Klarna har B2B-funktionalitet men det är mest moget för B2C. För renodlat B2B är Walley/Qliro starkare alternativ."
+      }
+    ],
+    "reviews": [
+      {
+        "reviewerName": "Erik Lindström",
+        "reviewerCompany": "TechStore AB",
+        "webshopUrl": "https://techstore.se",
+        "rating": 5,
+        "title": "Konverteringen ökade med 22%",
+        "content": "Efter byte till Klarna såg vi en direkt ökning i konvertering, särskilt på mobil. BNPL-funktionen är perfekt för vår målgrupp."
+      },
+      {
+        "reviewerName": "Maria Andersson",
+        "reviewerCompany": "Fashion Nordic",
+        "webshopUrl": "https://fashionnordic.com",
+        "rating": 4,
+        "title": "Starkt men kostsamt",
+        "content": "Klarna levererar på konvertering men marginalerna påverkas. Vi funderar på att testa Walley som alternativ."
+      }
+    ],
+    "id": "klarna",
+    "logo_url": "/logos/klarna.png",
+    "website_url": "https://www.klarna.com",
+    "brand_color": "bg-pink-500",
+    "target_market": "B2C",
+    "conversion_impact": 9,
+    "key_features": [
+      "BNPL (faktura, delbetalning, konto)",
+      "One-click & express checkout",
+      "Inbyggd riskbedömning",
+      "Klarna app & loyalty-flöden",
+      "Omnichannel: in-store + online"
+    ],
+    "affiliate_url": "https://www.klarna.com/business/"
+  },
+  {
+    "slug": "walley",
+    "name": "Walley",
+    "tagline": "Post-purchase intäkter och stark B2B-checkout.",
+    "logoUrl": "/logos/walley.png",
+    "websiteUrl": "https://www.walley.se",
+    "brandColor": "bg-emerald-500",
+    "category": "Betallösning",
+    "targetMarket": "B2B/B2C",
+    "conversionImpact": 8,
+    "marketImpact": {
+      "se": 8,
+      "no": 7,
+      "dk": 7,
+      "fi": 6
+    },
+    "trustAngle": "Post-purchase revenue & B2B strength",
+    "pros": [
+      "Stark B2B-funktionalitet (organisationsnummer-flöde)",
+      "Post-purchase upsell ökar intäkten per order",
+      "Konkurrenskraftiga priser",
+      "Nordiskt fokus med god lokal support"
+    ],
+    "cons": [
+      "Lägre internationell igenkänning än Klarna",
+      "Mindre konsument-app-ekosystem"
+    ],
+    "keyFeatures": [
+      "B2B & B2C i samma checkout",
+      "Walley Engage – post-purchase widgets",
+      "Faktura, delbetalning, kort, Swish",
+      "Organisationsnummer-uppslag",
+      "Abonnemangshantering"
+    ],
+    "platforms": [
+      "Shopify",
+      "WooCommerce",
+      "Magento",
+      "BigCommerce",
+      "Custom"
+    ],
+    "pricing": "Transaktionsbaserad, transparent prismodell.",
+    "countries": [
+      "SE",
+      "NO",
+      "DK",
+      "FI"
+    ],
+    "affiliateUrl": "https://www.walley.se/foretag/",
+    "description": "Walley (tidigare Collector Checkout) är en av Sveriges starkaste utmanare till Klarna. Bolaget har särskilt stark position inom B2B där organisationsnummer-flöden och fakturabetalning är avgörande. Walley Engage – produkter för post-purchase intäkt – är ett tydligt differentieringsvärde.",
+    "faq": [
+      {
+        "q": "Vad är Walley Engage?",
+        "a": "Ett post-purchase-lager som visar relevanta erbjudanden direkt efter köp och driver merförsäljning utan att påverka konverteringsflödet."
+      },
+      {
+        "q": "Klarar Walley B2B-flöden?",
+        "a": "Ja, det är en av Walleys starkaste sidor – inklusive organisationsnummer-uppslag och fakturahantering mot företag."
+      }
+    ],
+    "id": "walley",
+    "logo_url": "/logos/walley.png",
+    "website_url": "https://www.walley.se",
+    "brand_color": "bg-emerald-500",
+    "target_market": "B2B/B2C",
+    "conversion_impact": 8,
+    "key_features": [
+      "B2B & B2C i samma checkout",
+      "Walley Engage – post-purchase widgets",
+      "Faktura, delbetalning, kort, Swish",
+      "Organisationsnummer-uppslag",
+      "Abonnemangshantering"
+    ],
+    "affiliate_url": "https://www.walley.se/foretag/",
+    "reviews": []
+  },
+  {
+    "slug": "kustom",
+    "name": "Kustom",
+    "tagline": "Headless checkout för varumärken som vill äga UI:t.",
+    "logoUrl": "/logos/kustom.png",
+    "websiteUrl": "https://kustom.co",
+    "brandColor": "bg-violet-500",
+    "category": "Betallösning",
+    "targetMarket": "B2C",
+    "conversionImpact": 8,
+    "marketImpact": {
+      "se": 7,
+      "no": 6,
+      "dk": 6,
+      "fi": 5
+    },
+    "trustAngle": "Customizable UI & full brand control",
+    "pros": [
+      "Full UI-kontroll – inget tredjeparts-branding",
+      "Headless arkitektur passar moderna stackar",
+      "Composable: välj betalmetoder fritt",
+      "Snabb laddning, hög teknisk standard"
+    ],
+    "cons": [
+      "Kräver mer utvecklingsresurser",
+      "Mindre färdig BNPL-funktionalitet jämfört med Klarna"
+    ],
+    "keyFeatures": [
+      "Headless / API-first",
+      "Customizable UI-komponenter",
+      "Multipla PSP:er bakom samma flöde",
+      "A/B-test ready",
+      "GDPR-vänlig datamodell"
+    ],
+    "platforms": [
+      "Custom",
+      "Next.js",
+      "React",
+      "Vue",
+      "Svelte"
+    ],
+    "pricing": "SaaS + transaktion. Offert per merchant.",
+    "countries": [
+      "SE",
+      "NO",
+      "DK",
+      "FI",
+      "EU"
+    ],
+    "affiliateUrl": "https://kustom.co/",
+    "description": "Kustom (tidigare Briqpay) bygger en headless checkout för varumärken som vill behålla full UI- och datakontroll. Lämpar sig särskilt väl för D2C-brands och avancerade e-handlare som A/B-testar kassan kontinuerligt och inte vill kompromissa på brand experience.",
+    "faq": [
+      {
+        "q": "Behöver jag utvecklare för Kustom?",
+        "a": "Ja, det är en headless lösning som kräver implementation. I gengäld får du full kontroll över UX och konvertering."
+      },
+      {
+        "q": "Kan jag kombinera Kustom med Klarna?",
+        "a": "Ja – Kustom är PSP-agnostisk och kan rendera Klarna, Adyen, Stripe m.fl. som betalmetoder."
+      }
+    ],
+    "id": "kustom",
+    "logo_url": "/logos/kustom.png",
+    "website_url": "https://kustom.co",
+    "brand_color": "bg-violet-500",
+    "target_market": "B2C",
+    "conversion_impact": 8,
+    "key_features": [
+      "Headless / API-first",
+      "Customizable UI-komponenter",
+      "Multipla PSP:er bakom samma flöde",
+      "A/B-test ready",
+      "GDPR-vänlig datamodell"
+    ],
+    "affiliate_url": "https://kustom.co/",
+    "reviews": []
+  },
+  {
+    "slug": "qliro",
+    "name": "Qliro",
+    "tagline": "Svensk utmanare med stark fokus på AOV och säkerhet.",
+    "logoUrl": "/logos/qliro.png",
+    "websiteUrl": "https://www.qliro.com",
+    "brandColor": "bg-orange-500",
+    "category": "Betallösning",
+    "targetMarket": "B2C",
+    "conversionImpact": 7,
+    "marketImpact": {
+      "se": 7,
+      "no": 6,
+      "dk": 5,
+      "fi": 5
+    },
+    "trustAngle": "Post-purchase revenue & high-AOV ecommerce",
+    "pros": [
+      "Stark vid höga ordervärden (möbler, hemelektronik)",
+      "Konkurrenskraftig prismodell",
+      "Genomtänkt riskhantering",
+      "Lokalt nordiskt fotfäste"
+    ],
+    "cons": [
+      "Mindre internationell räckvidd än Klarna",
+      "Svagare app-ekosystem"
+    ],
+    "keyFeatures": [
+      "BNPL, faktura, delbetalning, kort",
+      "Riskbaserad authentication",
+      "Snabb integration via SDK",
+      "Bra lojalitets- och återköpsflöden"
+    ],
+    "platforms": [
+      "Shopify",
+      "WooCommerce",
+      "Magento",
+      "BigCommerce",
+      "Custom"
+    ],
+    "pricing": "Transaktionsbaserad. Förhandlingsbar.",
+    "countries": [
+      "SE",
+      "NO",
+      "DK",
+      "FI"
+    ],
+    "affiliateUrl": "https://www.qliro.com/sv-se/handel",
+    "description": "Qliro är en noterad svensk utmanare som historiskt drivit handel med högt ordervärde. Erbjudandet är moget och konkurrenskraftigt prissatt, särskilt för segment där delbetalning är ett verkligt köpargument.",
+    "faq": [
+      {
+        "q": "När väljer jag Qliro framför Klarna?",
+        "a": "När din genomsnittliga ordervärde är hög och delbetalning är ett verkligt köpargument – Qliros prismodell kan ge bättre marginal i det segmentet."
+      }
+    ],
+    "id": "qliro",
+    "logo_url": "/logos/qliro.png",
+    "website_url": "https://www.qliro.com",
+    "brand_color": "bg-orange-500",
+    "target_market": "B2C",
+    "conversion_impact": 7,
+    "key_features": [
+      "BNPL, faktura, delbetalning, kort",
+      "Riskbaserad authentication",
+      "Snabb integration via SDK",
+      "Bra lojalitets- och återköpsflöden"
+    ],
+    "affiliate_url": "https://www.qliro.com/sv-se/handel",
+    "reviews": []
+  },
+  {
+    "slug": "ingrid",
+    "name": "Ingrid",
+    "tagline": "Delivery experience platform – konvertering via leverans.",
+    "logoUrl": "/logos/ingrid.png",
+    "websiteUrl": "https://www.svgrid.com",
+    "brandColor": "bg-sky-500",
+    "category": "Transportör",
+    "targetMarket": "B2C",
+    "conversionImpact": 8,
+    "marketImpact": {
+      "se": 8,
+      "no": 7,
+      "dk": 6,
+      "fi": 6
+    },
+    "trustAngle": "Logistics conversion & delivery UX",
+    "pros": [
+      "Leveransval i kassan ökar konvertering bevisligen",
+      "Modulärt: kan kombineras med valfri checkout",
+      "Stark data och track & trace",
+      "Bra ramverk för CO₂-medvetna leveranser"
+    ],
+    "cons": [
+      "Inte en betallösning – komplement, inte substitut",
+      "Kräver integrations-arbete med både checkout och WMS"
+    ],
+    "keyFeatures": [
+      "Smart leveransval i kassan",
+      "Branded tracking-page",
+      "Adressvalidering",
+      "Multi-carrier dashboard",
+      "Returer & post-purchase"
+    ],
+    "platforms": [
+      "Shopify",
+      "WooCommerce",
+      "Magento",
+      "BigCommerce",
+      "Custom"
+    ],
+    "pricing": "SaaS + transaktion.",
+    "countries": [
+      "SE",
+      "NO",
+      "DK",
+      "FI",
+      "DE",
+      "NL",
+      "UK"
+    ],
+    "affiliateUrl": "https://www.svgrid.com/",
+    "description": "Ingrid bygger Sveriges mest mogna Delivery Experience Platform. Plattformen optimerar steget mellan \"lagt i varukorgen\" och \"levererat\" – det skede där flest köp tappas. För e-handel med fysiska varor är delivery experience ett av de största orörda CRO-levers.",
+    "faq": [
+      {
+        "q": "Är Ingrid en checkout?",
+        "a": "Nej, Ingrid är en delivery experience platform som integreras i din befintliga checkout (Klarna, Walley, Kustom etc.) och optimerar leveranssteget."
+      },
+      {
+        "q": "Hur mycket ökar konverteringen?",
+        "a": "Mätningar i nordiska e-handelssegment indikerar att smart leveransval kan lyfta checkout-konvertering med 5–15%."
+      }
+    ],
+    "id": "ingrid",
+    "logo_url": "/logos/ingrid.png",
+    "website_url": "https://www.svgrid.com",
+    "brand_color": "bg-sky-500",
+    "target_market": "B2C",
+    "conversion_impact": 8,
+    "key_features": [
+      "Smart leveransval i kassan",
+      "Branded tracking-page",
+      "Adressvalidering",
+      "Multi-carrier dashboard",
+      "Returer & post-purchase"
+    ],
+    "affiliate_url": "https://www.svgrid.com/",
+    "reviews": []
+  },
+  {
+    "slug": "nshift",
+    "name": "nShift",
+    "tagline": "Enterprise-skalad delivery management & multicarrier.",
+    "logoUrl": "/logos/nshift.png",
+    "websiteUrl": "https://www.nshift.com",
+    "brandColor": "bg-indigo-500",
+    "category": "Transportör",
+    "targetMarket": "B2B/B2C",
+    "conversionImpact": 7,
+    "marketImpact": {
+      "se": 7,
+      "no": 6,
+      "dk": 6,
+      "fi": 5
+    },
+    "trustAngle": "Logistics conversion at enterprise scale",
+    "pros": [
+      "Bredaste carrier-nätverket i Norden",
+      "Robust för stora volymer & komplex logistik",
+      "Stark TMS-funktionalitet",
+      "Bevisat enterprise-track-record"
+    ],
+    "cons": [
+      "Mer komplex implementation – passar mid-market och uppåt",
+      "Mindre konsument-fokuserad UX än Ingrid"
+    ],
+    "keyFeatures": [
+      "Delivery Checkout",
+      "Multicarrier-shipping",
+      "Returer & track-and-trace",
+      "Warehouse integrations",
+      "Customer comms post-purchase"
+    ],
+    "platforms": [
+      "Shopify",
+      "WooCommerce",
+      "Magento",
+      "BigCommerce",
+      "Custom"
+    ],
+    "pricing": "Enterprise – offert.",
+    "countries": [
+      "SE",
+      "NO",
+      "DK",
+      "FI",
+      "EU",
+      "UK"
+    ],
+    "affiliateUrl": "https://www.nshift.com/",
+    "description": "nShift är den nordiska enterprise-tungviktaren inom delivery management. Plattformen täcker hela kedjan från checkout till returer och passar e-handlare med komplexa carrier-mixer och stora volymer. Mer enterprise-orienterat än Ingrid, men oslagbart vid skala.",
+    "faq": [
+      {
+        "q": "nShift eller Ingrid?",
+        "a": "Ingrid har vassare konsument-UX och passar D2C-brands. nShift är starkare vid enterprise-volymer och komplex multi-carrier-logistik."
+      }
+    ],
+    "id": "nshift",
+    "logo_url": "/logos/nshift.png",
+    "website_url": "https://www.nshift.com",
+    "brand_color": "bg-indigo-500",
+    "target_market": "B2B/B2C",
+    "conversion_impact": 7,
+    "key_features": [
+      "Delivery Checkout",
+      "Multicarrier-shipping",
+      "Returer & track-and-trace",
+      "Warehouse integrations",
+      "Customer comms post-purchase"
+    ],
+    "affiliate_url": "https://www.nshift.com/",
+    "reviews": []
+  },
+  {
+    "slug": "svea",
+    "name": "Svea",
+    "tagline": "Svensk finansiell infrastruktur med bred checkout- och betalmeny.",
+    "logoUrl": "/logos/svea.png",
+    "websiteUrl": "https://www.svea.com",
+    "brandColor": "bg-rose-500",
+    "category": "Betallösning",
+    "targetMarket": "B2B/B2C",
+    "conversionImpact": 7,
+    "marketImpact": {
+      "se": 8,
+      "no": 7,
+      "dk": 6,
+      "fi": 6
+    },
+    "trustAngle": "Etablerad finansiell partner med full betalmeny",
+    "pros": [
+      "Stor svensk finansiell koncern – högt förtroende",
+      "Bredd i betalmetoder (faktura, delbetalning, kort, Swish)",
+      "Starkt B2B-erbjudande via organisationsnummer-flöden",
+      "Inkasso- och kredithantering i samma koncern"
+    ],
+    "cons": [
+      "Mindre modernt UI-skal än Kustom/Klarna",
+      "Lägre internationell räckvidd än Klarna"
+    ],
+    "keyFeatures": [
+      "Svea Checkout (hosted)",
+      "Faktura, delbetalning, kort, Swish, Trustly",
+      "B2B-flöden med organisationsnummer",
+      "Kredit- och inkassohantering",
+      "Abonnemang & återkommande betalningar"
+    ],
+    "platforms": [
+      "Shopify",
+      "WooCommerce",
+      "Magento",
+      "BigCommerce",
+      "Custom"
+    ],
+    "pricing": "Transaktionsbaserad, förhandlas per merchant.",
+    "countries": [
+      "SE",
+      "NO",
+      "DK",
+      "FI",
+      "NL",
+      "DE"
+    ],
+    "affiliateUrl": "https://www.svea.com/se/sv/foretag/vara-tjanster/checkout/",
+    "description": "Svea är en etablerad svensk finansiell aktör som bygger checkout ovanpå en full finansiell stack – kredit, faktura, inkasso. Det gör Svea till ett särskilt starkt alternativ när du vill äga hela kedjan från kassa till fordran, och när både B2B- och B2C-flöden ska samsas i samma checkout.",
+    "faq": [
+      {
+        "q": "När väljer jag Svea?",
+        "a": "När du vill ha en svensk finansiell partner med full bredd på betalmetoder och behov av både B2B och B2C i samma flöde – särskilt om kredit- och inkassohantering är viktigt."
+      },
+      {
+        "q": "Hur står sig Svea mot Klarna?",
+        "a": "Klarna vinner på global igenkänning och konsument-app. Svea vinner på svensk finansiell djup, B2B-styrka och att hela kreditkedjan kan hanteras internt."
+      }
+    ],
+    "id": "svea",
+    "logo_url": "/logos/svea.png",
+    "website_url": "https://www.svea.com",
+    "brand_color": "bg-rose-500",
+    "target_market": "B2B/B2C",
+    "conversion_impact": 7,
+    "key_features": [
+      "Svea Checkout (hosted)",
+      "Faktura, delbetalning, kort, Swish, Trustly",
+      "B2B-flöden med organisationsnummer",
+      "Kredit- och inkassohantering",
+      "Abonnemang & återkommande betalningar"
+    ],
+    "affiliate_url": "https://www.svea.com/se/sv/foretag/vara-tjanster/checkout/",
+    "reviews": []
+  },
+  {
+    "slug": "wetail",
+    "name": "Wetail",
+    "tagline": "Logistik och leveransoptimering för e-handel.",
+    "logoUrl": "/logos/wetail.svg",
+    "websiteUrl": "https://wetail.io",
+    "brandColor": "bg-teal-500",
+    "category": "Transportör",
+    "targetMarket": "B2B/B2C",
+    "conversionImpact": 6,
+    "marketImpact": {
+      "se": 6,
+      "no": 5,
+      "dk": 5,
+      "fi": 4
+    },
+    "trustAngle": "Logistiklösning med fokus på leveransupplevelse",
+    "pros": [
+      "Specialiserad på logistik och leverans",
+      "Integreras med befintlig checkout",
+      "Fokus på nordisk e-handel",
+      "Hjälper optimera leveransval"
+    ],
+    "cons": [
+      "Inte en komplett checkout-lösning",
+      "Mindre känt än stora logistikaktörer",
+      "Kräver integration med checkout"
+    ],
+    "keyFeatures": [
+      "Leveransval i kassan",
+      "Integration med logistikpartners",
+      "Leveransoptimering",
+      "Spårning och uppföljning"
+    ],
+    "platforms": [
+      "Shopify",
+      "WooCommerce",
+      "Magento",
+      "Custom"
+    ],
+    "pricing": "SaaS + transaktion. Offert per merchant.",
+    "countries": [
+      "SE",
+      "NO",
+      "DK",
+      "FI"
+    ],
+    "affiliateUrl": "https://wetail.io/",
+    "description": "Wetail är en logistiklösning som fokuserar på att optimera leveransupplevelsen för e-handel. Plattformen integreras i befintlig checkout och hjälper kunder välja rätt leveransalternativ.",
+    "faq": [
+      {
+        "q": "Är Wetail en checkout?",
+        "a": "Nej, Wetail är en logistik- och leveranslösning som integreras i din befintliga checkout."
+      }
+    ],
+    "id": "wetail",
+    "logo_url": "/logos/wetail.svg",
+    "website_url": "https://wetail.io",
+    "brand_color": "bg-teal-500",
+    "target_market": "B2B/B2C",
+    "conversion_impact": 6,
+    "key_features": [
+      "Leveransval i kassan",
+      "Integration med logistikpartners",
+      "Leveransoptimering",
+      "Spårning och uppföljning"
+    ],
+    "affiliate_url": "https://wetail.io/",
+    "reviews": []
+  },
+  {
+    "slug": "nyehandel",
+    "name": "Nyehandel",
+    "tagline": "Svensk e-handelsplattform med inbyggd logistik.",
+    "logoUrl": "/logos/nyehandel.svg",
+    "websiteUrl": "https://nyehandel.se",
+    "brandColor": "bg-cyan-500",
+    "category": "E-handelsplattform",
+    "targetMarket": "B2B/B2C",
+    "conversionImpact": 6,
+    "marketImpact": {
+      "se": 6,
+      "no": 5,
+      "dk": 4,
+      "fi": 4
+    },
+    "trustAngle": "All-in-one e-handelsplattform med logistik",
+    "pros": [
+      "Komplett e-handelsplattform",
+      "Inbyggd logistikhantering",
+      "Svensk utveckling och support",
+      "SEO-vänlig"
+    ],
+    "cons": [
+      "Mindre flexibelt än headless-lösningar",
+      "Låst till plattformens ekosystem",
+      "Mindre internationellt fokus"
+    ],
+    "keyFeatures": [
+      "E-handelsplattform",
+      "Logistikhantering",
+      "Lagerstyrning",
+      "Orderhantering",
+      "Betalintegrationer"
+    ],
+    "platforms": [
+      "Custom"
+    ],
+    "pricing": "SaaS-baserad. Offert per merchant.",
+    "countries": [
+      "SE"
+    ],
+    "affiliateUrl": "https://nyehandel.se/",
+    "description": "Nyehandel är en svensk e-handelsplattform som erbjuder en komplett lösning inklusive logistikhantering. Plattformen riktar sig till svenska e-handlare som vill ha en enkel att använda plattform.",
+    "faq": [
+      {
+        "q": "Är Nyehandel en checkout?",
+        "a": "Nyehandel är en komplett e-handelsplattform som inkluderar checkout-funktionalitet, inte en ren checkout-aktör."
+      }
+    ],
+    "id": "nyehandel",
+    "logo_url": "/logos/nyehandel.svg",
+    "website_url": "https://nyehandel.se",
+    "brand_color": "bg-cyan-500",
+    "target_market": "B2B/B2C",
+    "conversion_impact": 6,
+    "key_features": [
+      "E-handelsplattform",
+      "Logistikhantering",
+      "Lagerstyrning",
+      "Orderhantering",
+      "Betalintegrationer"
+    ],
+    "affiliate_url": "https://nyehandel.se/",
+    "reviews": []
+  },
+  {
+    "slug": "fraktjakt",
+    "name": "Fraktjakt",
+    "tagline": "Jämförelse och bokning av frakt för e-handel.",
+    "logoUrl": "/logos/fraktjakt.svg",
+    "websiteUrl": "https://www.fraktjakt.se",
+    "brandColor": "bg-amber-500",
+    "category": "Transportör",
+    "targetMarket": "B2B",
+    "conversionImpact": 6,
+    "marketImpact": {
+      "se": 6,
+      "no": 5,
+      "dk": 5,
+      "fi": 4
+    },
+    "trustAngle": "Fraktjämförelse och TMS för e-handel",
+    "pros": [
+      "Jämför fraktpriser från flera transportörer",
+      "Fullskaligt TMS-system",
+      "Automatiserad fraktadministration",
+      "Många unika funktioner"
+    ],
+    "cons": [
+      "Fokuserat på B2B, inte konsument-UX",
+      "Inte en checkout-lösning",
+      "Kräver integration"
+    ],
+    "keyFeatures": [
+      "Fraktjämförelse",
+      "TMS (Transport Management System)",
+      "Automatisering",
+      "Integration med webshop-system",
+      "Bokning och spårning"
+    ],
+    "platforms": [
+      "Shopify",
+      "WooCommerce",
+      "Magento",
+      "Custom"
+    ],
+    "pricing": "SaaS + transaktion. Offert per merchant.",
+    "countries": [
+      "SE",
+      "NO",
+      "DK",
+      "FI"
+    ],
+    "affiliateUrl": "https://www.fraktjakt.se/",
+    "description": "Fraktjakt startade som en jämförelsesajt för frakt och har idag ett fullskaligt TMS-system för e-handlare. Plattformen hjälper företag hantera fraktadministration och jämföra priser från flera transportörer.",
+    "faq": [
+      {
+        "q": "Är Fraktjakt en checkout?",
+        "a": "Nej, Fraktjakt är en TMS-lösning för fraktadministration och jämförelse, inte en checkout."
+      }
+    ],
+    "id": "fraktjakt",
+    "logo_url": "/logos/fraktjakt.svg",
+    "website_url": "https://www.fraktjakt.se",
+    "brand_color": "bg-amber-500",
+    "target_market": "B2B",
+    "conversion_impact": 6,
+    "key_features": [
+      "Fraktjämförelse",
+      "TMS (Transport Management System)",
+      "Automatisering",
+      "Integration med webshop-system",
+      "Bokning och spårning"
+    ],
+    "affiliate_url": "https://www.fraktjakt.se/",
+    "reviews": []
+  },
+  {
+    "slug": "shipmondo",
+    "name": "Shipmondo",
+    "tagline": "Fraktplattform för e-handel med integrationer.",
+    "logoUrl": "/logos/shipmondo.svg",
+    "websiteUrl": "https://shipmondo.com",
+    "brandColor": "bg-lime-500",
+    "category": "Transportör",
+    "targetMarket": "B2B",
+    "conversionImpact": 6,
+    "marketImpact": {
+      "se": 6,
+      "no": 5,
+      "dk": 5,
+      "fi": 4
+    },
+    "trustAngle": "Fraktplattform med många integrationer",
+    "pros": [
+      "Många integrationer med webshop-system",
+      "Stöd för flera transportörer",
+      "Automatiserad frakthantering",
+      "Enkel att komma igång med"
+    ],
+    "cons": [
+      "Inte en checkout-lösning",
+      "Fokuserat på B2B",
+      "Primärt för frakt, inte leveransval i kassan"
+    ],
+    "keyFeatures": [
+      "Fraktbokning",
+      "Integrationer (WooCommerce, Shopify m.fl.)",
+      "Multi-carrier",
+      "Automatisering",
+      "Spårning"
+    ],
+    "platforms": [
+      "WooCommerce",
+      "Shopify",
+      "Magento",
+      "Custom"
+    ],
+    "pricing": "SaaS + transaktion. Offert per merchant.",
+    "countries": [
+      "SE",
+      "NO",
+      "DK",
+      "FI"
+    ],
+    "affiliateUrl": "https://shipmondo.com/",
+    "description": "Shipmondo är en fraktplattform för e-handel med många integrationer till populära webshop-system. Plattformen hjälper e-handlare hantera frakt och bokning av transportörer.",
+    "faq": [
+      {
+        "q": "Är Shipmondo en checkout?",
+        "a": "Nej, Shipmondo är en fraktplattform för e-handel, inte en checkout-lösning."
+      }
+    ],
+    "id": "shipmondo",
+    "logo_url": "/logos/shipmondo.svg",
+    "website_url": "https://shipmondo.com",
+    "brand_color": "bg-lime-500",
+    "target_market": "B2B",
+    "conversion_impact": 6,
+    "key_features": [
+      "Fraktbokning",
+      "Integrationer (WooCommerce, Shopify m.fl.)",
+      "Multi-carrier",
+      "Automatisering",
+      "Spårning"
+    ],
+    "affiliate_url": "https://shipmondo.com/",
+    "reviews": []
+  },
+  {
+    "slug": "postnord",
+    "name": "PostNord",
+    "tagline": "Nordens ledande logistikaktör med checkout-lösningar.",
+    "logoUrl": "/logos/postnord.svg",
+    "websiteUrl": "https://www.postnord.com",
+    "brandColor": "bg-yellow-500",
+    "category": "Transportör",
+    "targetMarket": "B2B/B2C",
+    "conversionImpact": 7,
+    "marketImpact": {
+      "se": 8,
+      "no": 7,
+      "dk": 6,
+      "fi": 6
+    },
+    "trustAngle": "Nordens ledande logistikaktör",
+    "pros": [
+      "Starkast logistiknät i Norden",
+      "Hög igenkänning och förtroende",
+      "Checkout-lösningar med leveransfokus",
+      "Omfattande nät av ombud"
+    ],
+    "cons": [
+      "Primärt logistik, checkout är sekundärt",
+      "Mindre flexibelt än renodlade checkout-aktörer",
+      "Högre kostnader för små e-handlare"
+    ],
+    "keyFeatures": [
+      "PostNord Checkout",
+      "Leveransval i kassan",
+      "Ombudsnätverk",
+      "Spårning och kommunikation",
+      "Returhantering"
+    ],
+    "platforms": [
+      "Shopify",
+      "WooCommerce",
+      "Magento",
+      "BigCommerce",
+      "Custom"
+    ],
+    "pricing": "Transaktionsbaserad + frakt. Förhandlas per merchant.",
+    "countries": [
+      "SE",
+      "NO",
+      "DK",
+      "FI",
+      "DE"
+    ],
+    "affiliateUrl": "https://www.postnord.com/",
+    "description": "PostNord är Nordens ledande logistikaktör med ett omfattande nät av ombud och leveranslösningar. Bolaget erbjuder även checkout-lösningar med fokus på leveransupplevelse.",
+    "faq": [
+      {
+        "q": "Har PostNord checkout?",
+        "a": "Ja, PostNord erbjuder checkout-lösningar med fokus på leveransval och logistikintegration."
+      }
+    ],
+    "id": "postnord",
+    "logo_url": "/logos/postnord.svg",
+    "website_url": "https://www.postnord.com",
+    "brand_color": "bg-yellow-500",
+    "target_market": "B2B/B2C",
+    "conversion_impact": 7,
+    "key_features": [
+      "PostNord Checkout",
+      "Leveransval i kassan",
+      "Ombudsnätverk",
+      "Spårning och kommunikation",
+      "Returhantering"
+    ],
+    "affiliate_url": "https://www.postnord.com/",
+    "reviews": []
+  },
+  {
+    "slug": "dhl",
+    "name": "DHL",
+    "tagline": "Global logistikjätte med checkout-integrationer.",
+    "logoUrl": "/logos/dhl.png",
+    "websiteUrl": "https://www.dhl.com",
+    "brandColor": "bg-red-500",
+    "category": "Transportör",
+    "targetMarket": "B2B/B2C",
+    "conversionImpact": 7,
+    "marketImpact": {
+      "se": 6,
+      "no": 6,
+      "dk": 6,
+      "fi": 6
+    },
+    "trustAngle": "Global logistikledare",
+    "pros": [
+      "Globalt logistiknätverk",
+      "Hög igenkänning internationellt",
+      "Checkout-integrationer för e-handel",
+      "Stark på internationell e-handel"
+    ],
+    "cons": [
+      "Primärt logistik, inte renodlad checkout",
+      "Mindre fokus på nordisk e-handel",
+      "Komplex integration för små handlare"
+    ],
+    "keyFeatures": [
+      "DHL Checkout",
+      "Global leverans",
+      "Spårning och kommunikation",
+      "Internationell frakt",
+      "Tollhantering"
+    ],
+    "platforms": [
+      "Shopify",
+      "WooCommerce",
+      "Magento",
+      "BigCommerce",
+      "Custom"
+    ],
+    "pricing": "Transaktionsbaserad + frakt. Förhandlas per merchant.",
+    "countries": [
+      "Global"
+    ],
+    "affiliateUrl": "https://www.dhl.com/",
+    "description": "DHL är en global logistikjätte med checkout-integrationer för e-handel. Bolaget är särskilt starkt för internationell e-handel och global leverans.",
+    "faq": [
+      {
+        "q": "Har DHL checkout?",
+        "a": "DHL erbjuder checkout-integrationer med fokus på global leverans och logistik."
+      }
+    ],
+    "id": "dhl",
+    "logo_url": "/logos/dhl.png",
+    "website_url": "https://www.dhl.com",
+    "brand_color": "bg-red-500",
+    "target_market": "B2B/B2C",
+    "conversion_impact": 7,
+    "key_features": [
+      "DHL Checkout",
+      "Global leverans",
+      "Spårning och kommunikation",
+      "Internationell frakt",
+      "Tollhantering"
+    ],
+    "affiliate_url": "https://www.dhl.com/",
+    "reviews": []
+  },
+  {
+    "slug": "bring",
+    "name": "Bring",
+    "tagline": "Nordisk logistikaktör med e-handelslösningar.",
+    "logoUrl": "/logos/bring.svg",
+    "websiteUrl": "https://www.bring.com",
+    "brandColor": "bg-green-500",
+    "category": "Transportör",
+    "targetMarket": "B2B/B2C",
+    "conversionImpact": 6,
+    "marketImpact": {
+      "se": 6,
+      "no": 6,
+      "dk": 5,
+      "fi": 5
+    },
+    "trustAngle": "Nordisk logistikpartner",
+    "pros": [
+      "Stark i Norden",
+      "E-handelslösningar med leveransfokus",
+      "Ombudsnätverk",
+      "Bra på returhantering"
+    ],
+    "cons": [
+      "Primärt logistik, inte renodlad checkout",
+      "Mindre känt än PostNord i Sverige",
+      "Checkout-lösningar mindre utvecklade"
+    ],
+    "keyFeatures": [
+      "Bring Checkout",
+      "Leveransval",
+      "Ombudsnät",
+      "Spårning",
+      "Returer"
+    ],
+    "platforms": [
+      "Shopify",
+      "WooCommerce",
+      "Magento",
+      "BigCommerce",
+      "Custom"
+    ],
+    "pricing": "Transaktionsbaserad + frakt. Förhandlas per merchant.",
+    "countries": [
+      "SE",
+      "NO",
+      "DK",
+      "FI"
+    ],
+    "affiliateUrl": "https://www.bring.com/",
+    "description": "Bring är en nordisk logistikaktör med e-handelslösningar. Bolaget erbjuder checkout-integrationer med fokus på leveransupplevelse i Norden.",
+    "faq": [
+      {
+        "q": "Har Bring checkout?",
+        "a": "Bring erbjuder checkout-integrationer med fokus på nordisk leverans och logistik."
+      }
+    ],
+    "id": "bring",
+    "logo_url": "/logos/bring.svg",
+    "website_url": "https://www.bring.com",
+    "brand_color": "bg-green-500",
+    "target_market": "B2B/B2C",
+    "conversion_impact": 6,
+    "key_features": [
+      "Bring Checkout",
+      "Leveransval",
+      "Ombudsnät",
+      "Spårning",
+      "Returer"
+    ],
+    "affiliate_url": "https://www.bring.com/",
+    "reviews": []
+  },
+  {
+    "slug": "e37",
+    "name": "E37",
+    "tagline": "Svensk e-handelsplattform med fokus på B2B.",
+    "logoUrl": "/logos/e37.svg",
+    "websiteUrl": "https://e37.se",
+    "brandColor": "bg-purple-500",
+    "category": "E-handelsplattform",
+    "targetMarket": "B2B/B2C",
+    "conversionImpact": 6,
+    "marketImpact": {
+      "se": 6,
+      "no": 5,
+      "dk": 4,
+      "fi": 4
+    },
+    "trustAngle": "Svensk e-handelsplattform med B2B-fokus",
+    "pros": [
+      "Stark på B2B e-handel",
+      "Svensk utveckling",
+      "Integration med affärssystem",
+      "Bra på komplexa produkter"
+    ],
+    "cons": [
+      "Mindre känt än stora internationella plattformar",
+      "Primärt för nordisk marknad",
+      "Mindre flexibelt än headless-lösningar"
+    ],
+    "keyFeatures": [
+      "E-handelsplattform",
+      "B2B-flöden",
+      "Affärssystemintegration",
+      "Produktkonfiguration",
+      "Orderhantering"
+    ],
+    "platforms": [
+      "Custom"
+    ],
+    "pricing": "SaaS-baserad. Offert per merchant.",
+    "countries": [
+      "SE",
+      "NO",
+      "DK"
+    ],
+    "affiliateUrl": "https://e37.se/",
+    "description": "E37 är en svensk e-handelsplattform med särskilt fokus på B2B e-handel. Plattformen integreras med affärssystem och hanterar komplexa produkter och kundgrupper.",
+    "faq": [
+      {
+        "q": "Är E37 en checkout?",
+        "a": "Nej, E37 är en komplett e-handelsplattform som inkluderar checkout-funktionalitet."
+      }
+    ],
+    "id": "e37",
+    "logo_url": "/logos/e37.svg",
+    "website_url": "https://e37.se",
+    "brand_color": "bg-purple-500",
+    "target_market": "B2B/B2C",
+    "conversion_impact": 6,
+    "key_features": [
+      "E-handelsplattform",
+      "B2B-flöden",
+      "Affärssystemintegration",
+      "Produktkonfiguration",
+      "Orderhantering"
+    ],
+    "affiliate_url": "https://e37.se/",
+    "reviews": []
+  },
+  {
+    "slug": "askas",
+    "name": "Askås",
+    "tagline": "Svensk e-handelsplattform med lång historia.",
+    "logoUrl": "/logos/askas.svg",
+    "websiteUrl": "https://askas.com",
+    "brandColor": "bg-blue-600",
+    "category": "E-handelsplattform",
+    "targetMarket": "B2B/B2C",
+    "conversionImpact": 6,
+    "marketImpact": {
+      "se": 6,
+      "no": 5,
+      "dk": 4,
+      "fi": 4
+    },
+    "trustAngle": "Etablerad svensk e-handelsplattform",
+    "pros": [
+      "Lång erfarenhet av svensk e-handel",
+      "Stark på svensk marknad",
+      "Integration med svenska system",
+      "Bra support"
+    ],
+    "cons": [
+      "Mindre modernt UI än nyare plattformar",
+      "Primärt för svensk marknad",
+      "Mindre internationell skalbarhet"
+    ],
+    "keyFeatures": [
+      "E-handelsplattform",
+      "PIM-integration",
+      "ERP-integration",
+      "Betalintegrationer",
+      "Orderhantering"
+    ],
+    "platforms": [
+      "Custom"
+    ],
+    "pricing": "SaaS-baserad. Offert per merchant.",
+    "countries": [
+      "SE"
+    ],
+    "affiliateUrl": "https://askas.com/",
+    "description": "Askås är en etablerad svensk e-handelsplattform med lång erfarenhet av svensk e-handel. Plattformen fokuserar på integrationer med svenska affärssystem.",
+    "faq": [
+      {
+        "q": "Är Askås en checkout?",
+        "a": "Nej, Askås är en komplett e-handelsplattform som inkluderar checkout-funktionalitet."
+      }
+    ],
+    "id": "askas",
+    "logo_url": "/logos/askas.svg",
+    "website_url": "https://askas.com",
+    "brand_color": "bg-blue-600",
+    "target_market": "B2B/B2C",
+    "conversion_impact": 6,
+    "key_features": [
+      "E-handelsplattform",
+      "PIM-integration",
+      "ERP-integration",
+      "Betalintegrationer",
+      "Orderhantering"
+    ],
+    "affiliate_url": "https://askas.com/",
+    "reviews": []
+  },
+  {
+    "slug": "shopify",
+    "name": "Shopify",
+    "tagline": "Världens största e-handelsplattform.",
+    "logoUrl": "/logos/shopify.svg",
+    "websiteUrl": "https://www.shopify.com",
+    "brandColor": "bg-emerald-600",
+    "category": "E-handelsplattform",
+    "targetMarket": "B2C",
+    "conversionImpact": 9,
+    "marketImpact": {
+      "se": 8,
+      "no": 7,
+      "dk": 7,
+      "fi": 7
+    },
+    "trustAngle": "Global marknadsledare inom e-handelsplattformar",
+    "pros": [
+      "Världens största e-handelsplattform",
+      "Huge app-ekosystem",
+      "Global skalbarhet",
+      "Enkel att komma igång med"
+    ],
+    "cons": [
+      "Transaktionsavgifter på vissa planer",
+      "Mindre flexibelt än headless-lösningar",
+      "Beroende av Shopify-ekosystemet"
+    ],
+    "keyFeatures": [
+      "E-handelsplattform",
+      "App Store med tusentals appar",
+      "Shopify Payments",
+      "Global CDN",
+      "Templating-system"
+    ],
+    "platforms": [
+      "Shopify"
+    ],
+    "pricing": "SaaS-baserad. Från $29/månad.",
+    "countries": [
+      "Global"
+    ],
+    "affiliateUrl": "https://www.shopify.com/",
+    "description": "Shopify är världens största e-handelsplattform med miljoner aktiva butiker. Plattformen är känt för sin enkelhet och stora app-ekosystem.",
+    "faq": [
+      {
+        "q": "Är Shopify en checkout?",
+        "a": "Nej, Shopify är en komplett e-handelsplattform som inkluderar Shopify Payments som checkout-lösning."
+      }
+    ],
+    "id": "shopify",
+    "logo_url": "/logos/shopify.svg",
+    "website_url": "https://www.shopify.com",
+    "brand_color": "bg-emerald-600",
+    "target_market": "B2C",
+    "conversion_impact": 9,
+    "key_features": [
+      "E-handelsplattform",
+      "App Store med tusentals appar",
+      "Shopify Payments",
+      "Global CDN",
+      "Templating-system"
+    ],
+    "affiliate_url": "https://www.shopify.com/",
+    "reviews": []
+  },
+  {
+    "slug": "norce",
+    "name": "Norce",
+    "tagline": "Nordisk e-handelsplattform för enterprise.",
+    "logoUrl": "/logos/norce.svg",
+    "websiteUrl": "https://norce.com",
+    "brandColor": "bg-indigo-600",
+    "category": "E-handelsplattform",
+    "targetMarket": "B2B/B2C",
+    "conversionImpact": 7,
+    "marketImpact": {
+      "se": 7,
+      "no": 6,
+      "dk": 5,
+      "fi": 5
+    },
+    "trustAngle": "Enterprise e-handelsplattform för Norden",
+    "pros": [
+      "Enterprise-fokus",
+      "Stark på komplex e-handel",
+      "Nordisk expertis",
+      "Scalbar arkitektur"
+    ],
+    "cons": [
+      "Högre inträdesbarriär",
+      "Mindre för små e-handlare",
+      "Kräver mer implementationstid"
+    ],
+    "keyFeatures": [
+      "E-handelsplattform",
+      "Headless-arkitektur",
+      "PIM",
+      "Omnichannel",
+      "Enterprise-integrationer"
+    ],
+    "platforms": [
+      "Custom"
+    ],
+    "pricing": "Enterprise. Offert per merchant.",
+    "countries": [
+      "SE",
+      "NO",
+      "DK",
+      "FI"
+    ],
+    "affiliateUrl": "https://norce.com/",
+    "description": "Norce är en nordisk e-handelsplattform med enterprise-fokus. Plattformen är designad för komplex e-handel och stora volymer.",
+    "faq": [
+      {
+        "q": "Är Norce en checkout?",
+        "a": "Nej, Norce är en komplett enterprise e-handelsplattform som inkluderar checkout-funktionalitet."
+      }
+    ],
+    "id": "norce",
+    "logo_url": "/logos/norce.svg",
+    "website_url": "https://norce.com",
+    "brand_color": "bg-indigo-600",
+    "target_market": "B2B/B2C",
+    "conversion_impact": 7,
+    "key_features": [
+      "E-handelsplattform",
+      "Headless-arkitektur",
+      "PIM",
+      "Omnichannel",
+      "Enterprise-integrationer"
+    ],
+    "affiliate_url": "https://norce.com/",
+    "reviews": []
+  },
+  {
+    "slug": "abicart",
+    "name": "Abicart",
+    "tagline": "Svensk e-handelsplattform med fokus på enkelhet.",
+    "logoUrl": "/logos/abicart.svg",
+    "websiteUrl": "https://abicart.se",
+    "brandColor": "bg-orange-600",
+    "category": "E-handelsplattform",
+    "targetMarket": "B2C",
+    "conversionImpact": 6,
+    "marketImpact": {
+      "se": 6,
+      "no": 5,
+      "dk": 4,
+      "fi": 4
+    },
+    "trustAngle": "Svensk e-handelsplattform för små och medelstora butiker",
+    "pros": [
+      "Enkel att använda",
+      "Svensk support",
+      "Bra för små och medelstora butiker",
+      "Komplett plattform"
+    ],
+    "cons": [
+      "Mindre skalbar än enterprise-plattformar",
+      "Primärt för svensk marknad",
+      "Mindre flexibelt än headless-lösningar"
+    ],
+    "keyFeatures": [
+      "E-handelsplattform",
+      "Mallar och teman",
+      "Betalintegrationer",
+      "Orderhantering",
+      "Lagerhantering"
+    ],
+    "platforms": [
+      "Custom"
+    ],
+    "pricing": "SaaS-baserad. Offert per merchant.",
+    "countries": [
+      "SE"
+    ],
+    "affiliateUrl": "https://abicart.se/",
+    "description": "Abicart är en svensk e-handelsplattform som fokuserar på enkelhet för små och medelstora butiker. Plattformen är komplett med allt som behövs för att starta e-handel.",
+    "faq": [
+      {
+        "q": "Är Abicart en checkout?",
+        "a": "Nej, Abicart är en komplett e-handelsplattform som inkluderar checkout-funktionalitet."
+      }
+    ],
+    "id": "abicart",
+    "logo_url": "/logos/abicart.svg",
+    "website_url": "https://abicart.se",
+    "brand_color": "bg-orange-600",
+    "target_market": "B2C",
+    "conversion_impact": 6,
+    "key_features": [
+      "E-handelsplattform",
+      "Mallar och teman",
+      "Betalintegrationer",
+      "Orderhantering",
+      "Lagerhantering"
+    ],
+    "affiliate_url": "https://abicart.se/",
+    "reviews": []
+  },
+  {
+    "slug": "webshipper",
+    "name": "Webshipper",
+    "tagline": "Shipping platform för e-handel med +70 carriers.",
+    "logoUrl": "/logos/webshipper.svg",
+    "websiteUrl": "https://webshipper.com",
+    "brandColor": "bg-orange-500",
+    "category": "Transportör",
+    "targetMarket": "B2B",
+    "conversionImpact": 6,
+    "marketImpact": {
+      "se": 6,
+      "no": 5,
+      "dk": 5,
+      "fi": 4
+    },
+    "trustAngle": "Multi-carrier shipping automation",
+    "pros": [
+      "Kopplar till +70 carriers",
+      "Automatiserad orderflöde",
+      "Integration med e-handelsplattformar",
+      "Flera fraktalternativ i kassan"
+    ],
+    "cons": [
+      "Kräver integration",
+      "Bäst för volymer"
+    ],
+    "keyFeatures": [
+      "Multi-carrier shipping",
+      "Automatisk orderimport",
+      "Fraktetiketter",
+      "Tracking-notifieringar",
+      "Returhantering"
+    ],
+    "platforms": [
+      "Shopify",
+      "WooCommerce",
+      "Magento",
+      "BigCommerce",
+      "Custom"
+    ],
+    "pricing": "SaaS + transaktion.",
+    "countries": [
+      "SE",
+      "NO",
+      "DK",
+      "FI",
+      "DE"
+    ],
+    "affiliateUrl": "https://webshipper.com/",
+    "description": "Webshipper är en shipping platform för e-handel som kopplar samman din webshop med +70 carriers. Plattformen automatiserar orderflödet från import till fraktetiketter och tracking.",
+    "faq": [
+      {
+        "q": "Är Webshipper en checkout?",
+        "a": "Nej, Webshipper är en shipping platform som integreras i din befintliga checkout."
+      }
+    ],
+    "id": "webshipper",
+    "logo_url": "/logos/webshipper.svg",
+    "website_url": "https://webshipper.com",
+    "brand_color": "bg-orange-500",
+    "target_market": "B2B",
+    "conversion_impact": 6,
+    "key_features": [
+      "Multi-carrier shipping",
+      "Automatisk orderimport",
+      "Fraktetiketter",
+      "Tracking-notifieringar",
+      "Returhantering"
+    ],
+    "affiliate_url": "https://webshipper.com/",
+    "reviews": []
+  },
+  {
+    "slug": "shipit",
+    "name": "Shipit",
+    "tagline": "Svensk fraktlösning för e-handel.",
+    "logoUrl": "/logos/shipit.svg",
+    "websiteUrl": "https://shipit.se",
+    "brandColor": "bg-indigo-500",
+    "category": "Transportör",
+    "targetMarket": "B2B",
+    "conversionImpact": 6,
+    "marketImpact": {
+      "se": 6,
+      "no": 5,
+      "dk": 5,
+      "fi": 4
+    },
+    "trustAngle": "Svensk fraktlösning med ombudsnät",
+    "pros": [
+      "Flera frakttjänster på ett ställe",
+      "Snabb responstid för ombud",
+      "Automatisering för e-handel",
+      "Svensk support"
+    ],
+    "cons": [
+      "Fokuserat på svensk marknad"
+    ],
+    "keyFeatures": [
+      "Fraktjämförelse",
+      "Ombudsnät",
+      "Paketskåp",
+      "Automatisk fraktbokning",
+      "Tracking"
+    ],
+    "platforms": [
+      "Shopify",
+      "WooCommerce",
+      "Magento",
+      "Custom"
+    ],
+    "pricing": "SaaS + transaktion.",
+    "countries": [
+      "SE"
+    ],
+    "affiliateUrl": "https://shipit.se/",
+    "description": "Shipit är en svensk fraktlösning som erbjuder flera populära frakttjänster både för styckvisa fraktköp och fullt automatiserat direkt i e-handelns kassa.",
+    "faq": [
+      {
+        "q": "Är Shipit en checkout?",
+        "a": "Nej, Shipit är en fraktlösning som integreras i din befintliga checkout."
+      }
+    ],
+    "id": "shipit",
+    "logo_url": "/logos/shipit.svg",
+    "website_url": "https://shipit.se",
+    "brand_color": "bg-indigo-500",
+    "target_market": "B2B",
+    "conversion_impact": 6,
+    "key_features": [
+      "Fraktjämförelse",
+      "Ombudsnät",
+      "Paketskåp",
+      "Automatisk fraktbokning",
+      "Tracking"
+    ],
+    "affiliate_url": "https://shipit.se/",
+    "reviews": []
+  },
+  {
+    "slug": "adyen",
+    "name": "Adyen",
+    "tagline": "Global betalningsplattform för enterprise.",
+    "logoUrl": "/logos/adyen.svg",
+    "websiteUrl": "https://www.adyen.com",
+    "brandColor": "bg-blue-900",
+    "category": "Betallösning",
+    "targetMarket": "B2B/B2C",
+    "conversionImpact": 9,
+    "marketImpact": {
+      "se": 7,
+      "no": 7,
+      "dk": 7,
+      "fi": 7
+    },
+    "trustAngle": "Global betalningsplattform för enterprise",
+    "pros": [
+      "Global närvaro i många länder",
+      "Enterprise-skala",
+      "Stark riskhantering",
+      "Många betalmetoder"
+    ],
+    "cons": [
+      "Komplex implementation",
+      "Bäst för stora volymer"
+    ],
+    "keyFeatures": [
+      "Global payment processing",
+      "Riskhantering",
+      "Multi-currency",
+      "Payouts",
+      "Data & analytics"
+    ],
+    "platforms": [
+      "Shopify",
+      "WooCommerce",
+      "Magento",
+      "BigCommerce",
+      "Custom"
+    ],
+    "pricing": "Transaktionsbaserad. Offert för enterprise.",
+    "countries": [
+      "Global"
+    ],
+    "affiliateUrl": "https://www.adyen.com/",
+    "description": "Adyen är en global betalningsplattform som erbjuder en enda lösning för att acceptera betalningar online, i butik och via mobila enheter. Plattformen är särskilt stark för enterprise-kunder.",
+    "faq": [
+      {
+        "q": "Är Adyen för svenska e-handel?",
+        "a": "Adyen har stark närvaro globalt men är mer enterprise-fokuserad. För mindre svenska e-handlare kan Klarna eller Walley vara enklare alternativ."
+      }
+    ],
+    "id": "adyen",
+    "logo_url": "/logos/adyen.svg",
+    "website_url": "https://www.adyen.com",
+    "brand_color": "bg-blue-900",
+    "target_market": "B2B/B2C",
+    "conversion_impact": 9,
+    "key_features": [
+      "Global payment processing",
+      "Riskhantering",
+      "Multi-currency",
+      "Payouts",
+      "Data & analytics"
+    ],
+    "affiliate_url": "https://www.adyen.com/",
+    "reviews": []
+  }
+]

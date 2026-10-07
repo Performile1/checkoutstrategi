@@ -62,25 +62,62 @@ function normalizePlayer(p: any): StoredPlayer {
   };
 }
 
-function initPlayers(): StoredPlayer[] {
-  const dir = path.dirname(PLAYERS_FILE);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+let memoryPlayers: StoredPlayer[] | null = null;
 
-  if (fs.existsSync(PLAYERS_FILE)) {
+function safeWritePlayers(playersList: StoredPlayer[]): void {
+  memoryPlayers = playersList;
+  try {
+    const dir = path.dirname(PLAYERS_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(PLAYERS_FILE, JSON.stringify(playersList, null, 2), 'utf8');
+  } catch {
+    // If process.cwd() is read-only (like Vercel serverless), try /tmp
     try {
+      const tmpPath = path.join('/tmp', 'checkout_players.json');
+      fs.writeFileSync(tmpPath, JSON.stringify(playersList, null, 2), 'utf8');
+    } catch {
+      // Memory cache is active
+    }
+  }
+}
+
+function initPlayers(): StoredPlayer[] {
+  if (memoryPlayers && memoryPlayers.length > 0) {
+    return memoryPlayers;
+  }
+
+  // 1. Try reading from project PLAYERS_FILE
+  try {
+    if (fs.existsSync(PLAYERS_FILE)) {
       const content = fs.readFileSync(PLAYERS_FILE, 'utf8');
       const parsed = JSON.parse(content);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.map(normalizePlayer);
+        memoryPlayers = parsed.map(normalizePlayer);
+        return memoryPlayers;
       }
-    } catch {
-      // fallback to static
     }
+  } catch {
+    // continue to /tmp
   }
 
-  // Seed with static players
+  // 2. Try reading from /tmp fallback
+  try {
+    const tmpPath = path.join('/tmp', 'checkout_players.json');
+    if (fs.existsSync(tmpPath)) {
+      const content = fs.readFileSync(tmpPath, 'utf8');
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        memoryPlayers = parsed.map(normalizePlayer);
+        return memoryPlayers;
+      }
+    }
+  } catch {
+    // continue to static
+  }
+
+  // 3. Seed with static players
   const seeded = staticPlayers.map(normalizePlayer);
-  fs.writeFileSync(PLAYERS_FILE, JSON.stringify(seeded, null, 2), 'utf8');
+  safeWritePlayers(seeded);
   return seeded;
 }
 
@@ -97,10 +134,12 @@ export async function getStoredPlayers(): Promise<StoredPlayer[]> {
       const supabase = getSupabaseClient();
       const { data, error } = await supabase.from('players').select('*').order('name');
       if (!error && data && data.length > 0) {
-        return data.map(normalizePlayer);
+        const mapped = data.map(normalizePlayer);
+        memoryPlayers = mapped;
+        return mapped;
       }
     } catch {
-      // fallback to file
+      // fallback to local/memory store
     }
   }
 
@@ -114,7 +153,7 @@ export async function getStoredPlayer(idOrSlug: string): Promise<StoredPlayer | 
 
 export async function saveStoredPlayer(playerData: any): Promise<StoredPlayer> {
   const normalized = normalizePlayer(playerData);
-  const players = initPlayers();
+  const players = [...initPlayers()];
   const index = players.findIndex((p) => p.id === normalized.id || p.slug === normalized.slug);
 
   if (index >= 0) {
@@ -123,7 +162,7 @@ export async function saveStoredPlayer(playerData: any): Promise<StoredPlayer> {
     players.push({ ...normalized, created_at: new Date().toISOString() });
   }
 
-  fs.writeFileSync(PLAYERS_FILE, JSON.stringify(players, null, 2), 'utf8');
+  safeWritePlayers(players);
 
   // Also sync to Supabase if connected
   const hasSupabase = Boolean(
@@ -155,7 +194,7 @@ export async function saveStoredPlayer(playerData: any): Promise<StoredPlayer> {
         faq: normalized.faq,
       }, { onConflict: 'slug' });
     } catch {
-      // ignore
+      // ignore Supabase sync error
     }
   }
 
@@ -165,7 +204,7 @@ export async function saveStoredPlayer(playerData: any): Promise<StoredPlayer> {
 export async function deleteStoredPlayer(idOrSlug: string): Promise<boolean> {
   const players = initPlayers();
   const filtered = players.filter((p) => p.id !== idOrSlug && p.slug !== idOrSlug);
-  fs.writeFileSync(PLAYERS_FILE, JSON.stringify(filtered, null, 2), 'utf8');
+  safeWritePlayers(filtered);
 
   const hasSupabase = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&

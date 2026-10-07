@@ -24,20 +24,57 @@ export interface StoredReview {
   };
 }
 
-function initReviews(): StoredReview[] {
-  const dir = path.dirname(REVIEWS_FILE);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+let memoryReviews: StoredReview[] | null = null;
 
-  if (fs.existsSync(REVIEWS_FILE)) {
+function safeWriteReviews(reviewsList: StoredReview[]): void {
+  memoryReviews = reviewsList;
+  try {
+    const dir = path.dirname(REVIEWS_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(REVIEWS_FILE, JSON.stringify(reviewsList, null, 2), 'utf8');
+  } catch {
+    // If process.cwd() is read-only (like Vercel serverless), try /tmp
     try {
+      const tmpPath = path.join('/tmp', 'checkout_reviews.json');
+      fs.writeFileSync(tmpPath, JSON.stringify(reviewsList, null, 2), 'utf8');
+    } catch {
+      // Memory cache active
+    }
+  }
+}
+
+function initReviews(): StoredReview[] {
+  if (memoryReviews && memoryReviews.length > 0) {
+    return memoryReviews;
+  }
+
+  // 1. Try reading from REVIEWS_FILE
+  try {
+    if (fs.existsSync(REVIEWS_FILE)) {
       const content = fs.readFileSync(REVIEWS_FILE, 'utf8');
       const parsed = JSON.parse(content);
       if (Array.isArray(parsed) && parsed.length > 0) {
+        memoryReviews = parsed;
         return parsed;
       }
-    } catch {
-      // fallback
     }
+  } catch {
+    // fallback
+  }
+
+  // 2. Try reading from /tmp fallback
+  try {
+    const tmpPath = path.join('/tmp', 'checkout_reviews.json');
+    if (fs.existsSync(tmpPath)) {
+      const content = fs.readFileSync(tmpPath, 'utf8');
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        memoryReviews = parsed;
+        return parsed;
+      }
+    }
+  } catch {
+    // fallback
   }
 
   // Seed with reviews from players
@@ -68,7 +105,7 @@ function initReviews(): StoredReview[] {
     }
   }
 
-  fs.writeFileSync(REVIEWS_FILE, JSON.stringify(seeded, null, 2), 'utf8');
+  safeWriteReviews(seeded);
   return seeded;
 }
 
@@ -88,6 +125,7 @@ export async function getStoredReviews(): Promise<StoredReview[]> {
         .order('created_at', { ascending: false });
 
       if (!error && data && data.length > 0) {
+        memoryReviews = data;
         return data;
       }
     } catch {
@@ -99,11 +137,11 @@ export async function getStoredReviews(): Promise<StoredReview[]> {
 }
 
 export async function approveStoredReview(id: string): Promise<boolean> {
-  const reviews = initReviews();
+  const reviews = [...initReviews()];
   const index = reviews.findIndex((r) => r.id === id);
   if (index >= 0) {
     reviews[index].approved = true;
-    fs.writeFileSync(REVIEWS_FILE, JSON.stringify(reviews, null, 2), 'utf8');
+    safeWriteReviews(reviews);
   }
 
   const hasSupabase = Boolean(
@@ -125,7 +163,7 @@ export async function approveStoredReview(id: string): Promise<boolean> {
 export async function deleteStoredReview(id: string): Promise<boolean> {
   const reviews = initReviews();
   const filtered = reviews.filter((r) => r.id !== id);
-  fs.writeFileSync(REVIEWS_FILE, JSON.stringify(filtered, null, 2), 'utf8');
+  safeWriteReviews(filtered);
 
   const hasSupabase = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&

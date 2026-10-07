@@ -1,0 +1,38 @@
+[
+  {
+    "id": "review-1",
+    "player_id": "klarna",
+    "reviewer_name": "Erik Lindström",
+    "reviewer_company": "TechStore AB",
+    "reviewer_email": "verifierad@kund.se",
+    "webshop_url": "https://techstore.se",
+    "rating": 5,
+    "title": "Konverteringen ökade med 22%",
+    "content": "Efter byte till Klarna såg vi en direkt ökning i konvertering, särskilt på mobil. BNPL-funktionen är perfekt för vår målgrupp.",
+    "verified": true,
+    "approved": true,
+    "created_at": "2026-10-05T18:04:16.845Z",
+    "players": {
+      "name": "Klarna",
+      "slug": "klarna"
+    }
+  },
+  {
+    "id": "review-2",
+    "player_id": "klarna",
+    "reviewer_name": "Maria Andersson",
+    "reviewer_company": "Fashion Nordic",
+    "reviewer_email": "verifierad@kund.se",
+    "webshop_url": "https://fashionnordic.com",
+    "rating": 4,
+    "title": "Starkt men kostsamt",
+    "content": "Klarna levererar på konvertering men marginalerna påverkas. Vi funderar på att testa Walley som alternativ.",
+    "verified": true,
+    "approved": true,
+    "created_at": "2026-10-04T18:04:16.845Z",
+    "players": {
+      "name": "Klarna",
+      "slug": "klarna"
+    }
+  }
+]

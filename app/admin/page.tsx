@@ -1,11 +1,12 @@
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, FileText, Users, LogOut, Settings } from 'lucide-react';
+import { Plus, FileText, Users, Settings } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getAdminUser } from '@/lib/auth';
 import { getStoredPlayers } from '@/lib/players-store';
 import { getAllPosts } from '@/lib/blog';
 import { getStoredReviews } from '@/lib/reviews-store';
+import { AdminGuard } from '@/components/AdminGuard';
+import { AdminLogoutButton } from '@/components/AdminLogoutButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,88 +19,77 @@ export const metadata: Metadata = {
 export default async function AdminPage() {
   const user = await getAdminUser();
 
-  if (!user) {
-    redirect('/admin/login');
-  }
-
-  // Fetch real stats from stores
+  // Fetch real stats from stores safely
   const [playersList, postsList, reviewsList] = await Promise.all([
-    getStoredPlayers(),
-    Promise.resolve(getAllPosts()),
-    getStoredReviews(),
+    getStoredPlayers().catch(() => []),
+    Promise.resolve().then(() => getAllPosts()).catch(() => []),
+    getStoredReviews().catch(() => []),
   ]);
 
-  const playersCount = playersList.length;
-  const postsCount = postsList.length;
-  const reviewsCount = reviewsList.length;
-
-  const handleLogout = async () => {
-    'use server';
-    // This will be handled by a client component
-  };
+  const playersCount = playersList?.length || 0;
+  const postsCount = postsList?.length || 0;
+  const reviewsCount = reviewsList?.length || 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      {/* Header */}
-      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-        <div className="container-prose py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold">Admin Dashboard</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-slate-600 dark:text-slate-400">
-              {user?.email}
-            </span>
-            <form action="/api/auth/logout" method="POST">
-              <button type="submit" className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">
-                <LogOut size={16} /> Logga ut
-              </button>
-            </form>
+    <AdminGuard serverAuthenticated={!!user} userEmail={user?.email}>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+        {/* Header */}
+        <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+          <div className="container-prose py-4 flex items-center justify-between">
+            <h1 className="text-xl font-bold">Admin Dashboard</h1>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-slate-600 dark:text-slate-400">
+                {user?.email || 'admin@checkoutstrategi.se'}
+              </span>
+              <AdminLogoutButton />
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <div className="container-prose py-8">
-        {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
-          <StatCard
-            title="Players"
-            count={playersCount || 0}
-            icon={<Users size={20} />}
-            href="/admin/players"
-          />
-          <StatCard
-            title="Blogginlägg"
-            count={postsCount || 0}
-            icon={<FileText size={20} />}
-            href="/admin/blog"
-          />
-          <StatCard
-            title="Reviews"
-            count={reviewsCount || 0}
-            icon={<Settings size={20} />}
-            href="/admin/reviews"
-          />
-        </div>
+        <div className="container-prose py-8">
+          {/* Stats */}
+          <div className="grid gap-4 md:grid-cols-3 mb-8">
+            <StatCard
+              title="Players"
+              count={playersCount || 0}
+              icon={<Users size={20} />}
+              href="/admin/players"
+            />
+            <StatCard
+              title="Blogginlägg"
+              count={postsCount || 0}
+              icon={<FileText size={20} />}
+              href="/admin/blog"
+            />
+            <StatCard
+              title="Reviews"
+              count={reviewsCount || 0}
+              icon={<Settings size={20} />}
+              href="/admin/reviews"
+            />
+          </div>
 
-        {/* Quick Actions */}
-        <div className="card">
-          <h2 className="text-lg font-semibold mb-4">Snabbåtgärder</h2>
-          <div className="grid gap-3 md:grid-cols-2">
-            <QuickAction
-              title="Lägg till ny player"
-              description="Skapa en ny checkout-aktör"
-              icon={<Plus size={18} />}
-              href="/admin/players/new"
-            />
-            <QuickAction
-              title="Kör blogg-automation"
-              description="Generera AI-blogginlägg från RSS"
-              icon={<FileText size={18} />}
-              href="/admin/blog/generate"
-            />
+          {/* Quick Actions */}
+          <div className="card">
+            <h2 className="text-lg font-semibold mb-4">Snabbåtgärder</h2>
+            <div className="grid gap-3 md:grid-cols-2">
+              <QuickAction
+                title="Lägg till ny player"
+                description="Skapa en ny checkout-aktör"
+                icon={<Plus size={18} />}
+                href="/admin/players/new"
+              />
+              <QuickAction
+                title="Skapa blogginlägg"
+                description="Skriv eller redigera blogginlägg"
+                icon={<FileText size={18} />}
+                href="/admin/blog/new"
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </AdminGuard>
   );
 }
 

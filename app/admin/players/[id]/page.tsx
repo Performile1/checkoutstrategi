@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { AdminGuard, getAdminAuthHeaders } from '@/components/AdminGuard';
 
 export default function EditPlayerPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -32,46 +32,49 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
   });
 
   useEffect(() => {
+    const loadPlayer = async () => {
+      try {
+        const authHeaders = getAdminAuthHeaders();
+        const response = await fetch(`/api/admin/players/${params.id}`, {
+          headers: authHeaders,
+        });
+        if (!response.ok) throw new Error('Kunde inte läsa in aktören');
+        const player = await response.json();
+
+        setFormData({
+          slug: player.slug,
+          name: player.name,
+          tagline: player.tagline,
+          logo_url: player.logo_url || player.logoUrl || '',
+          website_url: player.website_url || player.websiteUrl || '',
+          brand_color: player.brand_color || player.brandColor || 'bg-brand-500',
+          category: player.category || 'Checkout',
+          target_market: player.target_market || player.targetMarket || 'B2C',
+          conversion_impact: player.conversion_impact ?? player.conversionImpact ?? 7,
+          trust_angle: player.trust_angle || player.trustAngle || '',
+          pros: Array.isArray(player.pros) ? player.pros.join('\n') : '',
+          cons: Array.isArray(player.cons) ? player.cons.join('\n') : '',
+          key_features: Array.isArray(player.key_features || player.keyFeatures)
+            ? (player.key_features || player.keyFeatures).join('\n')
+            : '',
+          platforms: Array.isArray(player.platforms) ? player.platforms.join(', ') : '',
+          pricing: player.pricing || '',
+          countries: Array.isArray(player.countries) ? player.countries.join(', ') : '',
+          affiliate_url: player.affiliate_url || player.affiliateUrl || '',
+          description: player.description || '',
+          faq: Array.isArray(player.faq)
+            ? player.faq.map((f: { q: string; a: string }) => `Q: ${f.q}\nA: ${f.a}`).join('\n\n')
+            : '',
+        });
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadPlayer();
   }, [params.id]);
-
-  const loadPlayer = async () => {
-    try {
-      const response = await fetch(`/api/admin/players/${params.id}`);
-      if (!response.ok) throw new Error('Kunde inte läsa in aktören');
-      const player = await response.json();
-
-      setFormData({
-        slug: player.slug,
-        name: player.name,
-        tagline: player.tagline,
-        logo_url: player.logo_url || player.logoUrl || '',
-        website_url: player.website_url || player.websiteUrl || '',
-        brand_color: player.brand_color || player.brandColor || 'bg-brand-500',
-        category: player.category || 'Checkout',
-        target_market: player.target_market || player.targetMarket || 'B2C',
-        conversion_impact: player.conversion_impact ?? player.conversionImpact ?? 7,
-        trust_angle: player.trust_angle || player.trustAngle || '',
-        pros: Array.isArray(player.pros) ? player.pros.join('\n') : '',
-        cons: Array.isArray(player.cons) ? player.cons.join('\n') : '',
-        key_features: Array.isArray(player.key_features || player.keyFeatures)
-          ? (player.key_features || player.keyFeatures).join('\n')
-          : '',
-        platforms: Array.isArray(player.platforms) ? player.platforms.join(', ') : '',
-        pricing: player.pricing || '',
-        countries: Array.isArray(player.countries) ? player.countries.join(', ') : '',
-        affiliate_url: player.affiliate_url || player.affiliateUrl || '',
-        description: player.description || '',
-        faq: Array.isArray(player.faq)
-          ? player.faq.map((f: { q: string; a: string }) => `Q: ${f.q}\nA: ${f.a}`).join('\n\n')
-          : '',
-      });
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,9 +82,10 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
     setError('');
 
     try {
+      const authHeaders = getAdminAuthHeaders();
       const response = await fetch(`/api/admin/players/${params.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({
           slug: formData.slug,
           name: formData.name,
@@ -137,7 +141,8 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <AdminGuard>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         <div className="container-prose py-4">
           <h1 className="text-xl font-bold">Redigera player</h1>
@@ -382,5 +387,6 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
         </form>
       </div>
     </div>
+    </AdminGuard>
   );
 }

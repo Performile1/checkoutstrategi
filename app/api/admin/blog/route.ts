@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminUser } from '@/lib/auth';
-import fs from 'node:fs';
-import path from 'node:path';
-import matter from 'gray-matter';
-
-const POSTS_DIR = path.join(process.cwd(), 'content', 'blog');
-
-function ensureDir() {
-  if (!fs.existsSync(POSTS_DIR)) fs.mkdirSync(POSTS_DIR, { recursive: true });
-}
+import { saveBlogPost, getPost } from '@/lib/blog';
+import { getSupabaseClient } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
-  const user = await getAdminUser();
+  const user = await getAdminUser(request);
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -24,27 +17,44 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Slug and title are required' }, { status: 400 });
   }
 
-  const frontmatter: Record<string, any> = {
-    title,
-    description,
-    date: date || new Date().toISOString(),
-  };
-
-  if (author) frontmatter.author = author;
-  if (tags && tags.length > 0) frontmatter.tags = tags;
-  if (cover) frontmatter.cover = cover;
-
-  const raw = matter.stringify(content || '', frontmatter);
-  ensureDir();
-  
-  // Write to .mdx file
-  const filePath = path.join(POSTS_DIR, `${slug}.mdx`);
-  
-  if (fs.existsSync(filePath)) {
+  const existing = getPost(slug);
+  if (existing) {
     return NextResponse.json({ error: 'Post with this slug already exists' }, { status: 409 });
   }
-  
-  fs.writeFileSync(filePath, raw, 'utf8');
+
+  saveBlogPost(slug, content || '', {
+    title,
+    description: description || '',
+    date: date || new Date().toISOString(),
+    author: author || 'AI-analytikern',
+    tags: tags || [],
+    cover: cover || '',
+  });
+
+  // Sync to Supabase blog_posts table if connected
+  const hasSupabase = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  );
+  if (hasSupabase) {
+    try {
+      const supabase = getSupabaseClient(process.env.SUPABASE_SERVICE_ROLE_KEY);
+      await supabase.from('blog_posts').upsert({
+        slug,
+        title,
+        description: description || '',
+        content: content || '',
+        author: author || 'AI-analytikern',
+        tags: tags || [],
+        cover_url: cover || null,
+        draft: false,
+        published_at: date ? new Date(date).toISOString() : new Date().toISOString(),
+      }, { onConflict: 'slug' });
+    } catch {
+      // ignore
+    }
+  }
 
   return NextResponse.json({ success: true, slug });
 }
+
