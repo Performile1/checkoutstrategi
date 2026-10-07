@@ -9,8 +9,9 @@ import {
   Star, ShoppingCart, Map as MapIcon, Monitor, Shirt, Sofa, Coffee,
   Smartphone, Building2, Leaf, ShieldCheck, Timer, Wallet, Fingerprint,
   Share2, Printer, ArrowRightLeft, HeartHandshake, FileText, Award,
-  UsersRound, PackageCheck, Info
+  UsersRound, PackageCheck, Info, ArrowRight, Calculator
 } from 'lucide-react';
+import { CheckoutBenchmarks } from '@/components/CheckoutBenchmarks';
 
 // --- TYPER OCH DATA ---
 type CheckoutSection = { id: string; title: string; icon: React.ReactNode; description: string; };
@@ -481,13 +482,25 @@ export default function TestCheckoutPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 pb-20">
       <div className="container mx-auto px-4 py-8 max-w-[1400px]">
-        <div className="mb-8">
-          <div className="flex items-center gap-2 text-brand-600 dark:text-brand-400 mb-2">
-            <Settings size={20} />
-            <span className="text-sm font-semibold uppercase tracking-wide">Interactive Lab</span>
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-brand-600 dark:text-brand-400 mb-2">
+              <Settings size={20} />
+              <span className="text-sm font-semibold uppercase tracking-wide">Interactive Lab</span>
+            </div>
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100">Checkout Lab</h1>
+            <p className="mt-2 text-lg text-slate-600 dark:text-slate-400">
+              Experimentera med e-handelspsykologi längs hela kundresan och se hur det påverkar dina nyckeltal.
+            </p>
           </div>
-          <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100">Checkout Lab</h1>
-          <p className="mt-2 text-lg text-slate-600 dark:text-slate-400">Experimentera med e-handelspsykologi längs hela kundresan och se hur det påverkar dina nyckeltal.</p>
+          <a
+            href="#checkout-benchmarks"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 dark:text-brand-400 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition self-start sm:self-auto shrink-0"
+          >
+            <Calculator size={16} />
+            <span>Kalkylator & Benchmarks</span>
+            <ArrowRight size={14} />
+          </a>
         </div>
 
         <div className="grid lg:grid-cols-12 gap-8 items-start">
@@ -1859,6 +1872,9 @@ export default function TestCheckoutPage() {
           </div>
 
         </div>
+
+        {/* BRANSCHBENCHMARKS & INTERAKTIV KONVERTERINGSKALKYLATOR */}
+        <CheckoutBenchmarks />
       </div>
     </div>
   );

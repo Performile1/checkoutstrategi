@@ -93,7 +93,9 @@ export function AdminGuard({
 
     setAuthorized(false);
     setLoading(false);
-    router.push(`/admin/login?redirect=${encodeURIComponent(pathname || '/admin')}`);
+    if (pathname && !pathname.startsWith('/admin/login')) {
+      router.push(`/admin/login?redirect=${encodeURIComponent(pathname || '/admin')}`);
+    }
   }, [serverAuthenticated, userEmail, pathname, router]);
 
   if (loading) {

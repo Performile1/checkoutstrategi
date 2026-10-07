@@ -10,6 +10,20 @@ const nextConfig = {
       { protocol: 'https', hostname: '**' },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/checkoutlab',
+        destination: '/testcheckout',
+        permanent: true,
+      },
+      {
+        source: '/checkout-lab',
+        destination: '/testcheckout',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

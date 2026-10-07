@@ -56,11 +56,33 @@ export async function getAdminUser(request?: Request | NextRequest): Promise<Adm
       const user = parseAdminToken(customToken);
       if (user) return user;
     }
+
+    // Check request.cookies if NextRequest
+    if ('cookies' in request && (request as NextRequest).cookies) {
+      const nextReq = request as NextRequest;
+      const sessionVal =
+        nextReq.cookies.get(ADMIN_COOKIE_NAME)?.value ||
+        nextReq.cookies.get('checkout_admin_token')?.value;
+      if (sessionVal) {
+        const user = parseAdminToken(sessionVal);
+        if (user) return user;
+      }
+    }
+
+    // Check Cookie header string
+    const cookieHeader = request.headers.get('cookie') || '';
+    if (cookieHeader) {
+      const match = cookieHeader.match(/(?:^|;\s*)(?:checkout_admin_session|checkout_admin_token)=([^;]+)/);
+      if (match && match[1]) {
+        const user = parseAdminToken(decodeURIComponent(match[1]));
+        if (user) return user;
+      }
+    }
   }
 
   // 2. Check next/headers (works in Server Components & Route Handlers)
   try {
-    const headerList = await headers();
+    const headerList = headers();
     const authHeader = headerList.get('authorization') || '';
     if (authHeader.startsWith('Bearer ')) {
       const token = authHeader.slice(7).trim();
@@ -73,13 +95,22 @@ export async function getAdminUser(request?: Request | NextRequest): Promise<Adm
       const user = parseAdminToken(customToken);
       if (user) return user;
     }
+
+    const cookieHeader = headerList.get('cookie') || '';
+    if (cookieHeader) {
+      const match = cookieHeader.match(/(?:^|;\s*)(?:checkout_admin_session|checkout_admin_token)=([^;]+)/);
+      if (match && match[1]) {
+        const user = parseAdminToken(decodeURIComponent(match[1]));
+        if (user) return user;
+      }
+    }
   } catch {
     // headers() not available in current execution context
   }
 
   // 3. Check cookies
   try {
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     const sessionCookie =
       cookieStore.get(ADMIN_COOKIE_NAME)?.value ||
       cookieStore.get('checkout_admin_token')?.value;

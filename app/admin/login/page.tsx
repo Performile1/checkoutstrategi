@@ -12,15 +12,16 @@ function AdminLoginForm() {
   const [error, setError] = useState('');
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTarget = searchParams.get('redirect') || '/admin';
+  const rawTarget = searchParams.get('redirect') || '/admin';
+  const redirectTarget = (!rawTarget || rawTarget.startsWith('/admin/login')) ? '/admin' : rawTarget;
 
   useEffect(() => {
     // If already logged in, go straight to admin
     const user = getLocalAdminUser();
     if (user) {
-      router.push(redirectTarget);
+      window.location.href = redirectTarget;
     }
-  }, [redirectTarget, router]);
+  }, [redirectTarget]);
 
   const executeLogin = async (loginEmail: string, loginPassword?: string) => {
     setLoading(true);
@@ -52,8 +53,8 @@ function AdminLoginForm() {
         document.cookie = `checkout_admin_token=${token}; path=/; max-age=2592000; SameSite=Lax${isHttps ? '; Secure' : ''}`;
       } catch {}
 
-      router.push(redirectTarget);
-      router.refresh();
+      // Hard redirect to ensure server receives the newly set cookie on full page reload
+      window.location.href = redirectTarget;
     } catch {
       setError('Ett nätverksfel uppstod. Försök igen.');
       setLoading(false);
