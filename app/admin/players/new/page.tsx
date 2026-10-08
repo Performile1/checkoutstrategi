@@ -2,12 +2,16 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Sparkles } from 'lucide-react';
 import { AdminGuard, getAdminAuthHeaders } from '@/components/AdminGuard';
+import { ImageUploadField } from '@/components/ImageUploadField';
+import { slugify } from '@/lib/slugify';
 
 export default function NewPlayerPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [slugLocked, setSlugLocked] = useState(false);
   const [formData, setFormData] = useState({
     slug: '',
     name: '',
@@ -30,18 +34,37 @@ export default function NewPlayerPage() {
     faq: '',
   });
 
+  const handleNameChange = (newName: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      name: newName,
+      slug: slugLocked ? prev.slug : slugify(newName),
+    }));
+  };
+
+  const handleGenerateSlug = () => {
+    if (formData.name) {
+      setFormData((prev) => ({ ...prev, slug: slugify(prev.name) }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
+      const finalSlug = formData.slug.trim() || slugify(formData.name);
+      if (!finalSlug) {
+        throw new Error('Vänligen ange ett namn eller en slug för aktören.');
+      }
+
       const authHeaders = getAdminAuthHeaders();
       const response = await fetch('/api/admin/players', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({
-          slug: formData.slug,
+          slug: finalSlug,
           name: formData.name,
           tagline: formData.tagline,
           logo_url: formData.logo_url,
@@ -97,61 +120,79 @@ export default function NewPlayerPage() {
 
           <div className="card space-y-4">
             <h2 className="text-lg font-semibold">Grundläggande info</h2>
+
+            <div>
+              <label className="block text-sm font-medium mb-1.5">Namn på aktören</label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleNameChange(e.target.value)}
+                placeholder="T.ex. Kustom eller Dintero"
+                required
+                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+            </div>
+
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium mb-2">Slug (URL-vänligt)</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-medium">Slug (skapas automatiskt)</label>
+                  <button
+                    type="button"
+                    onClick={handleGenerateSlug}
+                    className="text-xs text-brand-600 hover:underline inline-flex items-center gap-1"
+                  >
+                    <Sparkles size={11} /> Generera
+                  </button>
+                </div>
                 <input
                   type="text"
                   value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                  onChange={(e) => {
+                    setSlugLocked(true);
+                    setFormData({ ...formData, slug: e.target.value });
+                  }}
+                  placeholder="kustom"
                   required
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
+                <p className="text-[11px] text-slate-400 mt-1">URL-identifierare (t.ex. /players/kustom).</p>
               </div>
+
               <div>
-                <label className="block text-sm font-medium mb-2">Namn</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Tagline</label>
-              <input
-                type="text"
-                value={formData.tagline}
-                onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
-                required
-                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900"
-              />
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium mb-2">Logo URL</label>
-                <input
-                  type="text"
-                  value={formData.logo_url}
-                  onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-                  required
-                  placeholder="/logos/klarna.png"
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Website URL</label>
+                <label className="block text-sm font-medium mb-1.5">Website URL</label>
                 <input
                   type="text"
                   value={formData.website_url}
                   onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
+                  placeholder="https://kustom.co"
                   required
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1.5">Tagline</label>
+              <input
+                type="text"
+                value={formData.tagline}
+                onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
+                placeholder="Kort beskrivning i en mening..."
+                required
+                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+            </div>
+
+            {/* Logo Upload */}
+            <ImageUploadField
+              label="Logotyp (Logo)"
+              value={formData.logo_url}
+              onChange={(url) => setFormData((prev) => ({ ...prev, logo_url: url }))}
+              type="logo"
+              placeholder="/logos/kustom.svg eller ladda upp fil"
+              helperText="Ladda upp SVG eller PNG (visas i aktörslistan och trustcards)"
+            />
           </div>
 
           <div className="card space-y-4">

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Plus, Edit, Trash2, Calendar } from 'lucide-react';
-import { getAllPosts } from '@/lib/blog';
+import { getStoredBlogPosts } from '@/lib/blog';
 import { getAdminUser } from '@/lib/auth';
 import { AdminGuard } from '@/components/AdminGuard';
 import type { Metadata } from 'next';
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default async function AdminBlogPage() {
   const user = await getAdminUser();
-  const posts = getAllPosts();
+  const posts = await getStoredBlogPosts();
 
   return (
     <AdminGuard serverAuthenticated={!!user} userEmail={user?.email}>

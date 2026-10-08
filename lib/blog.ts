@@ -115,6 +115,97 @@ export function getAllPosts(): PostMeta[] {
   return posts.sort((a, b) => +new Date(b.date) - +new Date(a.date));
 }
 
+/**
+ * Async version of getAllPosts that also queries Supabase blog_posts table
+ * if configured, merging local posts with cloud database posts.
+ */
+export async function getStoredBlogPosts(): Promise<PostMeta[]> {
+  const localPosts = getAllPosts();
+  const map = new Map<string, PostMeta>();
+  for (const p of localPosts) map.set(p.slug, p);
+
+  const hasSupabase = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  );
+
+  if (hasSupabase) {
+    try {
+      const { getSupabaseClient } = await import('@/lib/supabase');
+      const supabase = getSupabaseClient(process.env.SUPABASE_SERVICE_ROLE_KEY);
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .order('published_at', { ascending: false });
+
+      if (!error && Array.isArray(data)) {
+        for (const item of data) {
+          const postMeta: PostMeta = {
+            slug: item.slug,
+            title: item.title || item.slug,
+            description: item.description || '',
+            date: item.published_at || item.created_at || new Date().toISOString(),
+            author: item.author || 'AI-analytikern',
+            tags: Array.isArray(item.tags) ? item.tags : [],
+            cover: item.cover_url || undefined,
+          };
+          map.set(item.slug, postMeta);
+          if (!memoryPosts.has(item.slug)) {
+            memoryPosts.set(item.slug, {
+              ...postMeta,
+              content: item.content || '',
+            });
+          }
+        }
+      }
+    } catch {
+      // fallback to local posts
+    }
+  }
+
+  const posts = Array.from(map.values());
+  return posts.sort((a, b) => +new Date(b.date) - +new Date(a.date));
+}
+
+export async function getStoredBlogPost(slug: string): Promise<Post | null> {
+  const local = getPost(slug);
+  if (local) return local;
+
+  const hasSupabase = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  );
+
+  if (hasSupabase) {
+    try {
+      const { getSupabaseClient } = await import('@/lib/supabase');
+      const supabase = getSupabaseClient(process.env.SUPABASE_SERVICE_ROLE_KEY);
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('slug', slug)
+        .maybeSingle();
+
+      if (!error && data) {
+        const post: Post = {
+          slug: data.slug,
+          title: data.title,
+          description: data.description || '',
+          date: data.published_at || data.created_at || new Date().toISOString(),
+          author: data.author || 'AI-analytikern',
+          tags: Array.isArray(data.tags) ? data.tags : [],
+          cover: data.cover_url || undefined,
+          content: data.content || '',
+        };
+        memoryPosts.set(slug, post);
+        return post;
+      }
+    } catch {}
+  }
+
+  return null;
+}
+
 export function getPost(slug: string): Post | null {
   // Check memory first
   if (memoryPosts.has(slug)) {

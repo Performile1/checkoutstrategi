@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight, Calendar } from 'lucide-react';
-import { getAllPosts } from '@/lib/blog';
+import { getStoredBlogPosts } from '@/lib/blog';
 import { NewsFeed } from '@/components/NewsFeed';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Blogg – Checkout, CRO & e-handelsanalyser',
@@ -10,8 +12,8 @@ export const metadata: Metadata = {
   alternates: { canonical: '/blog' },
 };
 
-export default function BlogPage() {
-  const posts = getAllPosts();
+export default async function BlogPage() {
+  const posts = await getStoredBlogPosts();
   return (
     <section className="container-prose py-16">
       <div className="max-w-2xl">

@@ -30,34 +30,32 @@ export async function POST(request: NextRequest) {
           password,
         });
 
-        if (!error && data?.user) {
-          const userRole = data.user.user_metadata?.role;
-          if (
-            userRole === 'admin' ||
-            trimmedEmail === 'rickard@wigrund.se' ||
-            trimmedEmail === 'wigrund81@gmail.com'
-          ) {
-            isAuthenticated = true;
-            userEmail = data.user.email || trimmedEmail;
-          } else {
-            return NextResponse.json({ error: 'Kontot saknar admin-behörighet i Supabase' }, { status: 403 });
-          }
+        if (error) {
+          return NextResponse.json(
+            { error: 'Felaktig e-postadress eller lösenord.' },
+            { status: 401 }
+          );
         }
-      } catch {
-        // Fall back to direct login check if Supabase is unreachable
+
+        if (data?.user) {
+          const userRole = data.user.user_metadata?.role || data.user.app_metadata?.role;
+          // Grant access if user authenticated successfully via Supabase
+          isAuthenticated = true;
+          userEmail = data.user.email || trimmedEmail;
+        }
+      } catch (err: any) {
+        // Fall back only if Supabase call threw a network/infrastructure exception
       }
     }
 
-    // 2. If Supabase is not configured or offline:
-    // Allow login for admin (support ADMIN_PASSWORD env var or any password if not set)
-    if (!isAuthenticated) {
+    // 2. If Supabase is not configured in this environment (e.g. local dev sandbox):
+    if (!isAuthenticated && !hasSupabase) {
       const configuredPassword = process.env.ADMIN_PASSWORD;
       if (configuredPassword) {
         if (password !== configuredPassword) {
           return NextResponse.json({ error: 'Felaktigt lösenord' }, { status: 401 });
         }
       }
-      // Valid non-empty login accepted
       isAuthenticated = true;
     }
 

@@ -48,7 +48,7 @@ export default async function AdminPage() {
             <h1 className="text-xl font-bold">Admin Dashboard</h1>
             <div className="flex items-center gap-4">
               <span className="text-sm text-slate-600 dark:text-slate-400">
-                {user?.email || 'admin@checkoutstrategi.se'}
+                {user?.email || 'Inloggad administratör'}
               </span>
               <AdminLogoutButton />
             </div>

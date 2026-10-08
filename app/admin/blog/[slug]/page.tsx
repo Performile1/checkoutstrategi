@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AdminGuard, getAdminAuthHeaders } from '@/components/AdminGuard';
+import { ImageUploadField } from '@/components/ImageUploadField';
 
 export default function EditBlogPostPage({ params }: { params: { slug: string } }) {
   const router = useRouter();
@@ -182,16 +183,15 @@ export default function EditBlogPostPage({ params }: { params: { slug: string } 
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Cover image URL</label>
-                <input
-                  type="text"
-                  value={formData.cover}
-                  onChange={(e) => setFormData({ ...formData, cover: e.target.value })}
-                  placeholder="/images/blog/cover.jpg"
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900"
-                />
-              </div>
+              {/* Cover Image Upload */}
+              <ImageUploadField
+                label="Omslagsbild (Cover Image)"
+                value={formData.cover}
+                onChange={(url) => setFormData((prev) => ({ ...prev, cover: url }))}
+                type="cover"
+                placeholder="/images/blog/cover.jpg eller URL"
+                helperText="Ladda upp från datorn eller ange bildlänk"
+              />
             </div>
 
             <div className="card space-y-4">

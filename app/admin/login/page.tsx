@@ -66,10 +66,6 @@ function AdminLoginForm() {
     await executeLogin(email, password);
   };
 
-  const handleQuickLogin = async () => {
-    await executeLogin('rickard@wigrund.se', 'admin');
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
       <div className="card max-w-md w-full p-8 shadow-md">
@@ -79,7 +75,7 @@ function AdminLoginForm() {
         </div>
         <h1 className="text-2xl font-bold mb-2">Logga in på Dashboard</h1>
         <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
-          Hantera aktörer, blogginlägg och kassanätverket på Checkoutstrategi.
+          Ange dina administratörsuppgifter för att hantera Checkoutstrategi.
         </p>
 
         {error && (
@@ -127,20 +123,6 @@ function AdminLoginForm() {
             {loading ? 'Loggar in...' : 'Logga in'}
           </button>
         </form>
-
-        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
-          <p className="text-xs text-slate-500 mb-3 text-center">
-            Snabb-åtkomst för administratör:
-          </p>
-          <button
-            type="button"
-            onClick={handleQuickLogin}
-            disabled={loading}
-            className="w-full btn-secondary justify-center py-2 text-xs"
-          >
-            Snabb-inloggning som Admin <ArrowRight size={14} />
-          </button>
-        </div>
       </div>
     </div>
   );

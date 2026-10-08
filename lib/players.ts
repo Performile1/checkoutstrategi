@@ -173,7 +173,7 @@ export const players: Player[] = [
     countries: ['SE', 'NO', 'DK', 'FI', 'EU'],
     affiliateUrl: 'https://kustom.co/',
     description:
-      'Kustom (tidigare Briqpay) bygger en headless checkout för varumärken som vill behålla full UI- och datakontroll. Lämpar sig särskilt väl för D2C-brands och avancerade e-handlare som A/B-testar kassan kontinuerligt och inte vill kompromissa på brand experience.',
+      'Kustom bygger en modern, modulär checkout för varumärken och e-handlare som vill behålla full UI- och datakontroll. Lämpar sig särskilt väl för D2C-brands och avancerade e-handlare som A/B-testar kassan kontinuerligt och vill ha full frihet över design, flöden och betalmetoder utan att kompromissa på brand experience.',
     faq: [
       { q: 'Behöver jag utvecklare för Kustom?', a: 'Ja, det är en headless lösning som kräver implementation. I gengäld får du full kontroll över UX och konvertering.' },
       { q: 'Kan jag kombinera Kustom med Klarna?', a: 'Ja – Kustom är PSP-agnostisk och kan rendera Klarna, Adyen, Stripe m.fl. som betalmetoder.' },

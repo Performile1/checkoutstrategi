@@ -278,39 +278,44 @@ SUPABASE_SERVICE_ROLE_KEY=din-service-role-key`;
             </div>
           </div>
 
-          {/* Guide för Supabase koppling */}
+          {/* Status och säkerhetsöversikt för Supabase */}
           <div className="card p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <FileCode className="text-brand-600" size={18} />
-                <h3 className="font-bold text-base">Så här kopplar du en permanent Supabase-databas</h3>
-              </div>
-              <button
-                onClick={copyEnvSnippet}
-                className="btn-secondary text-xs py-1.5 px-3 inline-flex items-center gap-1.5"
-              >
-                {copied ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
-                {copied ? 'Kopierat!' : 'Kopiera .env mall'}
-              </button>
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="text-brand-600" size={18} />
+              <h3 className="font-bold text-base">Säkerhets- och anslutningsöversikt</h3>
             </div>
 
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              Om du vill att data ska sparas oberoende av Vercels serverless container-omstarter behöver du lägga till dina Supabase-nycklar i dina <strong>Environment Variables</strong> i Vercel (eller i din <code>.env.local</code>):
+              Databasanslutningen hanteras säkert via miljövariabler i Vercel. Känsliga API-nycklar och hemligheter exponeras aldrig i gränssnittet.
             </p>
 
-            <div className="p-4 rounded-xl bg-slate-900 text-slate-200 font-mono text-xs overflow-x-auto space-y-1">
-              <div className="text-slate-500"># 1. Hämta dina nycklar från ditt Supabase-projekt (Project Settings → API)</div>
-              <div><span className="text-brand-400">NEXT_PUBLIC_SUPABASE_URL</span>=https://ditt-projekt.supabase.co</div>
-              <div><span className="text-brand-400">NEXT_PUBLIC_SUPABASE_ANON_KEY</span>=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
-              <div><span className="text-brand-400">SUPABASE_SERVICE_ROLE_KEY</span>=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800">
+                <span className="text-slate-400 block mb-1">NEXT_PUBLIC_SUPABASE_URL</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  {data?.environment?.supabaseUrlProvided ? '✓ Konfigurerad' : 'Ej konfigurerad'}
+                </span>
+              </div>
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800">
+                <span className="text-slate-400 block mb-1">Anon Key</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  {data?.environment?.supabaseAnonKeyProvided ? '✓ Konfigurerad (Dold)' : 'Ej konfigurerad'}
+                </span>
+              </div>
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800">
+                <span className="text-slate-400 block mb-1">Service Role Key</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  {data?.environment?.supabaseServiceKeyProvided ? '✓ Konfigurerad (Dold)' : 'Ej konfigurerad'}
+                </span>
+              </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 text-xs space-y-2">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 text-xs space-y-1">
               <div className="font-semibold text-slate-800 dark:text-slate-200">
-                2. Kör databasschemat i Supabase SQL Editor:
+                Databasschema & tabellstruktur
               </div>
               <p className="text-slate-500">
-                Schemat finns färdigt i <code>supabase/schema.sql</code> och skapar tabellerna <code>players</code>, <code>builds</code>, <code>blog_posts</code> och <code>reviews</code> med RLS-säkerhetsregler.
+                Schemat finns i <code>supabase/schema.sql</code> och skapar tabellerna <code>players</code>, <code>builds</code>, <code>blog_posts</code> och <code>reviews</code> med RLS-säkerhetsregler.
               </p>
             </div>
           </div>

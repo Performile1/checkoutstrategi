@@ -224,7 +224,7 @@
       "EU"
     ],
     "affiliateUrl": "https://kustom.co/",
-    "description": "Kustom (tidigare Briqpay) bygger en headless checkout för varumärken som vill behålla full UI- och datakontroll. Lämpar sig särskilt väl för D2C-brands och avancerade e-handlare som A/B-testar kassan kontinuerligt och inte vill kompromissa på brand experience.",
+    "description": "Kustom bygger en modern, modulär checkout för varumärken och e-handlare som vill behålla full UI- och datakontroll. Lämpar sig särskilt väl för D2C-brands och avancerade e-handlare som A/B-testar kassan kontinuerligt och vill ha full frihet över design, flöden och betalmetoder utan att kompromissa på brand experience.",
     "faq": [
       {
         "q": "Behöver jag utvecklare för Kustom?",

@@ -3,16 +3,14 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Calendar } from 'lucide-react';
 import { MDXRemote } from 'next-mdx-remote/rsc';
-import { getAllPosts, getPost } from '@/lib/blog';
+import { getAllPosts, getPost, getStoredBlogPost } from '@/lib/blog';
 import { siteConfig } from '@/lib/site';
 import { ShareButtons } from '@/components/ShareButtons';
 
-export function generateStaticParams() {
-  return getAllPosts().map((p) => ({ slug: p.slug }));
-}
+export const dynamic = 'force-dynamic';
 
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
-  const post = getPost(params.slug);
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const post = (await getStoredBlogPost(params.slug)) || getPost(params.slug);
   if (!post) return {};
   return {
     title: post.title,
@@ -27,8 +25,8 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   };
 }
 
-export default function PostPage({ params }: { params: { slug: string } }) {
-  const post = getPost(params.slug);
+export default async function PostPage({ params }: { params: { slug: string } }) {
+  const post = (await getStoredBlogPost(params.slug)) || getPost(params.slug);
   if (!post) notFound();
 
   const articleJsonLd = {
