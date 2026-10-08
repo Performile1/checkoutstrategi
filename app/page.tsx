@@ -1,5 +1,15 @@
 import Link from 'next/link';
-import { ArrowRight, BarChart3, Truck, Sparkles, ShieldCheck, Star } from 'lucide-react';
+import {
+  ArrowRight,
+  BarChart3,
+  Truck,
+  Sparkles,
+  ShieldCheck,
+  Star,
+  Search,
+  ExternalLink,
+  Layers
+} from 'lucide-react';
 import { players } from '@/lib/players';
 import { PlayerCard } from '@/components/PlayerCard';
 import { NewsFeed } from '@/components/NewsFeed';
@@ -98,6 +108,133 @@ export default function HomePage() {
           <div className="flex items-center gap-2">
             <Truck size={20} />
             <span className="text-sm">Svensk expertis</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Empirisk Forskningsdata & Benchmarks CTA */}
+      <section className="bg-gradient-to-b from-slate-900 to-slate-950 text-white border-y border-slate-800 py-20 relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="container-prose relative z-10 space-y-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="max-w-2xl space-y-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-300 border border-brand-500/30">
+                <Search size={13} />
+                <span>Oberoende Forskning & Vetenskap</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white">
+                Vad säger forskningen om checkout-steg och konvertering?
+              </h2>
+              <p className="text-slate-300 text-base sm:text-lg leading-relaxed pt-1">
+                Sluta gissa och undvik anekdotisk optimering. Upptäck vad över 130 000 timmars användartester och miljontals transaktioner från{' '}
+                <strong className="text-white font-semibold">Baymard Institute</strong>,{' '}
+                <strong className="text-white font-semibold">Nielsen Norman Group (NN/g)</strong>,{' '}
+                <strong className="text-white font-semibold">CXL</strong> och{' '}
+                <strong className="text-white font-semibold">Stripe</strong> visar om 1-stegs vs flerstegskassor.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+              <Link
+                href="/guides/empirisk-data"
+                className="btn-primary text-sm font-bold px-6 py-3.5 shadow-lg flex items-center justify-center gap-2"
+              >
+                <span>Utforska forskningsdata</span>
+                <ArrowRight size={16} />
+              </Link>
+              <Link
+                href="/testcheckout"
+                className="px-6 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white text-sm font-semibold transition text-center"
+              >
+                Testa i Checkout Lab
+              </Link>
+            </div>
+          </div>
+
+          {/* Forskningsfakta i siffror */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-5 rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-2">
+              <div className="text-xs uppercase font-bold text-rose-400 tracking-wider">70.19 % Snittavhopp</div>
+              <div className="text-2xl font-black text-white">Varukorgsavhopp</div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Genomsnittligt globalt avhopp i kassan baserat på 49 oberoende studier (Baymard).
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-2">
+              <div className="text-xs uppercase font-bold text-emerald-400 tracking-wider">+11.8 % Konvertering</div>
+              <div className="text-2xl font-black text-white">1-stegs kassa</div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Lyft vid okomplicerade D2C-köp när klickmotstånd minimeras under 8 fält (CXL).
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-2">
+              <div className="text-xs uppercase font-bold text-blue-400 tracking-wider">+32 % Cart Recovery</div>
+              <div className="text-2xl font-black text-white">2-stegs kassa</div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Ökad återhämtning av övergivna kassor genom att fånga e-post i steg 1 (PostNord/Klaviyo).
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-2">
+              <div className="text-xs uppercase font-bold text-indigo-400 tracking-wider">-41 % Avhopp</div>
+              <div className="text-2xl font-black text-white">Tidig fraktkostnad</div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Minskning av avhopp när frakt och leveranstid presenteras transparent före steg 2.
+              </p>
+            </div>
+          </div>
+
+          {/* Externa länkar direkt till primärkällorna */}
+          <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400">
+            <span className="font-semibold text-slate-300">Direktlänkar till externa källor:</span>
+            <div className="flex flex-wrap items-center gap-4">
+              <a
+                href="https://baymard.com/checkout-usability"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition inline-flex items-center gap-1 hover:underline"
+              >
+                Baymard Institute <ExternalLink size={11} />
+              </a>
+              <span className="text-slate-600">·</span>
+              <a
+                href="https://www.nngroup.com/articles/checkout-process/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition inline-flex items-center gap-1 hover:underline"
+              >
+                Nielsen Norman Group <ExternalLink size={11} />
+              </a>
+              <span className="text-slate-600">·</span>
+              <a
+                href="https://cxl.com/blog/single-page-vs-multi-step-checkout/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition inline-flex items-center gap-1 hover:underline"
+              >
+                CXL Institute <ExternalLink size={11} />
+              </a>
+              <span className="text-slate-600">·</span>
+              <a
+                href="https://stripe.com/newsroom/news/state-of-checkouts"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition inline-flex items-center gap-1 hover:underline"
+              >
+                Stripe State of Checkouts <ExternalLink size={11} />
+              </a>
+              <span className="text-slate-600">·</span>
+              <a
+                href="https://www.postnord.se/foretag/skicka/e-handel/e-barometern"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition inline-flex items-center gap-1 hover:underline"
+              >
+                PostNord E-barometern <ExternalLink size={11} />
+              </a>
+            </div>
           </div>
         </div>
       </section>

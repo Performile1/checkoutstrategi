@@ -17,7 +17,16 @@ export const siteConfig = {
     },
     { href: '/testcheckout', label: 'Checkout Lab' },
     { href: '/blog', label: 'Blogg' },
-    { href: '/guides', label: 'Strategiguider' },
+    { 
+      label: 'Strategiguider',
+      items: [
+        { href: '/guides', label: 'Alla strategiguider' },
+        { href: '/guides/empirisk-data', label: 'Empirisk forskningsdata' },
+        { href: '/guides/cro-checkout', label: 'CRO i kassan' },
+        { href: '/guides/delivery-experience', label: 'Delivery Experience' },
+        { href: '/guides/checkout-analys-2026', label: 'Checkoutanalys 2026' },
+      ]
+    },
   ],
   contactEmail: 'hej@checkoutstrategi.se',
 };

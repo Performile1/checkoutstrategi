@@ -23,230 +23,15 @@ import {
   Info
 } from 'lucide-react';
 
-export interface ResearchItem {
-  id: string;
-  title: string;
-  summary: string;
-  category: 'steps' | 'fields' | 'payment' | 'shipping' | 'mobile' | 'trust';
-  categoryLabel: string;
-  impactValue: string;
-  impactType: 'positive' | 'negative' | 'neutral';
-  impactPercentage: number; // For sorting/filtering
-  source: string;
-  sourceYear: string;
-  sampleSize?: string;
-  keyTakeaway: string;
-  recommendedAction: string;
-  tags: string[];
-  applicableCheckouts: ('1-steg' | '2-steg' | '3-steg' | 'alla')[];
-}
+import {
+  ResearchItem,
+  ResearchInstitute,
+  EXTERNAL_RESEARCH_INSTITUTES,
+  CONVERSION_RESEARCH_DATA
+} from '@/lib/research';
 
-export const CONVERSION_RESEARCH_DATA: ResearchItem[] = [
-  {
-    id: 'res-step-1vs3',
-    title: '1-stegs kassa vs 3-stegs kassa för enkla D2C-köp',
-    summary: 'Genom att samla alla moment på en enda sida minskas klickmotståndet för återkommande eller okomplicerade köp. För varukorgar med få artiklar ökar slutförandegraden markant.',
-    category: 'steps',
-    categoryLabel: 'Stegarkitektur',
-    impactValue: '+11.8 % konvertering',
-    impactType: 'positive',
-    impactPercentage: 11.8,
-    source: 'CXL Institute & Swedish D2C Benchmark',
-    sourceYear: '2025',
-    sampleSize: '420 000 sessioner',
-    keyTakeaway: 'Kunder upplever 1-stegs kassa som snabbare och mer transparent så länge antalet synliga fält är under 8 stycken.',
-    recommendedAction: 'Använd 1-stegs kassa om du säljer mode, kosttillskott, kosmetika eller impulsprodukter med begränsade fraktval.',
-    tags: ['1-steg', '3-steg', 'd2c', 'kassalayout', 'klickmotstånd'],
-    applicableCheckouts: ['1-steg', '3-steg']
-  },
-  {
-    id: 'res-step-2step-nordic',
-    title: '2-stegs kassa: Optimal balans mellan e-postfångst och slutförande',
-    summary: 'Steg 1 samlar in kunduppgifter och e-post; Steg 2 visar frakt och betalning. Detta gör att 100 % av påbörjade kassor med ifylld e-post kan följas upp med övergiven varukorg-flöden.',
-    category: 'steps',
-    categoryLabel: 'Stegarkitektur',
-    impactValue: '+32 % cart recovery & +9.4 % konvertering',
-    impactType: 'positive',
-    impactPercentage: 9.4,
-    source: 'Klaviyo Ecommerce Benchmark & PostNord E-barometern',
-    sourceYear: '2025',
-    sampleSize: '1.2M e-handelsorder',
-    keyTakeaway: '2-stegs kassa delar upp mental belastning utan att skapa den tröghet som traditionella 4-stegs enterprise-kassor lider av.',
-    recommendedAction: 'Implementera 2-stegs kassa om du har ett aktivt automatiserat SMS/e-postflöde för övergivna kassor.',
-    tags: ['2-steg', 'cart recovery', 'e-post', 'abandonment', 'norden'],
-    applicableCheckouts: ['2-steg']
-  },
-  {
-    id: 'res-step-complex-furniture',
-    title: 'När 3-stegs kassa slår 1-stegs: Sällanköp och skrymmande varor',
-    summary: 'För dyra varor (möbler, elektronik över 5 000 kr) skapar en 1-stegs kassa ofta kognitiv överbelastning. Tydliga, numrerade steg ger kunden känsla av trygghet och kontroll.',
-    category: 'steps',
-    categoryLabel: 'Stegarkitektur',
-    impactValue: '+8.2 % konvertering i sällanköpssektorn',
-    impactType: 'positive',
-    impactPercentage: 8.2,
-    source: 'Baymard Institute Checkout Usability Study',
-    sourceYear: '2024',
-    sampleSize: '1 800 användartester',
-    keyTakeaway: 'Stegvisa kassor ger struktur vid leveransbokning med tidsfönster, inbärning, installation och tunga betalningsalternativ.',
-    recommendedAction: 'Dela upp flödet i 3 tydliga steg (1. Adress, 2. Leveranstjänster/tid, 3. Finansiering/Betalning) om AOV > 2 500 kr.',
-    tags: ['3-steg', 'möbler', 'elektronik', 'aov', 'kognitiv belastning'],
-    applicableCheckouts: ['3-steg']
-  },
-  {
-    id: 'res-guest-checkout',
-    title: 'Tvingad kontoregistrering orsakar massivt kassa-avhopp',
-    summary: 'Att tvinga kunden att skapa ett konto med lösenord innan de kan betala är den enskilt näst största orsaken till avbrutna köp globalt.',
-    category: 'fields',
-    categoryLabel: 'Formulär & Fält',
-    impactValue: '-35 % avhopp med gästkassa',
-    impactType: 'positive',
-    impactPercentage: 35.0,
-    source: 'Baymard Institute Cart Abandonment Statistics',
-    sourceYear: '2025',
-    sampleSize: '49 000 konsumenter',
-    keyTakeaway: 'Erbjud alltid gästkassa (Guest Checkout). Kontot kan erbjudas valfritt med ett klick på tack-sidan efter slutfört köp.',
-    recommendedAction: 'Ta bort tvingande inloggning. Fråga istället på orderbekräftelsen: "Vill du spara dina uppgifter med ett klick?".',
-    tags: ['gästkassa', 'konto', 'registrering', 'avbrutna köp', 'friktion'],
-    applicableCheckouts: ['alla']
-  },
-  {
-    id: 'res-field-reduction',
-    title: 'Fältreduktion: Minska formulärfält från 12 till 6 stycken',
-    summary: 'Genom att ta bort fält som "Adressrad 2", "Företagsnamn (valfritt för privatpersoner)", "Telefon typ" och "Titel/Kön" minskar tidsåtgången i kassan med 45 sekunder.',
-    category: 'fields',
-    categoryLabel: 'Formulär & Fält',
-    impactValue: '+26.2 % konverteringslyft',
-    impactType: 'positive',
-    impactPercentage: 26.2,
-    source: 'HubSpot Form Friction & CXL Research',
-    sourceYear: '2024',
-    sampleSize: '250 000 form-submissions',
-    keyTakeaway: 'Varje extra obligatoriskt formulärfält minskar konverteringen med i snitt 2.4 % på mobil.',
-    recommendedAction: 'Dölj onödiga fält bakom "Lägg till företagsnamn" eller valfria länkar. Fråga endast efter data som krävs för frakt och betalning.',
-    tags: ['formulärfält', 'mobil', 'tidsåtgång', 'friktion'],
-    applicableCheckouts: ['alla']
-  },
-  {
-    id: 'res-swish-top',
-    title: 'Swish som förvald/översta betalmetod i Sverige',
-    summary: 'I Sverige föredrar över 75 % av konsumenterna Swish på mobila enheter. När Swish placeras överst eller som default ökar snabbheten och köpen slutförs direkt via BankID.',
-    category: 'payment',
-    categoryLabel: 'Betalmetoder',
-    impactValue: '+9.4 % mobilkonvertering',
-    impactType: 'positive',
-    impactPercentage: 9.4,
-    source: 'Getswish Årsrapport & E-barometern',
-    sourceYear: '2025',
-    sampleSize: 'Nationell svensk transaktionsdata',
-    keyTakeaway: 'Att tvinga kunder att knappa in 16 kortnummer på mobiltelefonen är den största källan till tekniskt avhopp i steg 3.',
-    recommendedAction: 'Sortera betalmetoder dynamiskt baserat på land och enhet: Swish först i SE på mobil, Vipps i NO, MobilePay i DK.',
-    tags: ['swish', 'mobil', 'bankid', 'sverige', 'betalning'],
-    applicableCheckouts: ['alla']
-  },
-  {
-    id: 'res-express-wallets',
-    title: 'Expresskassor (Apple Pay / Google Pay) före Steg 1',
-    summary: 'Genom att erbjuda Apple Pay och Google Pay högst upp i kassan hoppar användaren över alla adressinmatningar med ett klick via FaceID.',
-    category: 'mobile',
-    categoryLabel: 'Mobiloptimering',
-    impactValue: '+18.5 % slutförandegrad på iOS',
-    impactType: 'positive',
-    impactPercentage: 18.5,
-    source: 'Stripe Global State of Checkout',
-    sourceYear: '2025',
-    sampleSize: '5 miljoner sessioner',
-    keyTakeaway: 'Över 50 % av alla e-handelsbesökare i Sverige använder en iPhone. Apple Pay eliminerar hela steg 1 och steg 2 på 4 sekunder.',
-    recommendedAction: 'Placera express-knappar tydligt överst med rubriken "Eller snabbkassa".',
-    tags: ['apple pay', 'google pay', 'express', 'faceid', 'ios'],
-    applicableCheckouts: ['1-steg', '2-steg', '3-steg']
-  },
-  {
-    id: 'res-shipping-transparency',
-    title: 'Tidiga fraktkostnader minskar kassa-chock i sista steget',
-    summary: '48 % av alla avbrutna köp sker på grund av att fraktkostnaden överraskar kunden i sista steget. Att visa beräknad frakt i steg 1 eller varukorgen eliminerar detta.',
-    category: 'shipping',
-    categoryLabel: 'Frakt & Logistik',
-    impactValue: '-41 % kassa-avhopp (Abandonment)',
-    impactType: 'positive',
-    impactPercentage: 41.0,
-    source: 'Baymard Institute & Ingrid Delivery Study',
-    sourceYear: '2024',
-    sampleSize: '35 000 tillfrågade e-handelskunder',
-    keyTakeaway: 'Kunden godtar en fraktkostnad så länge den är känd i förväg. Dolda tillägg i sista steget upplevs som manipulation.',
-    recommendedAction: 'Presentera fri frakt-mätare ("Handla för 120 kr till för fri frakt") och basfrakt redan i varukorgen och steg 1.',
-    tags: ['frakt', 'kostnad', 'chock', 'transparens', 'avhopp'],
-    applicableCheckouts: ['alla']
-  },
-  {
-    id: 'res-step-dropoff-funnel',
-    title: 'Var lämnar kunden kassan i flerstegsflöden? (Drop-off per steg)',
-    summary: 'Statistisk analys av drop-off visar att: Steg 1 tappar 22 % (krav på registrering/långa formulär), Steg 2 tappar 38 % (fraktkostnader/lång leveranstid), Steg 3 tappar 14 % (saknad betalmetod/3D-Secure).',
-    category: 'steps',
-    categoryLabel: 'Stegarkitektur',
-    impactValue: 'Fördela optimeringsresurserna rätt',
-    impactType: 'neutral',
-    impactPercentage: 0,
-    source: 'Google Analytics 4 E-commerce Funnel Benchmark',
-    sourceYear: '2025',
-    sampleSize: '8 500 nätbutiker',
-    keyTakeaway: 'Steg 2 (Frakt) är ofta den verkliga flaskhalsen i flerstegskassor, inte betalsteget.',
-    recommendedAction: 'Lägg fokus på att optimera leveransvalen (tydliga datum, paketskåp som Instabox/Budbee) för störst hävstång.',
-    tags: ['funnel', 'drop-off', 'flaskhals', 'steg 2', 'ga4'],
-    applicableCheckouts: ['2-steg', '3-steg']
-  },
-  {
-    id: 'res-address-autofill',
-    title: 'Adress-autofill via Postnummer & Personnummer (Klarna/SPAR)',
-    summary: 'I Norden är konsumenter vana vid att knappa in personnummer eller postnummer och få gatuadress och ort ifyllt på 0.2 sekunder.',
-    category: 'fields',
-    categoryLabel: 'Formulär & Fält',
-    impactValue: '+17.4 % konverteringslyft i Norden',
-    impactType: 'positive',
-    impactPercentage: 17.4,
-    source: 'Svea & Dintero Checkout Insight',
-    sourceYear: '2025',
-    sampleSize: '650 000 köp',
-    keyTakeaway: 'Att skriva in gatuadress manuellt på en mobilskärm i kollektivtrafiken genererar stavfel och felaktiga leveranser.',
-    recommendedAction: 'Integrera automatiskt postnummer-uppslag och valfritt personnummer- eller Klarna-autofill.',
-    tags: ['autofill', 'postnummer', 'spar', 'klarna', 'personnummer'],
-    applicableCheckouts: ['alla']
-  },
-  {
-    id: 'res-accordion-steps',
-    title: 'Accordion-steg (Utfällbara moduler) vs Separata sidor',
-    summary: 'Accordion-kassor håller kunden på samma URL men expanderar ett steg i taget i takt med att föregående steg valideras.',
-    category: 'steps',
-    categoryLabel: 'Stegarkitektur',
-    impactValue: '+6.1 % över separata omladdningar',
-    impactType: 'positive',
-    impactPercentage: 6.1,
-    source: 'Shopify Checkout Extensibility Data',
-    sourceYear: '2025',
-    sampleSize: '2.4M transaktioner',
-    keyTakeaway: 'Eliminerar laddtider mellan steg. Kunden ser alltid helheten och vad som återstår utan URL-omladdningar.',
-    recommendedAction: 'Välj accordion-steg framför separata sidomladdningar vid headless- eller moderna SPA-arkitekturer.',
-    tags: ['accordion', 'spa', 'laddtider', 'utfällbar', 'steg'],
-    applicableCheckouts: ['2-steg', '3-steg']
-  },
-  {
-    id: 'res-security-badges',
-    title: 'Placering av säkerhetssymboler (BankID, SSL, Klarna, Visa)',
-    summary: 'Säkerhetsikoner placerade i anslutning till slutknappen (CTA) ökar upplevd trygghet med 24 % bland förstagångskunder.',
-    category: 'trust',
-    categoryLabel: 'Förtroende & Säkerhet',
-    impactValue: '+5.3 % konvertering för nya besökare',
-    impactType: 'positive',
-    impactPercentage: 5.3,
-    source: 'Trustpilot & CXL Trust Benchmark',
-    sourceYear: '2024',
-    sampleSize: '180 000 köp',
-    keyTakeaway: 'Mindre kända varumärken och nystartade e-handlare behöver "låna förtroende" från etablerade betalpartners.',
-    recommendedAction: 'Visa BankID-symbolen och SSL/Krypterad anslutning-märke direkt under knappen "Slutför köp".',
-    tags: ['trust', 'bankid', 'förtroende', 'säkerhet', 'trygghet'],
-    applicableCheckouts: ['alla']
-  }
-];
+export type { ResearchItem, ResearchInstitute };
+export { EXTERNAL_RESEARCH_INSTITUTES, CONVERSION_RESEARCH_DATA };
 
 export function ConversionResearchExplorer({
   activeCheckoutType = '1-steg',
@@ -482,8 +267,21 @@ export function ConversionResearchExplorer({
 
                 {/* Fot: Källa, Taggar och Kopiera */}
                 <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
-                  <div className="truncate max-w-[200px] sm:max-w-[260px]">
-                    <span className="font-medium text-slate-600 dark:text-slate-400">{item.source}</span>
+                  <div className="truncate max-w-[220px] sm:max-w-[280px]">
+                    {item.sourceUrl ? (
+                      <a
+                        href={item.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 inline-flex items-center gap-1 hover:underline"
+                        title={`Läs extern studie hos ${item.source}`}
+                      >
+                        <span className="truncate">{item.source}</span>
+                        <ExternalLink size={10} className="shrink-0 text-slate-400" />
+                      </a>
+                    ) : (
+                      <span className="font-medium text-slate-600 dark:text-slate-400">{item.source}</span>
+                    )}
                     <span className="mx-1">·</span>
                     <span>{item.sourceYear}</span>
                     {item.sampleSize && (
@@ -671,6 +469,66 @@ export function ConversionResearchExplorer({
           <p className="leading-relaxed">
             <strong>Slutsats för din kassa:</strong> Genom att lösa de två största läckorna – gästkassa i Steg 1 och transparens kring frakten före Steg 2 – återtar en genomsnittlig e-handel över hälften av alla tappade kunder.
           </p>
+        </div>
+      </div>
+
+      {/* EXTERNA FORSKNINGSINSTITUT & PRIMÄRKÄLLOR */}
+      <div className="card p-6 sm:p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-lg space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 flex items-center gap-1.5 mb-1">
+              <ExternalLink size={15} /> Oberoende Källor & Institut
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+              Externa forskningsinstitut och auktoriteter
+            </h3>
+          </div>
+          <span className="text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg self-start sm:self-auto font-medium">
+            Direktlänkar till primärstudier
+          </span>
+        </div>
+
+        <p className="text-sm text-slate-600 dark:text-slate-400 max-w-3xl leading-relaxed">
+          Vi sammanställer och validerar våra rekommendationer mot världens mest respekterade oberoende UX- och e-handelsinstitut. Klicka dig vidare för att ta del av deras fullständiga rapporter, metodik och dataserier:
+        </p>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {EXTERNAL_RESEARCH_INSTITUTES.map((inst) => (
+            <a
+              key={inst.name}
+              href={inst.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800 hover:border-brand-500 dark:hover:border-brand-500 transition-all group flex flex-col justify-between shadow-sm hover:shadow-md"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/60 px-2 py-0.5 rounded border border-brand-200 dark:border-brand-800">
+                    {inst.badge}
+                  </span>
+                  <ExternalLink size={13} className="text-slate-400 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition shrink-0" />
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-base text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition flex items-center gap-1.5">
+                    {inst.name}
+                  </h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed">
+                    {inst.description}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-xs">
+                <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  {inst.highlightStat}
+                </span>
+                <span className="text-[11px] text-brand-600 dark:text-brand-400 group-hover:underline font-medium">
+                  Besök {inst.name.split(' ')[0]} &rarr;
+                </span>
+              </div>
+            </a>
+          ))}
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Plus, FileText, Users, Settings, Download, Database, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Plus, FileText, Users, Settings, Download, Database, ShieldCheck, CheckCircle2, Sliders } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getAdminUser } from '@/lib/auth';
 import { getStoredPlayers, getStoredPlayer } from '@/lib/players-store';
@@ -139,6 +139,12 @@ export default async function AdminPage() {
                 description="Verifiera data & anslutning"
                 icon={<Database size={18} />}
                 href="/admin/database"
+              />
+              <QuickAction
+                title="Styr kassa & procent"
+                description="12 CRO-faktorer & standardkassa"
+                icon={<Sliders size={18} />}
+                href="/admin/checkout-config"
               />
               <QuickAction
                 title="Skapa blogginlägg"

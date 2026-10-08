@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { 
   CheckCircle2, CreditCard, Truck, User, Package, TrendingUp, Settings,
@@ -10,11 +11,21 @@ import {
   Smartphone, Building2, Leaf, ShieldCheck, Timer, Wallet, Fingerprint,
   Share2, Printer, ArrowRightLeft, HeartHandshake, FileText, Award,
   UsersRound, PackageCheck, Info, ArrowRight, Calculator,
-  Search, Layers, ChevronRight, ChevronLeft, Sparkles
+  Search, Layers, ChevronRight, ChevronLeft, Sparkles,
+  Store, ChevronDown, ChevronUp, Check, X, ExternalLink,
+  Sliders, Scale, UserCheck, BarChart3, Plus, Trash2, Eye
 } from 'lucide-react';
 import { CheckoutBenchmarks } from '@/components/CheckoutBenchmarks';
-import { CheckoutStepBuilder, StepBuilderConfig, DEFAULT_PRESETS, StepDefinition } from '@/components/CheckoutStepBuilder';
-import { ConversionResearchExplorer } from '@/components/ConversionResearchExplorer';
+import { CheckoutStepBuilder, StepBuilderConfig, DEFAULT_PRESETS, StepDefinition, CheckoutStepMode } from '@/components/CheckoutStepBuilder';
+import {
+  CRO_OPTIMIZATION_FACTORS,
+  SHIPPING_CRO_VARIABLES,
+  DEFAULT_MOCK_CUSTOMERS,
+  DEFAULT_SAVED_VARIANTS,
+  LIFT_PILLARS_DATA,
+  SavedCheckoutVariant,
+  MockCustomer
+} from '@/lib/checkout-config';
 
 // --- TYPER OCH DATA ---
 type CheckoutSection = { id: string; title: string; icon: React.ReactNode; description: string; };
@@ -63,6 +74,14 @@ const DELIVERY_OPTIONS: DeliveryOption[] = [
   { id: 'express', name: 'Expressleverans', icon: <Zap size={18} />, maxWeight: 20, allowedSizes: ['small', 'medium'] },
 ];
 
+const PICKUP_STORES = [
+  { id: 'sthlm-city', name: 'Stockholm City – Drottninggatan 53', stockStatus: 'Finns i lager (14 st)', readyTime: 'Klart inom 2 timmar', distance: '1.2 km' },
+  { id: 'sthlm-mall', name: 'Westfield Mall of Scandinavia', stockStatus: 'Finns i lager (8 st)', readyTime: 'Klart inom 2 timmar', distance: '5.8 km' },
+  { id: 'gbg-nordstan', name: 'Göteborg – Nordstan', stockStatus: 'Finns i lager (5 st)', readyTime: 'Klart inom 2 timmar', distance: '12 km' },
+  { id: 'malmo-triangeln', name: 'Malmö – Triangeln', stockStatus: 'Fåtal kvar (2 st)', readyTime: 'Klart inom 3 timmar', distance: '25 km' },
+  { id: 'uppsala-city', name: 'Uppsala – Svartbäcksgatan', stockStatus: 'Finns i lager (7 st)', readyTime: 'Klart inom 2 timmar', distance: '65 km' },
+];
+
 const PRODUCTS = [
   { id: 'tshirt', name: 'Basic T-shirt', price: 199, industry: 'kläder', weight: 0.2, size: 'small', icon: <Shirt size={24} /> },
   { id: 'sneakers', name: 'Premium Sneakers', price: 1299, industry: 'kläder', weight: 0.8, size: 'medium', icon: <Package size={24} /> },
@@ -103,7 +122,7 @@ const FallbackImage = ({ src, alt, className }: { src?: string, alt: string, cla
 export default function TestCheckoutPage() {
   const [layoutOrder, setLayoutOrder] = useState(['expressWallets', 'customer', 'guest', 'coupon', 'shipping', 'payment', 'review']);
   const [activeTab, setActiveTab] = useState('settings');
-  const [activeView, setActiveView] = useState<'checkout' | 'research' | 'orderConfirmation' | 'return' | 'export'>('checkout');
+  const [activeView, setActiveView] = useState<'checkout' | 'orderConfirmation' | 'return' | 'export'>('checkout');
   const [deviceView, setDeviceView] = useState<'mobile' | 'desktop'>('desktop');
 
   // -- STATE STEG-KASSA (Step Architecture) --
@@ -149,6 +168,49 @@ export default function TestCheckoutPage() {
   const [ecoSvanen, setEcoSvanen] = useState(false);
   const [ecoKompenserad, setEcoKompenserad] = useState(false);
   const [ecoGreen, setEcoGreen] = useState(false);
+
+  // Click & Collect / Hämta i butik som första steg
+  const [pickupFirstStep, setPickupFirstStep] = useState(false);
+  const [selectedPickupStore, setSelectedPickupStore] = useState('sthlm-city');
+  const [pickupModeActive, setPickupModeActive] = useState(false);
+
+  // 4 Fraktoptimeringar från blogginlägget (5–15 % konverteringslyft)
+  const [shipExactDates, setShipExactDates] = useState(true);
+  const [shipBadging, setShipBadging] = useState(true);
+  const [shipPostcodeDriven, setShipPostcodeDriven] = useState(true);
+  const [shipFreeShippingMeter, setShipFreeShippingMeter] = useState(true);
+
+  // Kunddata & Prefill-testflöde (Anna, Erik, Sara)
+  const [customerEmail, setCustomerEmail] = useState('anna@example.se');
+  const [customerPhone, setCustomerPhone] = useState('070-123 45 67');
+  const [customerFirstName, setCustomerFirstName] = useState('Anna');
+  const [customerLastName, setCustomerLastName] = useState('Svensson');
+  const [customerStreet, setCustomerStreet] = useState('Vasagatan 14B');
+  const [customerCity, setCustomerCity] = useState('Stockholm');
+  const [matchedCustomerAlert, setMatchedCustomerAlert] = useState<string | null>(
+    'Återkommande kund identifierad (BankID/Klarna ID): Anna Svensson, Stockholm. Förifyller adress, Instabox (Box 4) och Klarna.'
+  );
+  const [savedMockCustomers, setSavedMockCustomers] = useState<MockCustomer[]>(DEFAULT_MOCK_CUSTOMERS);
+
+  // A/B Testning & Sparade Kassa-varianter
+  const [savedVariants, setSavedVariants] = useState<SavedCheckoutVariant[]>(DEFAULT_SAVED_VARIANTS);
+  const [activeVariantId, setActiveVariantId] = useState<string>('var-1-express');
+  const [showComparisonModal, setShowComparisonModal] = useState(false);
+  const [newVariantName, setNewVariantName] = useState('');
+  const [newVariantDescription, setNewVariantDescription] = useState('');
+  const [variantToast, setVariantToast] = useState<string | null>(null);
+
+  // Admin-styrning av konverteringsprocent och 12 optimeringsfaktorer
+  const [adminBaseRate, setAdminBaseRate] = useState<number | null>(null);
+  const [adminFactorBoosts, setAdminFactorBoosts] = useState<Record<string, number> | null>(null);
+  const [adminSettingsActive, setAdminSettingsActive] = useState<boolean>(false);
+
+  // LIFT-modellen & 12 Optimeringsfaktorer Audit Modal
+  const [showLiftAuditModal, setShowLiftAuditModal] = useState(false);
+
+  // Modaler & Informationsguider
+  const [showEuGreenClaimsGuide, setShowEuGreenClaimsGuide] = useState(false);
+  const [showDhlSendGreenInfo, setShowDhlSendGreenInfo] = useState(false);
 
   const [selectedDeliveryOptions, setSelectedDeliveryOptions] = useState(['point', 'home', 'locker']);
   const [selectedCarriers, setSelectedCarriers] = useState(['postnord', 'instabox', 'airmee']);
@@ -391,7 +453,7 @@ mobil konvertering enligt nordisk best practice.
 
   // CHECKOUT METRICS
   const calculateConversionScore = () => {
-    let score = 45; 
+    let score = adminBaseRate !== null ? adminBaseRate : 48; 
 
     const customerIdx = layoutOrder.indexOf('customer');
     const shippingIdx = layoutOrder.indexOf('shipping');
@@ -422,10 +484,12 @@ mobil konvertering enligt nordisk best practice.
       if (calculateAOV() > 2000) score += 4;
       else score += 1;
     }
-    else if (stepConfig.mode === 'accordion') score += 3;
+    else if (stepConfig.mode === 'accordion') score += 5; // Accordion som ökar i längd minskar drop-off
+    else if (stepConfig.mode === 'click-collect') score += 6;
+    if (pickupFirstStep || pickupModeActive) score += 6; // Hämta i butik som första steg minskar formulärtröskel med 5 fält
     if (stepConfig.autoAdvanceOnValid) score += 2; 
 
-    const isFreeShipping = (freeShippingThreshold > 0 && calculateAOV() >= freeShippingThreshold);
+    const isFreeShipping = (freeShippingThreshold > 0 && calculateAOV() >= freeShippingThreshold) || pickupModeActive;
     const costToUse = isFreeShipping ? 0 : actualShippingCost;
     const shippingRatio = costToUse / calculateAOV();
     const benchmark = getIndustryBenchmark(selectedProduct.industry);
@@ -444,7 +508,18 @@ mobil konvertering enligt nordisk best practice.
     if (allowMapSelection && availableDeliveryOptions.includes('point')) score += 4; 
     if (preselectShipping) score += 2;
     if (rememberShipping) score += 4; 
-    if (ecoSvanen || ecoKompenserad || ecoGreen) score += 2; 
+
+    // De 4 Fraktoptimeringarna (från bloggen: "Fraktväljaren: Kassans verkliga flaskhals" ger 5–15 % lyft)
+    if (shipExactDates) score += 3.5; // Exakta datum istället för intervall (LIFT: Tydlighet)
+    if (shipBadging) score += 2.8; // Guidning genom badging som Snabbast/Fossilfritt (LIFT: Relevans)
+    if (shipPostcodeDriven) score += 3.2; // Postnummer tidigt för exakta boxar (LIFT: Friktion)
+    if (shipFreeShippingMeter) score += 2.5; // Dynamisk fri frakt-mätare (LIFT: Värdeerbjudande)
+
+    // Miljöval: Svanen och DHL Send Green (insetting) ger positivt betyg.
+    // Miljökompenserad frakt är förbjudet enligt EU Green Claims (2026) och ger kraftigt negativt betyg (-12).
+    if (ecoSvanen) score += 3;
+    if (ecoGreen) score += 4; // DHL Send Green via insetting (EU-godkänt & fossilfritt)
+    if (ecoKompenserad) score -= 12; // Otillåten generisk kompensation enligt EU-direktivet 2024/825 mot greenwashing
     if (showShippingReviews) score += 2; 
 
     const marketKey = customerCountry.toLowerCase() as 'se' | 'no' | 'dk' | 'fi';
@@ -566,13 +641,70 @@ mobil konvertering enligt nordisk best practice.
       const params = new URLSearchParams(window.location.search);
       const viewParam = params.get('view');
       const tabParam = params.get('tab');
-      if (viewParam === 'research') {
-        setActiveView('research');
-      } else if (viewParam === 'checkout' || viewParam === 'orderConfirmation' || viewParam === 'return' || viewParam === 'export') {
+      if (viewParam === 'checkout' || viewParam === 'orderConfirmation' || viewParam === 'return' || viewParam === 'export') {
         setActiveView(viewParam as any);
       }
       if (tabParam === 'steps' || tabParam === 'settings' || tabParam === 'shipping' || tabParam === 'product' || tabParam === 'provider') {
         setActiveTab(tabParam as any);
+      }
+
+      // Ladda Admin-inställningar (procent & startkassa)
+      try {
+        const storedAdmin = localStorage.getItem('checkout_admin_settings');
+        if (storedAdmin) {
+          const parsed = JSON.parse(storedAdmin);
+          if (typeof parsed.baseConversionRate === 'number') {
+            setAdminBaseRate(parsed.baseConversionRate);
+          }
+          if (parsed.factorBoosts) {
+            setAdminFactorBoosts(parsed.factorBoosts);
+          }
+          setAdminSettingsActive(true);
+
+          // Om startkassa satts i admin och ingen vy är satt via URL
+          if (!tabParam && parsed.defaultMode) {
+            const targetMode = parsed.defaultMode as CheckoutStepMode;
+            if (DEFAULT_PRESETS[targetMode]) {
+              setStepConfig({
+                mode: targetMode,
+                indicatorStyle: targetMode === 'accordion' ? 'accordion' : 'numbered',
+                steps: DEFAULT_PRESETS[targetMode],
+                autoAdvanceOnValid: true,
+                showStepSummary: true,
+                pickupFirstStep: targetMode === 'click-collect'
+              });
+            }
+          }
+          if (parsed.defaultPickupFirstStep !== undefined) {
+            setPickupFirstStep(Boolean(parsed.defaultPickupFirstStep));
+            if (parsed.defaultPickupFirstStep) {
+              setPickupModeActive(true);
+            }
+          }
+          if (parsed.defaultDevice === 'desktop' || parsed.defaultDevice === 'mobile') {
+            setDeviceView(parsed.defaultDevice);
+          }
+        }
+
+        // Ladda sparade varianter från localStorage
+        const storedVars = localStorage.getItem('checkout_saved_variants');
+        if (storedVars) {
+          const parsedVars = JSON.parse(storedVars);
+          if (Array.isArray(parsedVars) && parsedVars.length > 0) {
+            setSavedVariants(parsedVars);
+          }
+        }
+
+        // Ladda sparade kunder från localStorage
+        const storedCusts = localStorage.getItem('checkout_saved_customers');
+        if (storedCusts) {
+          const parsedCusts = JSON.parse(storedCusts);
+          if (Array.isArray(parsedCusts) && parsedCusts.length > 0) {
+            setSavedMockCustomers(parsedCusts);
+          }
+        }
+      } catch {
+        // ignore
       }
     }
   }, []);
@@ -610,6 +742,200 @@ mobil konvertering enligt nordisk best practice.
     }
   };
 
+  // KUNDDATA & FÖRIFYLLNADS-METODER
+  const checkCustomerMatch = (email: string, phone: string) => {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = phone.replace(/[\s-]/g, '').trim();
+
+    const found = savedMockCustomers.find(c => {
+      const matchEmail = cleanEmail.length >= 4 && c.email.toLowerCase() === cleanEmail;
+      const matchPhone = cleanPhone.length >= 6 && c.phone.replace(/[\s-]/g, '').includes(cleanPhone);
+      return matchEmail || matchPhone;
+    });
+
+    if (found) {
+      setCustomerFirstName(found.firstName);
+      setCustomerLastName(found.lastName);
+      setCustomerStreet(found.address);
+      setPostalCode(found.postalCode.replace(/\s/g, ''));
+      setCustomerCity(found.city);
+      if (found.preferredPayment && PAYMENT_METHODS.some(p => p.id === found.preferredPayment)) {
+        setSelectedPlayer(found.preferredPayment);
+      }
+      setMatchedCustomerAlert(
+        `✨ Återkommande kund identifierad (${found.ordersCount} tidigare köp): ${found.name}, ${found.city}. Sparad adress (${found.address}), favoritfrakt (${found.savedLocker}) och betalsätt (${found.preferredPayment.toUpperCase()}) har förifyllts automatiskt!`
+      );
+    } else {
+      setMatchedCustomerAlert(null);
+    }
+  };
+
+  const handleEmailChange = (val: string) => {
+    setCustomerEmail(val);
+    checkCustomerMatch(val, customerPhone);
+  };
+
+  const handlePhoneChange = (val: string) => {
+    setCustomerPhone(val);
+    checkCustomerMatch(customerEmail, val);
+  };
+
+  const handleSelectCustomer = (cust: MockCustomer | null) => {
+    if (!cust) {
+      setCustomerEmail('');
+      setCustomerPhone('');
+      setCustomerFirstName('');
+      setCustomerLastName('');
+      setCustomerStreet('');
+      setCustomerCity('');
+      setPostalCode('11122');
+      setMatchedCustomerAlert(null);
+      return;
+    }
+    setCustomerEmail(cust.email);
+    setCustomerPhone(cust.phone);
+    setCustomerFirstName(cust.firstName);
+    setCustomerLastName(cust.lastName);
+    setCustomerStreet(cust.address);
+    setPostalCode(cust.postalCode.replace(/\s/g, ''));
+    setCustomerCity(cust.city);
+    if (cust.preferredPayment && PAYMENT_METHODS.some(p => p.id === cust.preferredPayment)) {
+      setSelectedPlayer(cust.preferredPayment);
+    }
+    setMatchedCustomerAlert(
+      `✨ Återkommande kund identifierad (${cust.ordersCount} tidigare ordrar): ${cust.name}, ${cust.city}. Adress (${cust.address}), favoritfrakt (${cust.savedLocker}) och betalsätt (${cust.preferredPayment.toUpperCase()}) har förifyllts automatiskt!`
+    );
+  };
+
+  const handleSaveCurrentCustomer = () => {
+    if (!customerEmail && !customerPhone) return;
+    const newCust: MockCustomer = {
+      id: 'cust-' + Date.now(),
+      email: customerEmail || 'test@example.se',
+      phone: customerPhone || '070-000 00 00',
+      name: `${customerFirstName || 'Ny'} ${customerLastName || 'Kund'}`.trim(),
+      firstName: customerFirstName || 'Ny',
+      lastName: customerLastName || 'Kund',
+      address: customerStreet || 'Storgatan 1',
+      postalCode: postalCode || '111 22',
+      city: customerCity || 'Stockholm',
+      preferredCarrier: selectedCarriers[0] || 'instabox',
+      preferredPayment: selectedPlayer || 'klarna',
+      savedLocker: 'Instabox Paketbox',
+      ordersCount: 1,
+    };
+    const updated = [newCust, ...savedMockCustomers.filter(c => c.email !== newCust.email)];
+    setSavedMockCustomers(updated);
+    try {
+      localStorage.setItem('checkout_saved_customers', JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+    setVariantToast(`Sparade ${newCust.name} (${newCust.email}) i kunddatabasen!`);
+    setTimeout(() => setVariantToast(null), 3000);
+  };
+
+  // KASSA-VARIANTER OCH JÄMFÖRELSE
+  const handleLoadVariant = (variant: SavedCheckoutVariant) => {
+    setActiveVariantId(variant.id);
+    if (variant.configSnapshot) {
+      const snap = variant.configSnapshot;
+      if (snap.mode && DEFAULT_PRESETS[snap.mode as CheckoutStepMode]) {
+        const targetMode = snap.mode as CheckoutStepMode;
+        setStepConfig({
+          mode: targetMode,
+          indicatorStyle: targetMode === 'accordion' ? 'accordion' : 'numbered',
+          steps: DEFAULT_PRESETS[targetMode],
+          autoAdvanceOnValid: true,
+          showStepSummary: true,
+          pickupFirstStep: snap.pickupFirstStep !== undefined ? Boolean(snap.pickupFirstStep) : targetMode === 'click-collect'
+        });
+      }
+      if (snap.pickupFirstStep !== undefined) {
+        setPickupFirstStep(Boolean(snap.pickupFirstStep));
+        setPickupModeActive(Boolean(snap.pickupFirstStep));
+      }
+      if (snap.pickupModeActive !== undefined) {
+        setPickupModeActive(Boolean(snap.pickupModeActive));
+      }
+      if (snap.selectedPlayer && PAYMENT_METHODS.some(p => p.id === snap.selectedPlayer)) {
+        setSelectedPlayer(snap.selectedPlayer);
+      }
+      if (snap.lightningAutofill !== undefined) {
+        setHasLightningAutofill(Boolean(snap.lightningAutofill));
+      }
+      if (snap.postalCode) {
+        setPostalCode(snap.postalCode);
+      }
+    }
+    setCurrentCheckoutStep(1);
+    setShowComparisonModal(false);
+    setVariantToast(`Laddade in ${variant.name}! Kassan är nu uppdaterad.`);
+    setTimeout(() => setVariantToast(null), 3500);
+  };
+
+  const handleSaveNewVariant = (name: string, desc: string) => {
+    if (!name.trim()) return;
+    const newVariant: SavedCheckoutVariant = {
+      id: 'var-custom-' + Date.now(),
+      name: name.trim(),
+      description: desc.trim() || `Anpassad kassa sparad ${new Date().toLocaleDateString('sv-SE')}`,
+      dateCreated: new Date().toISOString().split('T')[0],
+      mode: stepConfig.mode,
+      estimatedConversionRate: conversionScore,
+      estimatedAOV: currentAOV,
+      formFieldsCount: pickupModeActive || pickupFirstStep ? 3 : stepConfig.mode === '1-steg' ? 4 : 8,
+      liftScores: {
+        value: Math.min(96, Math.round(55 + (freeShippingThreshold > 0 ? 15 : 5) + (showProductDiscount ? 15 : 0) + (hasUpsell ? 10 : 0))),
+        relevance: Math.min(96, Math.round(55 + (selectedPaymentMethods.includes('swish') ? 15 : 8) + (selectedCarriers.includes('instabox') ? 15 : 8))),
+        clarity: Math.min(96, Math.round(55 + (shipExactDates ? 15 : 5) + (stepConfig.mode === '3-steg' ? 15 : 5))),
+        anxiety: Math.max(8, Math.round(35 - (showTrustbadges ? 12 : 0) - (returnCost === 'free' ? 8 : 0))),
+        friction: Math.max(6, Math.round(35 - (hasLightningAutofill ? 14 : 0) - (pickupFirstStep ? 12 : 0))),
+      },
+      configSnapshot: {
+        mode: stepConfig.mode,
+        pickupFirstStep,
+        pickupModeActive,
+        selectedPlayer,
+        lightningAutofill: hasLightningAutofill,
+        postalCode,
+      },
+    };
+    const updated = [...savedVariants, newVariant];
+    setSavedVariants(updated);
+    setActiveVariantId(newVariant.id);
+    try {
+      localStorage.setItem('checkout_saved_variants', JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+    setNewVariantName('');
+    setNewVariantDescription('');
+    setVariantToast(`Ny kassa-variant "${newVariant.name}" sparad!`);
+    setTimeout(() => setVariantToast(null), 3500);
+  };
+
+  const handleDeleteVariant = (id: string) => {
+    const updated = savedVariants.filter(v => v.id !== id);
+    setSavedVariants(updated);
+    try {
+      localStorage.setItem('checkout_saved_variants', JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+    setVariantToast('Varianten togs bort.');
+    setTimeout(() => setVariantToast(null), 2500);
+  };
+
+  const calculateShippingLift = () => {
+    let lift = 0;
+    if (shipExactDates) lift += (adminFactorBoosts?.['ship-exact-dates'] ?? 3.5);
+    if (shipBadging) lift += (adminFactorBoosts?.['ship-badging'] ?? 2.8);
+    if (shipPostcodeDriven) lift += (adminFactorBoosts?.['ship-postcode-driven'] ?? 3.2);
+    if (shipFreeShippingMeter) lift += (adminFactorBoosts?.['ship-free-shipping-meter'] ?? 2.5);
+    return Math.round(lift * 10) / 10;
+  };
+
   const conversionScore = calculateConversionScore();
   const currentAOV = calculateAOV();
   const currentCLV = calculateCLV();
@@ -631,14 +957,74 @@ mobil konvertering enligt nordisk best practice.
               Experimentera med e-handelspsykologi längs hela kundresan och se hur det påverkar dina nyckeltal.
             </p>
           </div>
-          <a
-            href="#checkout-benchmarks"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 dark:text-brand-400 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition self-start sm:self-auto shrink-0"
-          >
-            <Calculator size={16} />
-            <span>Kalkylator & Benchmarks</span>
-            <ArrowRight size={14} />
-          </a>
+          <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto shrink-0">
+            {/* VARIANT-VÄLJARE */}
+            <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 p-1 pl-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-xs">
+              <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px]">
+                Aktiv Kassa:
+              </span>
+              <select
+                value={activeVariantId}
+                onChange={(e) => {
+                  const selected = savedVariants.find(v => v.id === e.target.value);
+                  if (selected) handleLoadVariant(selected);
+                }}
+                className="bg-transparent font-bold text-slate-900 dark:text-white outline-none cursor-pointer py-1 pr-1 text-xs"
+              >
+                {savedVariants.map(v => (
+                  <option key={v.id} value={v.id}>
+                    {v.name} ({v.estimatedConversionRate.toFixed(1)}%)
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {adminSettingsActive && (
+              <Link
+                href="/admin/checkout-config"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/60 hover:bg-brand-100 border border-brand-200 dark:border-brand-800 px-3 py-2 rounded-xl transition shadow-sm"
+                title="Admin-inställningar styr baslinje och 12 faktorer"
+              >
+                <Sliders size={13} />
+                <span>Admin: {adminBaseRate?.toFixed(1) ?? '52.0'}% baslinje</span>
+              </Link>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setShowComparisonModal(true)}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition"
+            >
+              <Scale size={15} className="text-brand-600 dark:text-brand-400" />
+              <span>Spara &amp; Jämför Kassor (A/B)</span>
+              <span className="text-[10px] bg-brand-100 dark:bg-brand-900/60 text-brand-700 dark:text-brand-300 font-bold px-1.5 py-0.5 rounded">
+                {savedVariants.length}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowLiftAuditModal(true)}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition"
+            >
+              <BarChart3 size={15} className="text-emerald-500" />
+              <span>LIFT &amp; 12 Faktorer</span>
+            </button>
+            <Link
+              href="/guides/empirisk-data"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 dark:bg-brand-600 dark:hover:bg-brand-500 px-4 py-2.5 rounded-xl shadow-sm transition"
+            >
+              <Search size={15} />
+              <span>Sök forskningsdata</span>
+              <ArrowRight size={14} />
+            </Link>
+            <a
+              href="#checkout-benchmarks"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 dark:text-brand-400 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition"
+            >
+              <Calculator size={16} />
+              <span>Kalkylator &amp; Benchmarks</span>
+            </a>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-12 gap-8 items-start">
@@ -661,7 +1047,7 @@ mobil konvertering enligt nordisk best practice.
                 <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 hidden sm:block" />
 
                 <div className="flex gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-lg w-full sm:w-auto overflow-x-auto hide-scrollbar">
-                  {(['checkout', 'research', 'orderConfirmation', 'return', 'export'] as const).map(view => (
+                  {(['checkout', 'orderConfirmation', 'return', 'export'] as const).map(view => (
                     <button
                       key={view}
                       onClick={() => {
@@ -672,38 +1058,13 @@ mobil konvertering enligt nordisk best practice.
                         activeView === view ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                       }`}
                     >
-                      {view === 'checkout' ? 'Kassa' : view === 'research' ? 'Sök Konverteringsdata' : view === 'orderConfirmation' ? 'Tacksida' : view === 'return' ? 'Retur' : 'Exportera'}
+                      {view === 'checkout' ? 'Kassa' : view === 'orderConfirmation' ? 'Tacksida' : view === 'return' ? 'Retur' : 'Exportera'}
                     </button>
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* FORSKNINGSDATABAS VY */}
-            {activeView === 'research' ? (
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 shadow-xl">
-                <ConversionResearchExplorer
-                  activeCheckoutType={stepConfig.mode}
-                  onSelectStrategy={(item) => {
-                    if (item.id === 'res-step-1vs3') {
-                      setStepConfig((prev) => ({ ...prev, mode: '1-steg', steps: DEFAULT_PRESETS['1-steg'] }));
-                    } else if (item.id === 'res-step-2step-nordic') {
-                      setStepConfig((prev) => ({ ...prev, mode: '2-steg', steps: DEFAULT_PRESETS['2-steg'] }));
-                    } else if (item.id === 'res-step-complex-furniture') {
-                      setStepConfig((prev) => ({ ...prev, mode: '3-steg', steps: DEFAULT_PRESETS['3-steg'] }));
-                    } else if (item.id === 'res-guest-checkout') {
-                      setIsGuestCheckout(true);
-                    } else if (item.id === 'res-address-autofill') {
-                      setHasAutofill(true);
-                    } else if (item.id === 'res-swish-top') {
-                      setSelectedPaymentMethods((prev) => ['swish', ...prev.filter((p) => p !== 'swish')]);
-                    }
-                    setActiveView('checkout');
-                    setActiveTab('steps');
-                  }}
-                />
-              </div>
-            ) : (
             <div className={`transition-all duration-500 mx-auto bg-slate-950 ${deviceView === 'mobile' ? 'w-[375px] rounded-[3rem] border-[14px] border-slate-900 shadow-2xl overflow-hidden ring-1 ring-slate-800' : 'w-full rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden'}`}>
               <div className="bg-white dark:bg-slate-800 h-full w-full relative">
                 
@@ -898,11 +1259,19 @@ mobil konvertering enligt nordisk best practice.
                               if (!section) return null;
                               
                               // Filtrera moduler baserat på aktivt steg i flerstegsläge
+                              const isAccordion = stepConfig.mode === 'accordion';
+                              // I accordion-läge ökar kassan i längd genom att behålla föregående steg och veckla ut nästa nedanför
+                              const accordionVisibleModuleIds = isAccordion
+                                ? stepConfig.steps.slice(0, currentCheckoutStep).flatMap((s) => s.moduleIds)
+                                : [];
+
                               const activeStepDef = stepConfig.steps[currentCheckoutStep - 1];
                               const shouldShowSection = 
                                 stepConfig.mode === '1-steg' || 
                                 stepPreviewMode === 'all-steps' ||
-                                (activeStepDef && activeStepDef.moduleIds.includes(sectionId));
+                                (isAccordion 
+                                  ? accordionVisibleModuleIds.includes(sectionId) 
+                                  : (activeStepDef && activeStepDef.moduleIds.includes(sectionId)));
 
                               if (!shouldShowSection) return null;
 
@@ -954,46 +1323,287 @@ mobil konvertering enligt nordisk best practice.
 
                                             {sectionId === 'customer' && (
                                               <div className="space-y-3">
-                                                {checkoutType === 'B2B' && (
-                                                  <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg mb-4">
-                                                    <div className="flex-1 text-center py-1.5 text-xs font-semibold text-slate-500">Privat</div>
-                                                    <div className="flex-1 text-center py-1.5 text-xs font-semibold bg-white dark:bg-slate-700 rounded shadow-sm text-slate-900 dark:text-white flex items-center justify-center gap-2"><Building2 size={12}/> Företag</div>
+                                                {/* KUNDDATA & PREFILL TEST-VERKTYG */}
+                                                <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
+                                                  <div className="flex items-center justify-between">
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+                                                      <Fingerprint size={12} className="text-brand-600 dark:text-brand-400" />
+                                                      Testa förifyllnadsflöde (1-klick)
+                                                    </span>
+                                                    <span className="text-[10px] text-slate-400">
+                                                      {savedMockCustomers.length} sparade testkunder
+                                                    </span>
+                                                  </div>
+
+                                                  <div className="flex flex-wrap gap-1.5">
+                                                    {savedMockCustomers.slice(0, 3).map((cust) => {
+                                                      const isSelected = customerEmail.toLowerCase() === cust.email.toLowerCase();
+                                                      return (
+                                                        <button
+                                                          key={cust.id}
+                                                          type="button"
+                                                          onClick={() => handleSelectCustomer(cust)}
+                                                          className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg transition border flex items-center gap-1 ${
+                                                            isSelected
+                                                              ? 'bg-brand-600 text-white border-brand-600 shadow-sm'
+                                                              : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-brand-400'
+                                                          }`}
+                                                        >
+                                                          <span>👤 {cust.name.split(' ')[0]}</span>
+                                                          <span className="text-[9px] opacity-75">({cust.city})</span>
+                                                        </button>
+                                                      );
+                                                    })}
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => handleSelectCustomer(null)}
+                                                      className="text-[11px] font-medium px-2 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
+                                                      title="Töm fälten för att testa manuell inmatning"
+                                                    >
+                                                      Rensa
+                                                    </button>
+                                                  </div>
+                                                </div>
+
+                                                {/* KUND-MATCH NOTIS VID IDENTIFIERING */}
+                                                {matchedCustomerAlert && (
+                                                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700/80 text-xs text-emerald-900 dark:text-emerald-200 flex items-start justify-between gap-2.5 animate-in fade-in duration-200">
+                                                    <div className="flex items-start gap-2">
+                                                      <UserCheck size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                                                      <div>
+                                                        <strong className="block font-bold leading-tight">
+                                                          {matchedCustomerAlert}
+                                                        </strong>
+                                                        <span className="text-[10px] text-emerald-700 dark:text-emerald-400 block mt-0.5">
+                                                          Pre-fill aktivt: Minskar manuell inmatningstid med 35–50 sekunder.
+                                                        </span>
+                                                      </div>
+                                                    </div>
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => setMatchedCustomerAlert(null)}
+                                                      className="text-emerald-600 hover:text-emerald-900 p-1 shrink-0"
+                                                    >
+                                                      <X size={14} />
+                                                    </button>
                                                   </div>
                                                 )}
-                                                
-                                                {hasLightningAutofill ? (
-                                                  <div className="grid grid-cols-2 gap-3 relative">
-                                                    <input type="email" placeholder="E-post" className="w-full h-10 bg-slate-50 dark:bg-slate-900 rounded-lg px-3 text-sm border border-brand-300 dark:border-brand-700 focus:ring-2 focus:ring-brand-500 outline-none" />
-                                                    <input type="text" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="Postnummer" className="w-full h-10 bg-slate-50 dark:bg-slate-900 rounded-lg px-3 text-sm border border-brand-300 dark:border-brand-700 focus:ring-2 focus:ring-brand-500 outline-none" />
-                                                    <div className="absolute -bottom-6 left-0 right-0 text-center"><span className="text-[10px] font-semibold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/30 px-2 py-0.5 rounded-full"><Fingerprint size={10} className="inline mr-1" />Blixt-autofill aktivt</span></div>
+
+                                                {/* Omnichannel val: Hämta i butik som första steg */}
+                                                {(pickupFirstStep || stepConfig.mode === 'click-collect' || pickupModeActive) && (
+                                                  <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 mb-2">
+                                                    <div className="flex items-center justify-between">
+                                                      <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                                                        Steg 1: Utlämningsmetod
+                                                      </span>
+                                                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                                                        0 kr frakt i butik
+                                                      </span>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                      <button
+                                                        type="button"
+                                                        onClick={() => setPickupModeActive(false)}
+                                                        className={`py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 border ${
+                                                          !pickupModeActive
+                                                            ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white border-slate-300 dark:border-slate-600 shadow-sm'
+                                                            : 'bg-transparent text-slate-500 border-transparent hover:text-slate-800'
+                                                        }`}
+                                                      >
+                                                        <Truck size={14} /> Ombud / Hem
+                                                      </button>
+                                                      <button
+                                                        type="button"
+                                                        onClick={() => setPickupModeActive(true)}
+                                                        className={`py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 border ${
+                                                          pickupModeActive
+                                                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                                                            : 'bg-transparent text-slate-500 border-transparent hover:text-slate-800'
+                                                        }`}
+                                                      >
+                                                        <Store size={14} /> Hämta i butik
+                                                      </button>
+                                                    </div>
+
+                                                    {pickupModeActive && (
+                                                      <div className="pt-2 border-t border-slate-200 dark:border-slate-800 space-y-2">
+                                                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                                                          Välj butik med lagersaldo:
+                                                        </label>
+                                                        <select
+                                                          value={selectedPickupStore}
+                                                          onChange={(e) => setSelectedPickupStore(e.target.value)}
+                                                          className="w-full h-10 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-xs px-2.5 font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500"
+                                                        >
+                                                          <option value="sthlm-city">Stockholm City, Sergelgatan 1 (14 i lager – Redo inom 30 min)</option>
+                                                          <option value="gbg-nordstan">Göteborg Nordstan (5 i lager – Redo idag)</option>
+                                                          <option value="malmo-triangeln">Malmö Triangeln (8 i lager – Redo inom 30 min)</option>
+                                                          <option value="uppsala-city">Uppsala City (3 i lager – Redo idag)</option>
+                                                        </select>
+                                                        <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium flex items-center gap-1">
+                                                          <Check size={12} /> Blixt-kassa aktiverad: Endast 3 fält behövs!
+                                                        </p>
+                                                      </div>
+                                                    )}
+                                                  </div>
+                                                )}
+
+                                                {/* Butikshämtning: Endast 3 fält för kontakt & SMS-avi */}
+                                                {pickupModeActive ? (
+                                                  <div className="space-y-2.5 bg-emerald-50/40 dark:bg-emerald-950/20 p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60">
+                                                    <div className="text-[11px] font-bold text-emerald-900 dark:text-emerald-200 flex items-center justify-between">
+                                                      <span>Uppgifter för SMS-avisering</span>
+                                                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">-5 formulärfält sparade</span>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                      <input
+                                                        type="text"
+                                                        placeholder="Förnamn"
+                                                        value={customerFirstName}
+                                                        onChange={(e) => setCustomerFirstName(e.target.value)}
+                                                        className="h-9 px-3 bg-white dark:bg-slate-900 rounded-lg text-xs border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+                                                      />
+                                                      <input
+                                                        type="text"
+                                                        placeholder="Efternamn"
+                                                        value={customerLastName}
+                                                        onChange={(e) => setCustomerLastName(e.target.value)}
+                                                        className="h-9 px-3 bg-white dark:bg-slate-900 rounded-lg text-xs border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+                                                      />
+                                                    </div>
+                                                    <input
+                                                      type="tel"
+                                                      placeholder="Mobilnummer för SMS-avi (070-123 45 67)"
+                                                      value={customerPhone}
+                                                      onChange={(e) => handlePhoneChange(e.target.value)}
+                                                      className="w-full h-9 px-3 bg-white dark:bg-slate-900 rounded-lg text-xs border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                                                    />
+                                                    <input
+                                                      type="email"
+                                                      placeholder="E-post för kvitto"
+                                                      value={customerEmail}
+                                                      onChange={(e) => handleEmailChange(e.target.value)}
+                                                      className="w-full h-9 px-3 bg-white dark:bg-slate-900 rounded-lg text-xs border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500"
+                                                    />
+                                                    <div className="pt-1 flex items-center justify-between">
+                                                      <button
+                                                        type="button"
+                                                        onClick={handleSaveCurrentCustomer}
+                                                        className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:underline flex items-center gap-1"
+                                                      >
+                                                        💾 Spara denna kundprofil för test
+                                                      </button>
+                                                    </div>
                                                   </div>
                                                 ) : (
-                                                  <div className="grid grid-cols-2 gap-3">
-                                                    <select value={customerCountry} onChange={(e) => setCustomerCountry(e.target.value)} className="w-full h-10 bg-slate-50 dark:bg-slate-900 rounded-lg px-3 text-sm text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-brand-500 outline-none">
-                                                      <option value="SE">Sverige</option><option value="NO">Norge</option><option value="DK">Danmark</option><option value="FI">Finland</option>
-                                                    </select>
-                                                    <input type="text" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="Postnummer" className="w-full h-10 bg-slate-50 dark:bg-slate-900 rounded-lg px-3 text-sm text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-brand-500 outline-none" />
-                                                  </div>
-                                                )}
+                                                  <>
+                                                    {checkoutType === 'B2B' && (
+                                                      <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg mb-4">
+                                                        <div className="flex-1 text-center py-1.5 text-xs font-semibold text-slate-500">Privat</div>
+                                                        <div className="flex-1 text-center py-1.5 text-xs font-semibold bg-white dark:bg-slate-700 rounded shadow-sm text-slate-900 dark:text-white flex items-center justify-center gap-2"><Building2 size={12}/> Företag</div>
+                                                      </div>
+                                                    )}
+                                                    
+                                                    {hasLightningAutofill ? (
+                                                      <div className="space-y-2">
+                                                        <div className="grid grid-cols-2 gap-2 relative">
+                                                          <input
+                                                            type="email"
+                                                            placeholder="E-post (t.ex. anna@example.se)"
+                                                            value={customerEmail}
+                                                            onChange={(e) => handleEmailChange(e.target.value)}
+                                                            className="w-full h-10 bg-slate-50 dark:bg-slate-900 rounded-lg px-3 text-xs border border-brand-300 dark:border-brand-700 focus:ring-2 focus:ring-brand-500 outline-none font-medium"
+                                                          />
+                                                          <input
+                                                            type="text"
+                                                            value={postalCode}
+                                                            onChange={(e) => setPostalCode(e.target.value)}
+                                                            placeholder="Postnummer"
+                                                            className="w-full h-10 bg-slate-50 dark:bg-slate-900 rounded-lg px-3 text-xs border border-brand-300 dark:border-brand-700 focus:ring-2 focus:ring-brand-500 outline-none font-medium"
+                                                          />
+                                                        </div>
+                                                        <div className="flex items-center justify-between text-[10px]">
+                                                          <span className="text-brand-600 dark:text-brand-400 font-semibold bg-brand-50 dark:bg-brand-900/30 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                                                            <Fingerprint size={10} /> Blixt-autofill aktivt
+                                                          </span>
+                                                          <button
+                                                            type="button"
+                                                            onClick={handleSaveCurrentCustomer}
+                                                            className="text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline"
+                                                          >
+                                                            💾 Spara profil
+                                                          </button>
+                                                        </div>
+                                                      </div>
+                                                    ) : (
+                                                      <div className="space-y-2">
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                          <input
+                                                            type="email"
+                                                            placeholder="E-postadress"
+                                                            value={customerEmail}
+                                                            onChange={(e) => handleEmailChange(e.target.value)}
+                                                            className="w-full h-10 bg-slate-50 dark:bg-slate-900 rounded-lg px-3 text-xs border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-brand-500 outline-none font-medium"
+                                                          />
+                                                          <input
+                                                            type="tel"
+                                                            placeholder="Mobiltelefon (070-123 45 67)"
+                                                            value={customerPhone}
+                                                            onChange={(e) => handlePhoneChange(e.target.value)}
+                                                            className="w-full h-10 bg-slate-50 dark:bg-slate-900 rounded-lg px-3 text-xs border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-brand-500 outline-none font-medium font-mono"
+                                                          />
+                                                        </div>
 
-                                                {checkoutType === 'B2B' && !hasLightningAutofill && (
-                                                  <div className="h-10 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 flex items-center"><span className="text-xs text-slate-400">Företagsnamn / Org.nr</span></div>
-                                                )}
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                          <input
+                                                            type="text"
+                                                            placeholder="Förnamn"
+                                                            value={customerFirstName}
+                                                            onChange={(e) => setCustomerFirstName(e.target.value)}
+                                                            className="h-10 px-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-brand-500 font-medium"
+                                                          />
+                                                          <input
+                                                            type="text"
+                                                            placeholder="Efternamn"
+                                                            value={customerLastName}
+                                                            onChange={(e) => setCustomerLastName(e.target.value)}
+                                                            className="h-10 px-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-brand-500 font-medium"
+                                                          />
+                                                        </div>
 
-                                                {!hasLightningAutofill && (
-                                                  addressAutocomplete ? (
-                                                    <div className="relative mt-2">
-                                                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><MapPin size={16} className="text-slate-400"/></div>
-                                                      <input type="text" placeholder="Sök adress..." className="w-full h-10 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-3 text-sm focus:ring-2 focus:ring-brand-500 outline-none" />
-                                                    </div>
-                                                  ) : hasAutofill ? (
-                                                    <div className="h-10 mt-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 rounded-lg px-3 flex items-center"><span className="text-xs font-medium text-green-700 dark:text-green-400">Autofyllt via Klarna/Walley</span></div>
-                                                  ) : (
-                                                    <>
-                                                      <div className="h-10 mt-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg" />
-                                                      <div className="h-10 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg" />
-                                                    </>
-                                                  )
+                                                        <div className="grid grid-cols-3 gap-2">
+                                                          <input
+                                                            type="text"
+                                                            placeholder="Gatuadress"
+                                                            value={customerStreet}
+                                                            onChange={(e) => setCustomerStreet(e.target.value)}
+                                                            className="col-span-2 h-10 px-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-brand-500 font-medium"
+                                                          />
+                                                          <input
+                                                            type="text"
+                                                            placeholder="Postnr"
+                                                            value={postalCode}
+                                                            onChange={(e) => setPostalCode(e.target.value)}
+                                                            className="h-10 px-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-brand-500 font-medium"
+                                                          />
+                                                        </div>
+
+                                                        <div className="pt-1 flex items-center justify-between text-[11px]">
+                                                          <span className="text-slate-400">
+                                                            📍 {customerCity || 'Sverige'}
+                                                          </span>
+                                                          <button
+                                                            type="button"
+                                                            onClick={handleSaveCurrentCustomer}
+                                                            className="font-bold text-brand-600 dark:text-brand-400 hover:underline"
+                                                          >
+                                                            💾 Spara profil till testdatabas
+                                                          </button>
+                                                        </div>
+                                                      </div>
+                                                    )}
+                                                  </>
                                                 )}
                                               </div>
                                             )}
@@ -1014,6 +1624,38 @@ mobil konvertering enligt nordisk best practice.
 
                                             {sectionId === 'shipping' && (
                                               <>
+                                                {/* FRAKTVÄLJARE CRO IMPACT BANNER */}
+                                                <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-emerald-950/40 border border-emerald-300 dark:border-emerald-800 space-y-2 mb-3">
+                                                  <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                      <Truck size={15} className="text-emerald-600 dark:text-emerald-400" />
+                                                      <strong className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                                                        Fraktväljarens Konverteringslyft
+                                                      </strong>
+                                                    </div>
+                                                    <span className="text-xs font-black text-emerald-700 dark:text-emerald-300 bg-white dark:bg-slate-900 px-2 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-700 font-mono">
+                                                      +{calculateShippingLift()}% CVR
+                                                    </span>
+                                                  </div>
+                                                  <p className="text-[11px] text-emerald-800 dark:text-emerald-300 leading-snug">
+                                                    Kassans verkliga flaskhals är leveranssteget (5–15 % lyft). Kunden avbryter på grund av vaga tidsangivelser, dolda avgifter eller valstress.
+                                                  </p>
+                                                  <div className="flex flex-wrap gap-1.5 pt-1">
+                                                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${shipExactDates ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700'}`}>
+                                                      ✓ Exakt datum (+3.5%)
+                                                    </span>
+                                                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${shipBadging ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700'}`}>
+                                                      ✓ Badging (+2.8%)
+                                                    </span>
+                                                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${shipPostcodeDriven ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700'}`}>
+                                                      ✓ Postnr-drivet (+3.2%)
+                                                    </span>
+                                                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${shipFreeShippingMeter ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700'}`}>
+                                                      ✓ Fri frakt-mätare (+2.5%)
+                                                    </span>
+                                                  </div>
+                                                </div>
+
                                                 {availableDeliveryOptions.length === 0 ? (
                                                   <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
                                                     <AlertTriangle className="text-red-500 shrink-0" size={18} />
@@ -1057,10 +1699,36 @@ mobil konvertering enligt nordisk best practice.
                                                                 </div>
                                                               </div>
                                                               {(ecoSvanen || ecoKompenserad || ecoGreen) && (
-                                                                <div className="flex gap-1.5 mt-2 ml-10">
-                                                                  {ecoSvanen && <span className="text-[9px] font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded flex items-center gap-1"><Leaf size={10}/> Svanenmärkt</span>}
-                                                                  {ecoKompenserad && <span className="text-[9px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 px-1.5 py-0.5 rounded flex items-center gap-1"><Leaf size={10}/> Kompenserad</span>}
-                                                                  {ecoGreen && <span className="text-[9px] font-semibold bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400 px-1.5 py-0.5 rounded flex items-center gap-1"><Truck size={10}/> Skicka Grönt</span>}
+                                                                <div className="flex flex-wrap gap-1.5 mt-2 ml-10">
+                                                                  {ecoSvanen && (
+                                                                    <span className="text-[9px] font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                                                      <Leaf size={10}/> Svanenmärkt (Typ 1)
+                                                                    </span>
+                                                                  )}
+                                                                  {ecoKompenserad && (
+                                                                    <button
+                                                                      type="button"
+                                                                      onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setShowEuGreenClaimsGuide(true);
+                                                                      }}
+                                                                      className="text-[9px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300 border border-rose-300 dark:border-rose-800 px-1.5 py-0.5 rounded flex items-center gap-1 hover:underline cursor-pointer"
+                                                                    >
+                                                                      <AlertTriangle size={10} className="text-rose-600 dark:text-rose-400"/> Ej EU-godkänt: Miljökompensation
+                                                                    </button>
+                                                                  )}
+                                                                  {ecoGreen && (
+                                                                    <button
+                                                                      type="button"
+                                                                      onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setShowDhlSendGreenInfo(true);
+                                                                      }}
+                                                                      className="text-[9px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 px-1.5 py-0.5 rounded flex items-center gap-1 hover:underline cursor-pointer"
+                                                                    >
+                                                                      <Truck size={10} className="text-emerald-600 dark:text-emerald-400"/> DHL Send Green (Insetting)
+                                                                    </button>
+                                                                  )}
                                                                 </div>
                                                               )}
                                                             </div>
@@ -1758,7 +2426,6 @@ mobil konvertering enligt nordisk best practice.
                 )}
               </div>
             </div>
-            )}
           </div>
 
           {/* HÖGER PANEL (Dynamic Settings & Engine) */}
@@ -1789,6 +2456,43 @@ mobil konvertering enligt nordisk best practice.
                     <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Avhoppsrisk</div>
                     <div className="text-2xl font-black text-white">{100 - conversionScore}<span className="text-sm text-slate-500 ml-1">%</span></div>
                   </div>
+
+                  {/* EU GREEN CLAIMS VARNING I AUDIT DASHBOARD */}
+                  {ecoKompenserad && (
+                    <div className="md:col-span-3 mt-2 p-3.5 rounded-xl bg-rose-950/90 border border-rose-600/80 text-xs text-rose-200 flex items-start justify-between gap-3 animate-pulse">
+                      <div className="flex items-start gap-2.5">
+                        <AlertTriangle size={18} className="text-rose-400 shrink-0 mt-0.5" />
+                        <div>
+                          <strong className="text-rose-100 font-bold block text-sm">
+                            ⚠️ Otillåtet enligt EU 2026: Miljökompensation ger -12 % avdrag
+                          </strong>
+                          <span className="text-rose-300/90 text-[11px] block mt-0.5 leading-relaxed">
+                            Klimatkompenserad frakt baserad på utsläppskrediter (offsetting) är olaglig som miljöpåstående enligt EU-direktiv 2024/825. Byt till Svanenmärkt eller DHL Send Green (insetting).
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowEuGreenClaimsGuide(true)}
+                        className="text-[11px] font-bold text-rose-200 underline whitespace-nowrap hover:text-white shrink-0 self-center"
+                      >
+                        Läs EU-reglerna &rarr;
+                      </button>
+                    </div>
+                  )}
+
+                  {/* CLICK & COLLECT STEG 1 BOOST */}
+                  {(pickupFirstStep || stepConfig.mode === 'click-collect' || pickupModeActive) && (
+                    <div className="md:col-span-3 mt-1 p-2.5 rounded-xl bg-emerald-950/70 border border-emerald-600/70 text-xs text-emerald-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+                        <span>Hämta i butik aktivt i steg 1: <strong>-5 fält, 0 kr frakt (+6 % CVR)</strong></span>
+                      </div>
+                      <span className="text-[10px] font-bold text-emerald-300 bg-emerald-900/60 px-2 py-0.5 rounded-full">
+                        Omnichannel Boost
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1843,37 +2547,70 @@ mobil konvertering enligt nordisk best practice.
               </div>
             )}
 
-            {activeView === 'research' && (
-              <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-2xl relative overflow-hidden transition-all">
-                <div className="absolute -right-4 -top-4 w-40 h-40 bg-brand-500/20 rounded-full blur-3xl pointer-events-none" />
-                <div className="relative z-10 space-y-3">
-                  <div className="text-xs font-bold uppercase tracking-widest text-brand-400 flex items-center gap-2">
-                    <Sparkles size={16} /> Forskningsöversikt
-                  </div>
-                  <h3 className="text-2xl font-black">Steg & Konverteringsdata</h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Empiriska mätvärden från ledande nordiska och globala e-handelsstudier.
-                  </p>
-                  <div className="grid grid-cols-2 gap-3 pt-2 text-xs">
-                    <div className="p-3 rounded-lg bg-slate-800/80 border border-slate-700">
-                      <span className="text-[10px] text-slate-400 block">Genomsnittligt kassa-avhopp</span>
-                      <strong className="text-lg text-rose-400 font-extrabold">69.8 %</strong>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-800/80 border border-slate-700">
-                      <span className="text-[10px] text-slate-400 block">Potential vid kassaoptimering</span>
-                      <strong className="text-lg text-emerald-400 font-extrabold">+35.2 %</strong>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {activeView === 'export' && (
               <div className="bg-brand-900 rounded-2xl p-6 text-white shadow-2xl relative overflow-hidden transition-all">
                 <div className="absolute -right-4 -top-4 w-40 h-40 bg-brand-500/30 rounded-full blur-3xl pointer-events-none" />
                 <div className="relative z-10 text-center py-6">
                   <div className="text-sm font-bold uppercase tracking-widest text-brand-300/70 mb-2">Sammanställning</div>
                   <div className="text-2xl font-black text-white">Redo för Export</div>
+                </div>
+              </div>
+            )}
+
+            {/* EMPIRISK FORSKNINGSDATA CTA */}
+            {activeView === 'checkout' && (
+              <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-brand-950 rounded-2xl p-4 sm:p-5 border border-slate-800 text-white shadow-xl space-y-3 relative overflow-hidden">
+                <div className="absolute top-0 right-0 -mr-6 -mt-6 w-32 h-32 bg-brand-500/10 rounded-full blur-2xl pointer-events-none" />
+                <div className="flex items-center justify-between relative z-10">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-brand-400 bg-brand-950/80 border border-brand-800/80 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <Sparkles size={11} /> Empirisk forskning & Benchmarks
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-medium">Baymard • NN/g • CXL</span>
+                </div>
+
+                <div className="relative z-10">
+                  <h4 className="text-sm font-bold text-white">
+                    Validera dina checkout-val mot vetenskapliga tester
+                  </h4>
+                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                    Undersök kvantitativa A/B-resultat för 1-steg vs flersteg, formulärfriktion och EU-regler.
+                  </p>
+                </div>
+
+                <div className="pt-1 flex flex-wrap items-center gap-2 relative z-10">
+                  <Link
+                    href="/guides/empirisk-data"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 px-3 py-2 rounded-xl transition shadow"
+                  >
+                    <Search size={13} /> Utforska forskningsdatabasen &rarr;
+                  </Link>
+                  <a
+                    href="https://baymard.com/checkout-usability"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-300 hover:text-white px-2.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 transition"
+                  >
+                    <span>Baymard</span>
+                    <ExternalLink size={11} />
+                  </a>
+                  <a
+                    href="https://www.nngroup.com/articles/checkout-process/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-300 hover:text-white px-2.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 transition"
+                  >
+                    <span>NN/g</span>
+                    <ExternalLink size={11} />
+                  </a>
+                  <a
+                    href="https://cxl.com/blog/checkout-flow-optimization/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-300 hover:text-white px-2.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 transition"
+                  >
+                    <span>CXL</span>
+                    <ExternalLink size={11} />
+                  </a>
                 </div>
               </div>
             )}
@@ -1907,18 +2644,18 @@ mobil konvertering enligt nordisk best practice.
                             config={stepConfig}
                             onChangeConfig={(newCfg) => {
                               setStepConfig(newCfg);
+                              if (newCfg.pickupFirstStep !== undefined) {
+                                setPickupFirstStep(newCfg.pickupFirstStep);
+                                if (newCfg.pickupFirstStep) {
+                                  setPickupModeActive(true);
+                                }
+                              } else if (newCfg.mode === 'click-collect') {
+                                setPickupFirstStep(true);
+                                setPickupModeActive(true);
+                              }
                               setCurrentCheckoutStep(1);
                             }}
                           />
-                          <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                            <button
-                              type="button"
-                              onClick={() => setActiveView('research')}
-                              className="w-full py-3 px-4 rounded-xl bg-slate-900 text-white dark:bg-brand-600 text-xs font-bold hover:bg-slate-800 dark:hover:bg-brand-500 transition flex items-center justify-center gap-2 shadow-md"
-                            >
-                              <Search size={14} /> Sök empirisk data om hur steg påverkar konvertering &rarr;
-                            </button>
-                          </div>
                         </div>
                       )}
                       
@@ -2046,6 +2783,19 @@ mobil konvertering enligt nordisk best practice.
                               <Toggle label="Kom ihåg fraktval" description="Återkommande kunder får sitt skåp förvalt (+ CLV/CVR)" checked={rememberShipping} onChange={setRememberShipping} />
                               <Toggle label="Visa omdömen för frakt" description="Stärker okända speditörer (ex. ★ 4.8)" checked={showShippingReviews} onChange={setShowShippingReviews} />
                               
+                              <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+                                <Toggle 
+                                  label="Ha 'Hämta i butik' (Click & Collect) som första steg" 
+                                  description="Kunden väljer butik i steg 1 och slipper fylla i hemadress (-5 formulärfält, 0 kr frakt, +6 p i betyg)" 
+                                  checked={pickupFirstStep} 
+                                  onChange={(val) => {
+                                    setPickupFirstStep(val);
+                                    setPickupModeActive(val);
+                                    setStepConfig((prev) => ({ ...prev, pickupFirstStep: val }));
+                                  }} 
+                                />
+                              </div>
+
                               <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
                                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Tillåtna alternativ</label>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -2077,11 +2827,69 @@ mobil konvertering enligt nordisk best practice.
                           </div>
 
                           <div>
-                            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Miljö & Tilläggstjänster (Logistik)</h3>
-                            <div className="space-y-5 bg-slate-50 dark:bg-slate-900/50 p-5 rounded-xl border border-slate-100 dark:border-slate-700/50">
-                              <Toggle label="Svanenmärkt e-handel" description="Visar eco-badge på frakten" checked={ecoSvanen} onChange={setEcoSvanen} />
-                              <Toggle label="Miljökompenserad frakt" description="Visar badge för kompensation" checked={ecoKompenserad} onChange={setEcoKompenserad} />
-                              <Toggle label="Skicka Grönt" description="PostNords fossilfria tillval" checked={ecoGreen} onChange={setEcoGreen} />
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                                Miljö, Hållbarhet & Tilläggstjänster
+                              </h3>
+                              <button
+                                type="button"
+                                onClick={() => setShowEuGreenClaimsGuide(true)}
+                                className="text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1"
+                              >
+                                <Info size={13} /> Vad gäller enligt EU 2026?
+                              </button>
+                            </div>
+                            <div className="space-y-4 bg-slate-50 dark:bg-slate-900/50 p-5 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                              <Toggle 
+                                label="Svanenmärkt e-handelstransport" 
+                                description="Officiell Typ 1-miljömärkning (+3 p i betyg). Högsta förtroendet bland konsumenter." 
+                                checked={ecoSvanen} 
+                                onChange={setEcoSvanen} 
+                              />
+
+                              <div className="p-3.5 rounded-xl border border-rose-300 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/20 space-y-2">
+                                <Toggle 
+                                  label="Miljökompenserad frakt" 
+                                  description="❌ Ej godkänt i EU sedan 2026. Utsläppskompensation (offsetting) är förbjudet som miljöpåstående." 
+                                  checked={ecoKompenserad} 
+                                  onChange={setEcoKompenserad} 
+                                />
+                                <div className="flex items-center justify-between text-[11px] pt-1.5 border-t border-rose-200 dark:border-rose-900/50 text-rose-700 dark:text-rose-400">
+                                  <span className="font-semibold flex items-center gap-1">
+                                    <AlertTriangle size={12} className="text-rose-600 dark:text-rose-400" />
+                                    Ger negativt betyg (-12 p) &amp; risk för vite
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowEuGreenClaimsGuide(true)}
+                                    className="font-bold underline hover:text-rose-900 dark:hover:text-rose-200"
+                                  >
+                                    Läs EU-reglerna &rarr;
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div className="p-3.5 rounded-xl border border-emerald-300 dark:border-emerald-900/60 bg-emerald-50/60 dark:bg-emerald-950/20 space-y-2">
+                                <Toggle 
+                                  label="DHL Send Green" 
+                                  description="Tidigare Skicka Grönt – DHL:s fossilfria tillval via insetting (biobränsle/el). Godkänt i EU (+4 p i betyg)." 
+                                  checked={ecoGreen} 
+                                  onChange={setEcoGreen} 
+                                />
+                                <div className="flex items-center justify-between text-[11px] pt-1.5 border-t border-emerald-200 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-300">
+                                  <span className="font-medium">
+                                    Investering i HVO100 &amp; svenska ellastbilar
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowDhlSendGreenInfo(true)}
+                                    className="font-bold underline hover:text-emerald-950 dark:hover:text-emerald-200 flex items-center gap-1"
+                                  >
+                                    <Info size={11} /> Förklarande text &rarr;
+                                  </button>
+                                </div>
+                              </div>
+
                               <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
                                 <Toggle label="Erbjud Leveransförsäkring" description="Låter kunden teckna extra skydd för 19kr" checked={addInsurance} onChange={setAddInsurance} />
                                 <div className="mt-4">
@@ -2334,6 +3142,548 @@ mobil konvertering enligt nordisk best practice.
 
         {/* BRANSCHBENCHMARKS & INTERAKTIV KONVERTERINGSKALKYLATOR */}
         <CheckoutBenchmarks />
+
+        {/* MODAL: EU GREEN CLAIMS GUIDE (FÖRBUD MOT MILJÖKOMPENSATION) */}
+        {showEuGreenClaimsGuide && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-start justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
+                    <AlertTriangle size={24} />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950 px-2 py-0.5 rounded-full border border-rose-200 dark:border-rose-800">
+                      EU-lagstiftning 2026
+                    </span>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mt-1">
+                      Förbud mot &rdquo;Miljökompenserad frakt&rdquo;
+                    </h3>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowEuGreenClaimsGuide(false)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 space-y-2">
+                  <h4 className="font-bold text-rose-900 dark:text-rose-200 flex items-center gap-2">
+                    <AlertTriangle size={16} /> Varför är miljökompensation otillåten sedan 2026?
+                  </h4>
+                  <p className="text-xs text-rose-800 dark:text-rose-300">
+                    Enligt <strong>EU-direktiv 2024/825</strong> (Empowering Consumers for the Green Transition) och det skärpta <em>Green Claims Directive</em> är det förbjudet att göra miljöpåståenden som &ldquo;klimatneutral&rdquo;, &ldquo;CO₂-kompenserad&rdquo; eller &ldquo;miljökompenserad&rdquo; när påståendet bygger på utsläppskrediter (offsetting/trädplantering) utanför företagets egen värdekedja.
+                  </p>
+                  <p className="text-xs text-rose-800 dark:text-rose-300">
+                    Överträdelse räknas som otillbörlig marknadsföring (greenwashing) och kan leda till sanktionsavgifter på upp till <strong>4 % av företagets årsomsättning</strong> av Konsumentverket.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="font-bold text-slate-900 dark:text-white text-base">
+                    Vad får du göra i kassan istället?
+                  </h4>
+
+                  <div className="grid gap-3">
+                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-start gap-3">
+                      <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="text-slate-900 dark:text-white block font-semibold text-xs">
+                          1. Officiell Typ 1-miljömärkning (Svanenmärkt)
+                        </strong>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 block">
+                          Svanenmärkt e-handelstransport bygger på ISO 14024 med oberoende granskning av fordonsflotta, förnybara drivmedel och schyssta arbetsvillkor. Högsta konverteringsförtroendet i Norden.
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-start gap-3">
+                      <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="text-slate-900 dark:text-white block font-semibold text-xs">
+                          2. Insetting i transportkedjan (DHL Send Green)
+                        </strong>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 block">
+                          Istället för att köpa externa krediter investeras kundens tilläggsavgift direkt i speditörens svenska flotta (HVO100 och ellastbilar). Detta minskar faktiska utsläpp vid källan och är fullt godkänt under EU-reglerna.
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-start gap-3">
+                      <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="text-slate-900 dark:text-white block font-semibold text-xs">
+                          3. Konkreta sakuppgifter istället för svepande ord
+                        </strong>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 block">
+                          Skriv &ldquo;Leverans med 100 % elfordon i Stockholm, Göteborg och Malmö&rdquo; istället för &ldquo;Grön leverans&rdquo;. Specifika och verifierbara fakta är alltid tillåtna.
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <span className="text-xs text-slate-400">
+                  Källa: EU 2024/825 &amp; Konsumentverkets vägledning
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowEuGreenClaimsGuide(false)}
+                  className="px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs hover:opacity-90 transition"
+                >
+                  Jag förstår EU-reglerna
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: DHL SEND GREEN INFO */}
+        {showDhlSendGreenInfo && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-start justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    <Truck size={24} />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                      DHL Freight Sweden
+                    </span>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mt-1">
+                      DHL Send Green (tidigare Skicka Grönt)
+                    </h3>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowDhlSendGreenInfo(false)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 space-y-2">
+                  <h4 className="font-bold text-emerald-900 dark:text-emerald-200">
+                    Varför byter Skicka Grönt namn till Send Green?
+                  </h4>
+                  <p className="text-xs text-emerald-800 dark:text-emerald-300">
+                    DHL harmoniserar sina hållbarhetstjänster globalt under varumärket <strong>Send Green</strong>. Konceptet är en vidareutveckling av svenska Skicka Grönt med ännu striktare krav på certifierade förnybara drivmedel och snabbare utrullning av tunga ellastbilar i det svenska inrikesnätet.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="font-bold text-slate-900 dark:text-white text-base">
+                    Hur fungerar Send Green insetting?
+                  </h4>
+
+                  <div className="space-y-2.5">
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs">
+                      <strong className="text-slate-900 dark:text-white block font-semibold mb-1">
+                        1. Äkta reduktion vid källan (Insetting)
+                      </strong>
+                      Tilläggsavgiften går oavkortat till att tanka HVO100 biodiesel, flytande biogas (LBG) och ladda ellastbilar i DHL:s svenska fordonsflotta. Inga osäkra externa trädplanteringsprojekt används.
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs">
+                      <strong className="text-slate-900 dark:text-white block font-semibold mb-1">
+                        2. Årlig oberoende revision
+                      </strong>
+                      Det fossila bortfallet och de faktiska milen granskas och certifieras årligen av en oberoende revisor. Detta uppfyller kraven för GHG Protocol Scope 1 och 3.
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs">
+                      <strong className="text-slate-900 dark:text-white block font-semibold mb-1">
+                        3. Rekommenderad förklarande text i kassan
+                      </strong>
+                      <em>&rdquo;DHL Send Green – Fossilfri transport med el och HVO100 biodrivmedel. Investering sker direkt i DHL:s svenska transportflotta.&rdquo;</em>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <span className="text-xs text-slate-400">
+                  Godkänt enligt EU:s Green Claims &amp; ISO 14064
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowDhlSendGreenInfo(false)}
+                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition"
+                >
+                  Stäng information
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TOAST: VARIANT & KUND NOTIS */}
+        {variantToast && (
+          <div className="fixed bottom-6 right-6 z-50 p-4 rounded-2xl bg-slate-900 text-white shadow-2xl flex items-center gap-3 border border-slate-700 animate-in fade-in slide-in-from-bottom-3 duration-200 max-w-md">
+            <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
+            <div className="text-xs">
+              <strong className="block font-bold text-slate-100">Uppdaterat</strong>
+              <span className="text-slate-300">{variantToast}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setVariantToast(null)}
+              className="text-slate-400 hover:text-white ml-auto"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
+
+        {/* MODAL: JÄMFÖR KASSA-VARIANTER (A/B/C) */}
+        {showComparisonModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-5xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[92vh] overflow-y-auto">
+              
+              <div className="flex items-start justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-800">
+                    <Scale size={24} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950 px-2 py-0.5 rounded-full border border-brand-200 dark:border-brand-800">
+                        A/B &amp; Multi-Variant Testning
+                      </span>
+                      <span className="text-xs text-slate-400">{savedVariants.length} sparade varianter</span>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1">
+                      Jämför Kassa-varianter mot varandra
+                    </h3>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowComparisonModal(false)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* SPARA NUVARANDE KASSA SOM NY VARIANT */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-brand-50/50 via-slate-50 to-slate-50 dark:from-brand-950/20 dark:via-slate-800/60 dark:to-slate-800/60 border border-brand-200 dark:border-brand-800/60 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h4 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                      <Plus size={16} className="text-brand-600 dark:text-brand-400" />
+                      Spara nuvarande checkout som ny variant
+                    </h4>
+                    <p className="text-xs text-slate-500">
+                      Sparar aktuellt läge ({stepConfig.mode}), konverteringsscore ({conversionScore}%), AOV ({currentAOV} kr) och alla aktiva val.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-12 gap-3 pt-1">
+                  <input
+                    type="text"
+                    value={newVariantName}
+                    onChange={(e) => setNewVariantName(e.target.value)}
+                    placeholder="Variantnamn (t.ex. Variant D: Mobilkassa med Swish)"
+                    className="sm:col-span-5 h-10 px-3 bg-white dark:bg-slate-900 rounded-xl text-xs font-semibold border border-slate-300 dark:border-slate-700 outline-none focus:ring-2 focus:ring-brand-500"
+                  />
+                  <input
+                    type="text"
+                    value={newVariantDescription}
+                    onChange={(e) => setNewVariantDescription(e.target.value)}
+                    placeholder="Beskrivning av hypotens/skillnaden..."
+                    className="sm:col-span-5 h-10 px-3 bg-white dark:bg-slate-900 rounded-xl text-xs border border-slate-300 dark:border-slate-700 outline-none focus:ring-2 focus:ring-brand-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleSaveNewVariant(newVariantName, newVariantDescription)}
+                    disabled={!newVariantName.trim()}
+                    className={`sm:col-span-2 h-10 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow ${
+                      newVariantName.trim()
+                        ? 'bg-brand-600 hover:bg-brand-500 text-white'
+                        : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                    }`}
+                  >
+                    <Plus size={14} /> Spara
+                  </button>
+                </div>
+              </div>
+
+              {/* JÄMFÖRELSEKORT (GRID) */}
+              <div className="grid gap-4 md:grid-cols-3">
+                {savedVariants.map((variant) => {
+                  const isActive = activeVariantId === variant.id;
+                  const isCustom = variant.id.startsWith('var-custom-');
+
+                  return (
+                    <div
+                      key={variant.id}
+                      className={`p-5 rounded-2xl border transition-all flex flex-col justify-between space-y-4 ${
+                        isActive
+                          ? 'bg-brand-50/40 dark:bg-brand-950/20 border-brand-500 ring-2 ring-brand-500/20'
+                          : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/70 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-white dark:bg-slate-900 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
+                            {variant.mode.toUpperCase()}
+                          </span>
+                          {isActive && (
+                            <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-700">
+                              Aktiv i labbet
+                            </span>
+                          )}
+                        </div>
+
+                        <div>
+                          <h4 className="font-bold text-slate-900 dark:text-white text-base">
+                            {variant.name}
+                          </h4>
+                          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">
+                            {variant.description}
+                          </p>
+                        </div>
+
+                        {/* NYCKELTAL */}
+                        <div className="grid grid-cols-3 gap-2 py-3 border-y border-slate-200 dark:border-slate-700/60 text-center">
+                          <div>
+                            <span className="text-[10px] text-slate-400 uppercase font-semibold block">Konv.</span>
+                            <span className="text-lg font-black text-brand-600 dark:text-brand-400 font-mono">
+                              {variant.estimatedConversionRate.toFixed(1)}%
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-400 uppercase font-semibold block">AOV</span>
+                            <span className="text-base font-bold text-slate-900 dark:text-white font-mono">
+                              {variant.estimatedAOV} kr
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-400 uppercase font-semibold block">Fält</span>
+                            <span className="text-base font-bold text-slate-900 dark:text-white font-mono">
+                              {variant.formFieldsCount} st
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* LIFT PROFIL MINI */}
+                        <div className="space-y-1.5 text-[11px]">
+                          <span className="font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase tracking-wider block">
+                            LIFT-Profil:
+                          </span>
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between text-[10px]">
+                              <span className="text-slate-500">Tydlighet &amp; Värde</span>
+                              <span className="font-bold text-emerald-600 dark:text-emerald-400">{variant.liftScores.clarity}%</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${variant.liftScores.clarity}%` }} />
+                            </div>
+
+                            <div className="flex items-center justify-between text-[10px] pt-0.5">
+                              <span className="text-slate-500">Friktion &amp; Oro (Lägre = Bättre)</span>
+                              <span className="font-bold text-slate-700 dark:text-slate-300">{variant.liftScores.friction}%</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div className="h-full bg-rose-500 rounded-full" style={{ width: `${Math.min(100, variant.liftScores.friction * 2)}%` }} />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* KNAPPAR */}
+                      <div className="pt-2 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleLoadVariant(variant)}
+                          className="flex-1 py-2 px-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold hover:opacity-90 transition flex items-center justify-center gap-1.5 shadow"
+                        >
+                          <Zap size={13} /> Ladda in i kassan
+                        </button>
+                        {isCustom && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteVariant(variant.id)}
+                            className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition"
+                            title="Ta bort variant"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500">
+                <span>
+                  💡 <strong>A/B-insikt:</strong> Att byta från standard 8-fälts postorder till Click &amp; Collect (3 fält) eller 1-stegs Blixt-kassa minskar avhoppen med upp till 12–18 %.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowComparisonModal(false)}
+                  className="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 transition self-end sm:self-auto"
+                >
+                  Stäng
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: LIFT-MODELLEN & 12 OPTIMERINGSFAKTORER AUDIT */}
+        {showLiftAuditModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-4xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[92vh] overflow-y-auto">
+              
+              <div className="flex items-start justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    <BarChart3 size={24} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                        WiderFunnel Ramverk
+                      </span>
+                      <span className="text-xs text-slate-400">CRO i Kassan</span>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1">
+                      LIFT-modellen &amp; De 12 Optimeringsfaktorerna
+                    </h3>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowLiftAuditModal(false)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* LIFT FORMEL */}
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-brand-950 text-white border border-slate-800 space-y-3">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-brand-400 bg-brand-950 px-2 py-0.5 rounded-full border border-brand-800">
+                  Konverteringsformeln
+                </span>
+                <div className="text-lg sm:text-xl font-black text-white font-mono">
+                  Konvertering = Värdeerbjudande + (Relevans + Tydlighet + Brådska) &minus; (Friktion + Oro)
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  LIFT-modellen (Landing page and Conversion Improvement Framework) visar att kunden väger drivkrafter mot hämmare. I kassan handlar CRO sällan om en magisk knapp – det handlar om att eliminera oro och friktion samtidigt som tydligheten hålls maximal.
+                </p>
+              </div>
+
+              {/* DE 6 LIFT-PELARNA */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-slate-900 dark:text-white text-base">
+                  De 6 Pelarna i LIFT-modellen
+                </h4>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {LIFT_PILLARS_DATA.map((pillar) => (
+                    <div
+                      key={pillar.pillar}
+                      className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 space-y-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                          pillar.role === 'Drivkraft'
+                            ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                            : 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
+                        }`}>
+                          {pillar.role}
+                        </span>
+                        <span className="text-xs font-black font-mono text-slate-700 dark:text-slate-300">
+                          {pillar.role === 'Drivkraft' ? `+${pillar.impactScore}%` : `-${pillar.impactScore}%`}
+                        </span>
+                      </div>
+                      <h5 className="font-bold text-slate-900 dark:text-white text-sm">
+                        {pillar.title}
+                      </h5>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                        {pillar.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* DE 12 OPTIMERINGSFAKTORERNA LISTA */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-slate-900 dark:text-white text-base">
+                    De 12 Optimeringsfaktorerna i Svenska Kassaflöden
+                  </h4>
+                  <Link
+                    href="/guides/cro-checkout"
+                    className="text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1"
+                  >
+                    Läs hela guiden &rarr;
+                  </Link>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto pr-1">
+                  {CRO_OPTIMIZATION_FACTORS.map((factor) => {
+                    const boost = adminFactorBoosts?.[factor.id] ?? factor.defaultBoost;
+                    return (
+                      <div
+                        key={factor.id}
+                        className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 flex items-start gap-3"
+                      >
+                        <div className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-900/60 text-brand-700 dark:text-brand-300 font-bold text-xs flex items-center justify-center shrink-0">
+                          {factor.number}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                              {factor.title}
+                            </span>
+                            <span className="text-xs font-bold text-brand-600 dark:text-brand-400 font-mono shrink-0">
+                              +{boost.toFixed(1)}%
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-brand-600 dark:text-brand-400 font-medium block">
+                            LIFT: {factor.liftPillar}
+                          </span>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
+                            {factor.description}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <span className="text-xs text-slate-400">
+                  Kalibrerad mot Baymard, Ingrid, Klarna &amp; Walley
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowLiftAuditModal(false)}
+                  className="px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs transition hover:opacity-90"
+                >
+                  Stäng analys
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

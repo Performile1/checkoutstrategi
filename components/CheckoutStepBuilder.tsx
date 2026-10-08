@@ -20,7 +20,7 @@ import {
   MoveUp
 } from 'lucide-react';
 
-export type CheckoutStepMode = '1-steg' | '2-steg' | '3-steg' | '4-steg' | 'accordion' | 'custom';
+export type CheckoutStepMode = '1-steg' | '2-steg' | '3-steg' | '4-steg' | 'accordion' | 'click-collect' | 'custom';
 
 export interface StepDefinition {
   id: string;
@@ -36,6 +36,7 @@ export interface StepBuilderConfig {
   steps: StepDefinition[];
   autoAdvanceOnValid: boolean;
   showStepSummary: boolean;
+  pickupFirstStep?: boolean;
 }
 
 export const DEFAULT_PRESETS: Record<CheckoutStepMode, StepDefinition[]> = {
@@ -87,6 +88,52 @@ export const DEFAULT_PRESETS: Record<CheckoutStepMode, StepDefinition[]> = {
       moduleIds: ['coupon', 'payment', 'euReturn', 'review']
     }
   ],
+  'accordion': [
+    {
+      id: 'acc-1',
+      number: 1,
+      title: 'Steg 1: Kunduppgifter',
+      description: 'E-post och kontakt (vecklas ut först)',
+      moduleIds: ['expressWallets', 'customer', 'guest']
+    },
+    {
+      id: 'acc-2',
+      number: 2,
+      title: 'Steg 2: Leverans & Frakt',
+      description: 'Vecklas ut nedåt på sidan när steg 1 är klart',
+      moduleIds: ['shipping', 'deliveryTimer', 'packaging']
+    },
+    {
+      id: 'acc-3',
+      number: 3,
+      title: 'Steg 3: Betalning & Slutför',
+      description: 'Vecklas ut längst ner för att slutföra köpet',
+      moduleIds: ['coupon', 'payment', 'euReturn', 'review']
+    }
+  ],
+  'click-collect': [
+    {
+      id: 'cnc-1',
+      number: 1,
+      title: 'Steg 1: Välj butik (Click & Collect)',
+      description: 'Välj fysisk butik med lagersaldo i realtid (0 kr frakt)',
+      moduleIds: ['shipping', 'deliveryTimer']
+    },
+    {
+      id: 'cnc-2',
+      number: 2,
+      title: 'Steg 2: Kontakt för SMS-avi',
+      description: 'Endast namn och mobil – ingen hemadress krävs!',
+      moduleIds: ['customer', 'guest']
+    },
+    {
+      id: 'cnc-3',
+      number: 3,
+      title: 'Steg 3: Betalning & Kvitto',
+      description: 'Betala online eller i butik vid uthämtning',
+      moduleIds: ['coupon', 'payment', 'review']
+    }
+  ],
   '4-steg': [
     {
       id: 'step-1-id',
@@ -115,29 +162,6 @@ export const DEFAULT_PRESETS: Record<CheckoutStepMode, StepDefinition[]> = {
       title: 'Steg 4: Slutgodkännande',
       description: 'Orderöversikt, inköpsordernummer och signering',
       moduleIds: ['review', 'euReturn']
-    }
-  ],
-  'accordion': [
-    {
-      id: 'acc-1',
-      number: 1,
-      title: '1. Dina uppgifter',
-      description: 'E-post och leveransadress',
-      moduleIds: ['expressWallets', 'customer', 'guest']
-    },
-    {
-      id: 'acc-2',
-      number: 2,
-      title: '2. Välj leverans',
-      description: 'Fraktmetod och ombud',
-      moduleIds: ['shipping', 'deliveryTimer']
-    },
-    {
-      id: 'acc-3',
-      number: 3,
-      title: '3. Betalning & Slutför',
-      description: 'Välj hur du vill betala',
-      moduleIds: ['coupon', 'payment', 'review']
     }
   ],
   'custom': [
@@ -189,6 +213,8 @@ export function CheckoutStepBuilder({
     onChangeConfig({
       ...config,
       mode,
+      indicatorStyle: mode === 'accordion' ? 'accordion' : config.indicatorStyle,
+      pickupFirstStep: mode === 'click-collect' ? true : config.pickupFirstStep,
       steps: newSteps
     });
   };
@@ -275,12 +301,22 @@ export function CheckoutStepBuilder({
     }
     if (config.mode === 'accordion') {
       return {
-        impact: '+6.5 %',
+        impact: '+8.4 %',
         type: 'positive',
-        headline: 'Modern SPA-upplevelse utan omladdningar',
-        explanation: 'Kunden behåller sammanhanget men fyller i ett segment i taget.',
-        mobileFrictionScore: 35,
-        desktopFrictionScore: 29
+        headline: 'Accordion som expanderar nedåt i längd',
+        explanation: 'Varje slutfört steg förblir synligt som sammanfattning medan nästa moment vecklas ut nedåt på samma URL. Kunden behåller full översikt och kassan ökar naturligt i längd.',
+        mobileFrictionScore: 26,
+        desktopFrictionScore: 22
+      };
+    }
+    if (config.mode === 'click-collect') {
+      return {
+        impact: '+14.2 % (Click & Collect)',
+        type: 'positive',
+        headline: 'Hämta i butik först – slipper 5 formulärfält',
+        explanation: 'Kunden väljer butik med realtidslager i steg 1 och behöver bara ange namn och mobilnummer för SMS-avi. Inga hemadressfält krävs.',
+        mobileFrictionScore: 18,
+        desktopFrictionScore: 15
       };
     }
     return {
@@ -314,7 +350,8 @@ export function CheckoutStepBuilder({
             { id: '1-steg', title: '1-stegs kassa', badge: 'Mest populär', desc: 'Allt på 1 sida' },
             { id: '2-steg', title: '2-stegs kassa', badge: 'Högst recovery', desc: 'Uppgifter &rarr; Betalning' },
             { id: '3-steg', title: '3-stegs kassa', badge: 'Standard Shopify', desc: 'Kund &rarr; Frakt &rarr; Betala' },
-            { id: 'accordion', title: 'Accordion-kassa', badge: 'Headless-favorit', desc: 'Utfällbara moment' },
+            { id: 'accordion', title: 'Accordion-kassa', badge: 'Ökar i längd', desc: 'Expanderar steg för steg' },
+            { id: 'click-collect', title: 'Hämta i butik först', badge: 'Omnichannel', desc: 'Butiksval &rarr; SMS-avi' },
             { id: '4-steg', title: '4-stegs (B2B)', badge: 'Stora ordrar', desc: 'Med PO & godkännande' },
             { id: 'custom', title: 'Anpassad layout', badge: 'Bygg själv', desc: 'Egen stegindelning' },
           ].map((modeOption) => (
@@ -567,6 +604,27 @@ export function CheckoutStepBuilder({
             Visa sammanfattning av genomförda steg (t.ex. &ldquo;Kund: anna@me.com [Ändra]&rdquo;)
           </span>
         </label>
+
+        <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+          <label className="flex items-start gap-2.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={!!config.pickupFirstStep}
+              onChange={(e) =>
+                onChangeConfig({ ...config, pickupFirstStep: e.target.checked })
+              }
+              className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 mt-0.5"
+            />
+            <div>
+              <span className="text-slate-800 dark:text-slate-200 font-semibold block">
+                Erbjud &ldquo;Hämta i butik&rdquo; (Click & Collect) som första steg
+              </span>
+              <span className="text-slate-500 text-[11px] block mt-0.5 leading-relaxed">
+                Låter kunden välja butik med realtidslagersaldo direkt i steg 1. Tar bort krav på hemadress, postnummer och ort (-5 fält, 0 kr frakt) – kunden anger endast namn och mobilnummer för SMS-avi.
+              </span>
+            </div>
+          </label>
+        </div>
       </div>
     </div>
   );
