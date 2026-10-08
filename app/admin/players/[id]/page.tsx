@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AdminGuard, getAdminAuthHeaders } from '@/components/AdminGuard';
+import { ImageUploadField } from '@/components/ImageUploadField';
 
 export default function EditPlayerPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -190,29 +191,24 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
                 className="w-full px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900"
               />
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium mb-2">Logo URL</label>
-                <input
-                  type="text"
-                  value={formData.logo_url}
-                  onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-                  required
-                  placeholder="/logos/klarna.png"
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Website URL</label>
-                <input
-                  type="text"
-                  value={formData.website_url}
-                  onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
-                  required
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Website URL</label>
+              <input
+                type="text"
+                value={formData.website_url}
+                onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
+                required
+                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900"
+              />
             </div>
+            <ImageUploadField
+              label="Logotyp (Logo)"
+              value={formData.logo_url}
+              onChange={(url) => setFormData((prev) => ({ ...prev, logo_url: url }))}
+              type="logo"
+              placeholder="/logos/kustom.svg eller ladda upp fil"
+              helperText="Ladda upp SVG eller PNG (visas i aktörslistan och trustcards)"
+            />
           </div>
 
           <div className="card space-y-4">

@@ -9,9 +9,12 @@ import {
   Star, ShoppingCart, Map as MapIcon, Monitor, Shirt, Sofa, Coffee,
   Smartphone, Building2, Leaf, ShieldCheck, Timer, Wallet, Fingerprint,
   Share2, Printer, ArrowRightLeft, HeartHandshake, FileText, Award,
-  UsersRound, PackageCheck, Info, ArrowRight, Calculator
+  UsersRound, PackageCheck, Info, ArrowRight, Calculator,
+  Search, Layers, ChevronRight, ChevronLeft, Sparkles
 } from 'lucide-react';
 import { CheckoutBenchmarks } from '@/components/CheckoutBenchmarks';
+import { CheckoutStepBuilder, StepBuilderConfig, DEFAULT_PRESETS, StepDefinition } from '@/components/CheckoutStepBuilder';
+import { ConversionResearchExplorer } from '@/components/ConversionResearchExplorer';
 
 // --- TYPER OCH DATA ---
 type CheckoutSection = { id: string; title: string; icon: React.ReactNode; description: string; };
@@ -24,7 +27,7 @@ const PLAYERS: Player[] = [
   { slug: 'qliro', name: 'Qliro', logoUrl: '/logos/qliro.png', marketImpact: { se: 3, no: 2, dk: 1, fi: 2 }, isCompleteCheckout: true },
   { slug: 'svea', name: 'Svea Checkout', logoUrl: '/logos/svea.png', marketImpact: { se: 4, no: 3, dk: 1, fi: 2 }, isCompleteCheckout: true },
   { slug: 'walley', name: 'Walley Checkout', logoUrl: '/logos/walley.png', marketImpact: { se: 4, no: 3, dk: 1, fi: 2 }, isCompleteCheckout: true },
-  { slug: 'kustom', name: 'Kustom (Egenbyggd)', logoUrl: '', marketImpact: { se: 2, no: 2, dk: 2, fi: 2 }, isCompleteCheckout: false },
+  { slug: 'kustom', name: 'Kustom Checkout', logoUrl: '/logos/kustom.svg', marketImpact: { se: 4, no: 3, dk: 3, fi: 3 }, isCompleteCheckout: true },
   { slug: 'adyen', name: 'Adyen Checkout', logoUrl: '/logos/adyen.png', marketImpact: { se: 2, no: 2, dk: 2, fi: 2 }, isCompleteCheckout: false },
   { slug: 'stripe', name: 'Stripe', logoUrl: '/logos/stripe.png', marketImpact: { se: 1, no: 1, dk: 1, fi: 1 }, isCompleteCheckout: false },
 ];
@@ -100,8 +103,19 @@ const FallbackImage = ({ src, alt, className }: { src?: string, alt: string, cla
 export default function TestCheckoutPage() {
   const [layoutOrder, setLayoutOrder] = useState(['expressWallets', 'customer', 'guest', 'coupon', 'shipping', 'payment', 'review']);
   const [activeTab, setActiveTab] = useState('settings');
-  const [activeView, setActiveView] = useState<'checkout' | 'orderConfirmation' | 'return' | 'export'>('checkout');
+  const [activeView, setActiveView] = useState<'checkout' | 'research' | 'orderConfirmation' | 'return' | 'export'>('checkout');
   const [deviceView, setDeviceView] = useState<'mobile' | 'desktop'>('desktop');
+
+  // -- STATE STEG-KASSA (Step Architecture) --
+  const [stepConfig, setStepConfig] = useState<StepBuilderConfig>({
+    mode: '1-steg',
+    indicatorStyle: 'numbered',
+    steps: DEFAULT_PRESETS['1-steg'],
+    autoAdvanceOnValid: true,
+    showStepSummary: true,
+  });
+  const [currentCheckoutStep, setCurrentCheckoutStep] = useState<number>(1);
+  const [stepPreviewMode, setStepPreviewMode] = useState<'step-by-step' | 'all-steps'>('step-by-step');
 
   // -- STATE UX & SETTINGS (Checkout) --
   const [customerCountry, setCustomerCountry] = useState('SE');
@@ -401,6 +415,16 @@ mobil konvertering enligt nordisk best practice.
     if (addressAutocomplete) score += 4;
     if (checkoutType === 'B2B') score += 2; 
 
+    // Stegarkitektur-påverkan baserat på empirisk forskning
+    if (stepConfig.mode === '1-steg') score += 4;
+    else if (stepConfig.mode === '2-steg') score += 5;
+    else if (stepConfig.mode === '3-steg') {
+      if (calculateAOV() > 2000) score += 4;
+      else score += 1;
+    }
+    else if (stepConfig.mode === 'accordion') score += 3;
+    if (stepConfig.autoAdvanceOnValid) score += 2; 
+
     const isFreeShipping = (freeShippingThreshold > 0 && calculateAOV() >= freeShippingThreshold);
     const costToUse = isFreeShipping ? 0 : actualShippingCost;
     const shippingRatio = costToUse / calculateAOV();
@@ -537,6 +561,22 @@ mobil konvertering enligt nordisk best practice.
     });
   };
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const viewParam = params.get('view');
+      const tabParam = params.get('tab');
+      if (viewParam === 'research') {
+        setActiveView('research');
+      } else if (viewParam === 'checkout' || viewParam === 'orderConfirmation' || viewParam === 'return' || viewParam === 'export') {
+        setActiveView(viewParam as any);
+      }
+      if (tabParam === 'steps' || tabParam === 'settings' || tabParam === 'shipping' || tabParam === 'product' || tabParam === 'provider') {
+        setActiveTab(tabParam as any);
+      }
+    }
+  }, []);
+
   useEffect(() => { toggleBlock('cartTimer', showCartTimer, 2); }, [showCartTimer]);
   useEffect(() => { toggleBlock('lowStock', showLowStockWarning, 2); }, [showLowStockWarning]);
   useEffect(() => { toggleBlock('socialProof', showSocialProof, 2); }, [showSocialProof]);
@@ -621,7 +661,7 @@ mobil konvertering enligt nordisk best practice.
                 <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 hidden sm:block" />
 
                 <div className="flex gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-lg w-full sm:w-auto overflow-x-auto hide-scrollbar">
-                  {(['checkout', 'orderConfirmation', 'return', 'export'] as const).map(view => (
+                  {(['checkout', 'research', 'orderConfirmation', 'return', 'export'] as const).map(view => (
                     <button
                       key={view}
                       onClick={() => {
@@ -632,13 +672,38 @@ mobil konvertering enligt nordisk best practice.
                         activeView === view ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                       }`}
                     >
-                      {view === 'checkout' ? 'Kassa' : view === 'orderConfirmation' ? 'Tacksida' : view === 'return' ? 'Retur' : 'Exportera'}
+                      {view === 'checkout' ? 'Kassa' : view === 'research' ? 'Sök Konverteringsdata' : view === 'orderConfirmation' ? 'Tacksida' : view === 'return' ? 'Retur' : 'Exportera'}
                     </button>
                   ))}
                 </div>
               </div>
             </div>
 
+            {/* FORSKNINGSDATABAS VY */}
+            {activeView === 'research' ? (
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 shadow-xl">
+                <ConversionResearchExplorer
+                  activeCheckoutType={stepConfig.mode}
+                  onSelectStrategy={(item) => {
+                    if (item.id === 'res-step-1vs3') {
+                      setStepConfig((prev) => ({ ...prev, mode: '1-steg', steps: DEFAULT_PRESETS['1-steg'] }));
+                    } else if (item.id === 'res-step-2step-nordic') {
+                      setStepConfig((prev) => ({ ...prev, mode: '2-steg', steps: DEFAULT_PRESETS['2-steg'] }));
+                    } else if (item.id === 'res-step-complex-furniture') {
+                      setStepConfig((prev) => ({ ...prev, mode: '3-steg', steps: DEFAULT_PRESETS['3-steg'] }));
+                    } else if (item.id === 'res-guest-checkout') {
+                      setIsGuestCheckout(true);
+                    } else if (item.id === 'res-address-autofill') {
+                      setHasAutofill(true);
+                    } else if (item.id === 'res-swish-top') {
+                      setSelectedPaymentMethods((prev) => ['swish', ...prev.filter((p) => p !== 'swish')]);
+                    }
+                    setActiveView('checkout');
+                    setActiveTab('steps');
+                  }}
+                />
+              </div>
+            ) : (
             <div className={`transition-all duration-500 mx-auto bg-slate-950 ${deviceView === 'mobile' ? 'w-[375px] rounded-[3rem] border-[14px] border-slate-900 shadow-2xl overflow-hidden ring-1 ring-slate-800' : 'w-full rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden'}`}>
               <div className="bg-white dark:bg-slate-800 h-full w-full relative">
                 
@@ -655,6 +720,175 @@ mobil konvertering enligt nordisk best practice.
                       </div>
                     )}
 
+                    {/* INTERAKTIV STEG-BAR OM FLERSTEGSKASSA ÄR AKTIV */}
+                    {stepConfig.mode !== '1-steg' && (
+                      <div className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 p-4 space-y-3">
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[11px] bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                              <Layers size={12} /> {stepConfig.mode}
+                            </span>
+                            <span className="text-slate-500 font-medium">
+                              Steg {currentCheckoutStep} av {stepConfig.steps.length}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1 bg-white dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                            <button
+                              type="button"
+                              onClick={() => setStepPreviewMode('step-by-step')}
+                              className={`px-2 py-0.5 rounded text-[11px] font-semibold transition ${
+                                stepPreviewMode === 'step-by-step'
+                                  ? 'bg-brand-600 text-white shadow-sm'
+                                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                              }`}
+                            >
+                              Steg för steg
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setStepPreviewMode('all-steps')}
+                              className={`px-2 py-0.5 rounded text-[11px] font-semibold transition ${
+                                stepPreviewMode === 'all-steps'
+                                  ? 'bg-brand-600 text-white shadow-sm'
+                                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                              }`}
+                            >
+                              Visa alla
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Visuell Stegindikator */}
+                        {stepConfig.indicatorStyle === 'numbered' && (
+                          <div className="flex items-center justify-between relative pt-1 pb-1">
+                            <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-0.5 bg-slate-200 dark:bg-slate-700 z-0" />
+                            {stepConfig.steps.map((st, sIdx) => {
+                              const stepNum = sIdx + 1;
+                              const isDone = currentCheckoutStep > stepNum;
+                              const isCurrent = currentCheckoutStep === stepNum;
+
+                              return (
+                                <button
+                                  key={st.id}
+                                  type="button"
+                                  onClick={() => setCurrentCheckoutStep(stepNum)}
+                                  className="relative z-10 flex flex-col items-center group cursor-pointer"
+                                >
+                                  <div
+                                    className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${
+                                      isDone
+                                        ? 'bg-emerald-600 text-white ring-2 ring-emerald-200 dark:ring-emerald-900'
+                                        : isCurrent
+                                        ? 'bg-brand-600 text-white ring-4 ring-brand-100 dark:ring-brand-900/60 scale-110'
+                                        : 'bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-400'
+                                    }`}
+                                  >
+                                    {isDone ? <CheckCircle2 size={14} /> : stepNum}
+                                  </div>
+                                  <span
+                                    className={`text-[10px] font-semibold mt-1 max-w-[85px] truncate text-center transition ${
+                                      isCurrent
+                                        ? 'text-brand-600 dark:text-brand-400 font-bold'
+                                        : 'text-slate-500 dark:text-slate-400'
+                                    }`}
+                                  >
+                                    {st.title.replace(/^Steg \d+:\s*/, '')}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {stepConfig.indicatorStyle === 'progressbar' && (
+                          <div className="space-y-1.5 pt-1">
+                            <div className="flex justify-between text-xs font-semibold">
+                              <span className="text-slate-900 dark:text-white">
+                                {stepConfig.steps[currentCheckoutStep - 1]?.title || `Steg ${currentCheckoutStep}`}
+                              </span>
+                              <span className="text-brand-600 dark:text-brand-400">
+                                {Math.round((currentCheckoutStep / stepConfig.steps.length) * 100)} %
+                              </span>
+                            </div>
+                            <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-brand-600 transition-all duration-300 rounded-full"
+                                style={{
+                                  width: `${(currentCheckoutStep / stepConfig.steps.length) * 100}%`
+                                }}
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {stepConfig.indicatorStyle === 'tabs' && (
+                          <div className="flex gap-1.5 overflow-x-auto hide-scrollbar pt-1">
+                            {stepConfig.steps.map((st, sIdx) => {
+                              const stepNum = sIdx + 1;
+                              const isCurrent = currentCheckoutStep === stepNum;
+                              return (
+                                <button
+                                  key={st.id}
+                                  type="button"
+                                  onClick={() => setCurrentCheckoutStep(stepNum)}
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 ${
+                                    isCurrent
+                                      ? 'bg-brand-600 text-white shadow-sm'
+                                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
+                                  }`}
+                                >
+                                  <span className="w-4 h-4 rounded-full bg-black/10 dark:bg-white/10 flex items-center justify-center text-[10px]">
+                                    {stepNum}
+                                  </span>
+                                  <span>{st.title.replace(/^Steg \d+:\s*/, '')}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {/* SAMMANFATTNING AV TIDIGARE STEG */}
+                        {stepConfig.showStepSummary && currentCheckoutStep > 1 && stepPreviewMode === 'step-by-step' && (
+                          <div className="space-y-1.5 pt-2 border-t border-slate-200 dark:border-slate-700/60">
+                            <div className="p-2 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-xs flex items-center justify-between">
+                              <div className="flex items-center gap-2 text-emerald-900 dark:text-emerald-200 truncate">
+                                <CheckCircle2 size={13} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                <span className="truncate">
+                                  <strong>Kund:</strong> test@kund.se · {postalCode} Stockholm
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setCurrentCheckoutStep(1)}
+                                className="text-[11px] font-bold text-brand-600 dark:text-brand-400 hover:underline shrink-0 ml-2"
+                              >
+                                Ändra
+                              </button>
+                            </div>
+
+                            {currentCheckoutStep > 2 && (
+                              <div className="p-2 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-xs flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-emerald-900 dark:text-emerald-200 truncate">
+                                  <CheckCircle2 size={13} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                  <span className="truncate">
+                                    <strong>Leverans:</strong> {availableCarriers[0] ? availableCarriers[0].toUpperCase() : 'Standard'} (0 kr)
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setCurrentCheckoutStep(2)}
+                                  className="text-[11px] font-bold text-brand-600 dark:text-brand-400 hover:underline shrink-0 ml-2"
+                                >
+                                  Ändra
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     <DragDropContext onDragEnd={handleDragEnd}>
                       <Droppable droppableId="checkout-sections" type="SECTION">
                         {(provided) => (
@@ -663,6 +897,15 @@ mobil konvertering enligt nordisk best practice.
                               const section = SECTIONS.find(s => s.id === sectionId);
                               if (!section) return null;
                               
+                              // Filtrera moduler baserat på aktivt steg i flerstegsläge
+                              const activeStepDef = stepConfig.steps[currentCheckoutStep - 1];
+                              const shouldShowSection = 
+                                stepConfig.mode === '1-steg' || 
+                                stepPreviewMode === 'all-steps' ||
+                                (activeStepDef && activeStepDef.moduleIds.includes(sectionId));
+
+                              if (!shouldShowSection) return null;
+
                               const tooltipInfo = getSectionTooltipData(sectionId);
 
                               return (
@@ -1155,19 +1398,53 @@ mobil konvertering enligt nordisk best practice.
                     </DragDropContext>
 
                     <div className="p-4 sm:p-6 bg-slate-50/50 dark:bg-slate-900/20 border-t border-slate-200 dark:border-slate-700 sticky bottom-0 z-50">
-                      <button
-                        className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all shadow-lg hover:-translate-y-0.5 ${
-                          ctaColor === 'green' ? 'bg-green-600 hover:bg-green-500 text-white shadow-green-600/20' 
-                          : ctaColor === 'orange' ? 'bg-orange-500 hover:bg-orange-400 text-white shadow-orange-500/20' 
-                          : ctaColor === 'red' ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-600/20' 
-                          : 'bg-slate-300 hover:bg-slate-400 text-slate-800 shadow-none'
-                        }`}
-                      >
-                        {ctaText === 'complete' && 'Slutför köp'}
-                        {ctaText === 'pay' && 'Betala säkert'}
-                        {ctaText === 'confirm' && 'Bekräfta order'}
-                      </button>
-                      <div className="text-center text-xs font-medium text-slate-400 dark:text-slate-500 mt-4 flex items-center justify-center gap-2">
+                      {stepConfig.mode !== '1-steg' && stepPreviewMode === 'step-by-step' && currentCheckoutStep < stepConfig.steps.length ? (
+                        <div className="flex gap-2">
+                          {currentCheckoutStep > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setCurrentCheckoutStep((prev) => Math.max(1, prev - 1))}
+                              className="px-4 py-3.5 rounded-xl border border-slate-300 dark:border-slate-600 font-semibold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                            >
+                              &larr; Föregående
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setCurrentCheckoutStep((prev) => Math.min(stepConfig.steps.length, prev + 1))}
+                            className="flex-1 py-4 px-6 rounded-xl font-bold text-base bg-brand-600 hover:bg-brand-500 text-white transition-all shadow-lg shadow-brand-600/25 flex items-center justify-center gap-2 hover:-translate-y-0.5"
+                          >
+                            <span>Fortsätt till {stepConfig.steps[currentCheckoutStep]?.title.replace(/^Steg \d+:\s*/, '') || 'nästa steg'}</span>
+                            <ArrowRight size={18} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          {stepConfig.mode !== '1-steg' && stepPreviewMode === 'step-by-step' && currentCheckoutStep > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setCurrentCheckoutStep((prev) => Math.max(1, prev - 1))}
+                              className="px-4 py-3.5 rounded-xl border border-slate-300 dark:border-slate-600 font-semibold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                            >
+                              &larr; Föregående
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setActiveView('orderConfirmation')}
+                            className={`flex-1 py-4 px-6 rounded-xl font-bold text-lg transition-all shadow-lg hover:-translate-y-0.5 ${
+                              ctaColor === 'green' ? 'bg-green-600 hover:bg-green-500 text-white shadow-green-600/20' 
+                              : ctaColor === 'orange' ? 'bg-orange-500 hover:bg-orange-400 text-white shadow-orange-500/20' 
+                              : ctaColor === 'red' ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-600/20' 
+                              : 'bg-slate-300 hover:bg-slate-400 text-slate-800 shadow-none'
+                            }`}
+                          >
+                            {ctaText === 'complete' && 'Slutför köp'}
+                            {ctaText === 'pay' && 'Betala säkert'}
+                            {ctaText === 'confirm' && 'Bekräfta order'}
+                          </button>
+                        </div>
+                      )}
+                      <div className="text-center text-xs font-medium text-slate-400 dark:text-slate-500 mt-3 flex items-center justify-center gap-2">
                         <Lock size={12} /> Säker krypterad betalning
                       </div>
                     </div>
@@ -1481,6 +1758,7 @@ mobil konvertering enligt nordisk best practice.
                 )}
               </div>
             </div>
+            )}
           </div>
 
           {/* HÖGER PANEL (Dynamic Settings & Engine) */}
@@ -1565,6 +1843,31 @@ mobil konvertering enligt nordisk best practice.
               </div>
             )}
 
+            {activeView === 'research' && (
+              <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-2xl relative overflow-hidden transition-all">
+                <div className="absolute -right-4 -top-4 w-40 h-40 bg-brand-500/20 rounded-full blur-3xl pointer-events-none" />
+                <div className="relative z-10 space-y-3">
+                  <div className="text-xs font-bold uppercase tracking-widest text-brand-400 flex items-center gap-2">
+                    <Sparkles size={16} /> Forskningsöversikt
+                  </div>
+                  <h3 className="text-2xl font-black">Steg & Konverteringsdata</h3>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Empiriska mätvärden från ledande nordiska och globala e-handelsstudier.
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 pt-2 text-xs">
+                    <div className="p-3 rounded-lg bg-slate-800/80 border border-slate-700">
+                      <span className="text-[10px] text-slate-400 block">Genomsnittligt kassa-avhopp</span>
+                      <strong className="text-lg text-rose-400 font-extrabold">69.8 %</strong>
+                    </div>
+                    <div className="p-3 rounded-lg bg-slate-800/80 border border-slate-700">
+                      <span className="text-[10px] text-slate-400 block">Potential vid kassaoptimering</span>
+                      <strong className="text-lg text-emerald-400 font-extrabold">+35.2 %</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeView === 'export' && (
               <div className="bg-brand-900 rounded-2xl p-6 text-white shadow-2xl relative overflow-hidden transition-all">
                 <div className="absolute -right-4 -top-4 w-40 h-40 bg-brand-500/30 rounded-full blur-3xl pointer-events-none" />
@@ -1583,7 +1886,7 @@ mobil konvertering enligt nordisk best practice.
                 {activeView === 'checkout' && (
                   <>
                     <div className="flex gap-1 overflow-x-auto hide-scrollbar border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 px-2 pt-2">
-                      {(['settings', 'shipping', 'product', 'provider'] as const).map(tab => (
+                      {(['settings', 'steps', 'shipping', 'product', 'provider'] as const).map(tab => (
                         <button
                           key={tab}
                           onClick={() => setActiveTab(tab)}
@@ -1591,12 +1894,33 @@ mobil konvertering enligt nordisk best practice.
                             activeTab === tab ? 'border-brand-500 text-brand-600 dark:text-brand-400 bg-white dark:bg-slate-800' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
                           }`}
                         >
-                          {tab === 'settings' ? 'Upplevelse' : tab === 'shipping' ? 'Logistik' : tab === 'product' ? 'Produkt' : 'Betalning'}
+                          {tab === 'settings' ? 'Upplevelse' : tab === 'steps' ? 'Steg & Kassa' : tab === 'shipping' ? 'Logistik' : tab === 'product' ? 'Produkt' : 'Betalning'}
                         </button>
                       ))}
                     </div>
 
                     <div className="p-4 sm:p-6 overflow-y-auto flex-1 custom-scrollbar bg-white dark:bg-slate-800">
+                      
+                      {activeTab === 'steps' && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                          <CheckoutStepBuilder
+                            config={stepConfig}
+                            onChangeConfig={(newCfg) => {
+                              setStepConfig(newCfg);
+                              setCurrentCheckoutStep(1);
+                            }}
+                          />
+                          <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                            <button
+                              type="button"
+                              onClick={() => setActiveView('research')}
+                              className="w-full py-3 px-4 rounded-xl bg-slate-900 text-white dark:bg-brand-600 text-xs font-bold hover:bg-slate-800 dark:hover:bg-brand-500 transition flex items-center justify-center gap-2 shadow-md"
+                            >
+                              <Search size={14} /> Sök empirisk data om hur steg påverkar konvertering &rarr;
+                            </button>
+                          </div>
+                        </div>
+                      )}
                       
                       {activeTab === 'settings' && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
