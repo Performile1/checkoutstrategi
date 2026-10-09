@@ -19,7 +19,7 @@ export const siteConfig = {
       label: 'Lab & Verktyg',
       items: [
         { href: '/testcheckout', label: 'Checkout Lab (Kassa-simulator)' },
-        { href: '/tracking', label: 'Spåra Leverans (Tracking)' },
+        { href: '/tracking', label: 'CRO i Tracking & Retention' },
         { href: '/spela', label: 'Vinn Kunden! (Överlevnadsspel)' },
         { href: '/email-campaigns', label: 'Mailutskick & CRO' },
       ]

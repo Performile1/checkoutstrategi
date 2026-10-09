@@ -153,8 +153,8 @@ export default async function AdminPage() {
                 href="/email-campaigns"
               />
               <QuickAction
-                title="Paketspårning"
-                description="Live tracking & delivery status"
+                title="CRO i Tracking"
+                description="Efterköp, CLV & returning customers"
                 icon={<Settings size={18} />}
                 href="/tracking"
               />
