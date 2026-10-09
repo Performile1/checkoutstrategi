@@ -15,8 +15,17 @@ export const siteConfig = {
         { href: '/compare/walley-vs-qliro', label: 'Walley vs Qliro' },
       ]
     },
-    { href: '/testcheckout', label: 'Checkout Lab' },
+    { 
+      label: 'Lab & Verktyg',
+      items: [
+        { href: '/testcheckout', label: 'Checkout Lab (Kassa-simulator)' },
+        { href: '/tracking', label: 'Spåra Leverans (Tracking)' },
+        { href: '/spela', label: 'Vinn Kunden! (Överlevnadsspel)' },
+        { href: '/email-campaigns', label: 'Mailutskick & CRO' },
+      ]
+    },
     { href: '/blog', label: 'Blogg' },
+    { href: '/links', label: 'Resurser & Länkar' },
     { 
       label: 'Strategiguider',
       items: [

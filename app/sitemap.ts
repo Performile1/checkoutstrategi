@@ -5,7 +5,7 @@ import { siteConfig } from '@/lib/site';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteConfig.url.replace(/\/$/, '');
-  const staticPaths = ['', '/players', '/comparison', '/blog', '/guides', '/contact'];
+  const staticPaths = ['', '/players', '/comparison', '/blog', '/guides', '/links', '/testcheckout', '/tracking', '/spela', '/email-campaigns', '/contact'];
   const guides = ['cro-checkout', 'delivery-experience', 'one-click-future'];
   const now = new Date();
 

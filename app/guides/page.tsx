@@ -128,6 +128,14 @@ export default function GuidesPage() {
               <span>CXL Checkout Study</span>
               <ExternalLink size={12} />
             </a>
+
+            <Link
+              href="/links"
+              className="inline-flex items-center gap-1.5 px-4 py-3 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/80 text-indigo-200 hover:text-white text-xs font-semibold transition"
+            >
+              <span>Resurser &amp; Länkar (AmbassadorFlow m.fl.)</span>
+              <ArrowRight size={12} />
+            </Link>
           </div>
         </div>
       </div>

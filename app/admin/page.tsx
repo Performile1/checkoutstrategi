@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Plus, FileText, Users, Settings, Download, Database, ShieldCheck, CheckCircle2, Sliders } from 'lucide-react';
+import { Plus, FileText, Users, Settings, Download, Database, ShieldCheck, CheckCircle2, Sliders, Compass } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getAdminUser } from '@/lib/auth';
 import { getStoredPlayers, getStoredPlayer } from '@/lib/players-store';
@@ -145,6 +145,24 @@ export default async function AdminPage() {
                 description="12 CRO-faktorer & standardkassa"
                 icon={<Sliders size={18} />}
                 href="/admin/checkout-config"
+              />
+              <QuickAction
+                title="Mailutskick & CRO"
+                description="Varukorgsavhopp & ROI-kalkyl"
+                icon={<FileText size={18} />}
+                href="/email-campaigns"
+              />
+              <QuickAction
+                title="Paketspårning"
+                description="Live tracking & delivery status"
+                icon={<Settings size={18} />}
+                href="/tracking"
+              />
+              <QuickAction
+                title="Resurser & Länkar"
+                description="AmbassadorFlow, Baymard, m.fl."
+                icon={<Compass size={18} />}
+                href="/links"
               />
               <QuickAction
                 title="Skapa blogginlägg"
