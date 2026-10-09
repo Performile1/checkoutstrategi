@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Twitter, Linkedin, Facebook, Link as LinkIcon } from 'lucide-react';
 
 interface ShareButtonsProps {
@@ -19,10 +20,13 @@ export function ShareButtons({ title, url, description }: ShareButtonsProps) {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
   };
 
+  const [copied, setCopied] = useState(false);
+
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(url);
-      alert('Länk kopierad!');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
     }
@@ -60,10 +64,15 @@ export function ShareButtons({ title, url, description }: ShareButtonsProps) {
       </a>
       <button
         onClick={copyToClipboard}
-        className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-brand-100 dark:hover:bg-brand-900 hover:text-brand-600 dark:hover:text-brand-400 transition"
+        className="relative p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-brand-100 dark:hover:bg-brand-900 hover:text-brand-600 dark:hover:text-brand-400 transition"
         aria-label="Kopiera länk"
       >
         <LinkIcon size={18} />
+        {copied && (
+          <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow whitespace-nowrap">
+            Kopierad!
+          </span>
+        )}
       </button>
     </div>
   );

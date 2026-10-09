@@ -485,28 +485,42 @@ export default function LinksAndResourcesPage() {
                     <DollarSign size={20} />
                   </div>
                   <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                    Vad det gör för CAC
+                    {isEnglish ? 'Impact on CAC' : 'Vad det gör för CAC'}
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    <strong>Kundanskaffningskostnad (-35% till -60%):</strong> Sluta göda auktionsjättarna. Ersätt dyra klick med prestationsbaserad provision.
+                    <strong>{isEnglish ? 'Customer Acquisition Cost (-35% to -60%):' : 'Kundanskaffningskostnad (-35% till -60%):'}</strong>{' '}
+                    {isEnglish
+                      ? 'Stop feeding the auction giants. Replace expensive cold clicks with performance-based rewards.'
+                      : 'Sluta göda auktionsjättarna. Ersätt dyra klick med prestationsbaserad provision.'}
                   </p>
                   <ul className="text-xs text-slate-400 space-y-2 pt-1">
                     <li className="flex items-start gap-2">
                       <CheckCircle2 size={14} className="text-emerald-400 shrink-0 mt-0.5" />
-                      <span><strong>Betala endast vid slutfört köp:</strong> Noll risk för bränd mediabudget utan ordrar.</span>
+                      <span>
+                        <strong>{isEnglish ? 'Pay only on completed purchases:' : 'Betala endast vid slutfört köp:'}</strong>{' '}
+                        {isEnglish ? 'Zero risk of burned media budgets without orders.' : 'Noll risk för bränd mediabudget utan ordrar.'}
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle2 size={14} className="text-emerald-400 shrink-0 mt-0.5" />
-                      <span><strong>Viral tillväxtloop på tacksidan:</strong> Bjud in varje köpare att bli ambassadör direkt efter genomförd order.</span>
+                      <span>
+                        <strong>{isEnglish ? 'Viral growth loop on thank-you page:' : 'Viral tillväxtloop på tacksidan:'}</strong>{' '}
+                        {isEnglish ? 'Invite every buyer to become an ambassador immediately post-purchase.' : 'Bjud in varje köpare att bli ambassadör direkt efter genomförd order.'}
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle2 size={14} className="text-emerald-400 shrink-0 mt-0.5" />
-                      <span><strong>Sänkt Blended CAC:</strong> Ju mer word-of-mouth du driver, desto lägre blir snitt-CAC för hela butiken.</span>
+                      <span>
+                        <strong>{isEnglish ? 'Reduced Blended CAC:' : 'Sänkt Blended CAC:'}</strong>{' '}
+                        {isEnglish ? 'The more word-of-mouth you drive, the lower the average CAC across your entire store.' : 'Ju mer word-of-mouth du driver, desto lägre blir snitt-CAC för hela butiken.'}
+                      </span>
                     </li>
                   </ul>
                 </div>
                 <div className="pt-3 border-t border-emerald-900/60">
-                  <span className="text-[11px] font-mono text-emerald-300 font-semibold">Effekt: Kapa CAC med upp till 60%</span>
+                  <span className="text-[11px] font-mono text-emerald-300 font-semibold">
+                    {isEnglish ? 'Impact: Cut CAC by up to 60%' : 'Effekt: Kapa CAC med upp till 60%'}
+                  </span>
                 </div>
               </div>
 
@@ -517,28 +531,42 @@ export default function LinksAndResourcesPage() {
                     <Repeat size={20} />
                   </div>
                   <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                    Vad det gör för CLV
+                    {isEnglish ? 'Impact on CLV' : 'Vad det gör för CLV'}
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    <strong>Kundens livstidsvärde (+37% retention):</strong> Rekommenderade kunder stannar längre och har avsevärt högre återköpsfrekvens.
+                    <strong>{isEnglish ? 'Customer Lifetime Value (+37% retention):' : 'Kundens livstidsvärde (+37% retention):'}</strong>{' '}
+                    {isEnglish
+                      ? 'Referred customers stay longer and repurchase with substantially higher frequency.'
+                      : 'Rekommenderade kunder stannar längre och har avsevärt högre återköpsfrekvens.'}
                   </p>
                   <ul className="text-xs text-slate-400 space-y-2 pt-1">
                     <li className="flex items-start gap-2">
                       <CheckCircle2 size={14} className="text-purple-400 shrink-0 mt-0.5" />
-                      <span><strong>Dubbelsidig lojalitet:</strong> Ambassadören köper själv 2.5x oftare för att använda sina intjänade butikskrediter.</span>
+                      <span>
+                        <strong>{isEnglish ? 'Two-sided loyalty:' : 'Dubbelsidig lojalitet:'}</strong>{' '}
+                        {isEnglish ? 'Ambassadors purchase 2.5x more often themselves to use their earned store credits.' : 'Ambassadören köper själv 2.5x oftare för att använda sina intjänade butikskrediter.'}
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle2 size={14} className="text-purple-400 shrink-0 mt-0.5" />
-                      <span><strong>Lägre churn &amp; returgrad:</strong> Kunder som köpt på rekommendation returnerar mindre sällan.</span>
+                      <span>
+                        <strong>{isEnglish ? 'Lower churn & return rates:' : 'Lägre churn & returgrad:'}</strong>{' '}
+                        {isEnglish ? 'Customers who purchase via recommendation return products much less often.' : 'Kunder som köpt på rekommendation returnerar mindre sällan.'}
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle2 size={14} className="text-purple-400 shrink-0 mt-0.5" />
-                      <span><strong>Varumärkesambassadörer för livet:</strong> Bygger en genuin community kring dina produkter.</span>
+                      <span>
+                        <strong>{isEnglish ? 'Brand ambassadors for life:' : 'Varumärkesambassadörer för livet:'}</strong>{' '}
+                        {isEnglish ? 'Builds an authentic community around your brand and catalog.' : 'Bygger en genuin community kring dina produkter.'}
+                      </span>
                     </li>
                   </ul>
                 </div>
                 <div className="pt-3 border-t border-purple-900/60">
-                  <span className="text-[11px] font-mono text-purple-300 font-semibold">Effekt: +37% högre retention</span>
+                  <span className="text-[11px] font-mono text-purple-300 font-semibold">
+                    {isEnglish ? 'Impact: +37% higher retention' : 'Effekt: +37% högre retention'}
+                  </span>
                 </div>
               </div>
 
@@ -549,16 +577,16 @@ export default function LinksAndResourcesPage() {
               <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
                 <div className="flex items-center gap-2 text-indigo-300 font-bold text-sm">
                   <Calculator size={18} />
-                  <span>Snabbkalkylator: Vad sparar du med AmbassadorFlow?</span>
+                  <span>{isEnglish ? 'ROI Calculator: How Much Do You Save With AmbassadorFlow?' : 'Snabbkalkylator: Vad sparar du med AmbassadorFlow?'}</span>
                 </div>
-                <span className="text-xs text-slate-400">Interaktiv simulering i realtid</span>
+                <span className="text-xs text-slate-400">{isEnglish ? 'Real-time interactive simulation' : 'Interaktiv simulering i realtid'}</span>
               </div>
 
               <div className="grid md:grid-cols-3 gap-6 text-xs">
                 <div>
                   <div className="flex justify-between font-semibold text-slate-300 mb-1">
-                    <span>Månatliga ordrar:</span>
-                    <span className="text-indigo-300 font-bold">{monthlyOrders.toLocaleString('sv-SE')} st</span>
+                    <span>{isEnglish ? 'Monthly orders:' : 'Månatliga ordrar:'}</span>
+                    <span className="text-indigo-300 font-bold">{monthlyOrders.toLocaleString(isEnglish ? 'en-US' : 'sv-SE')} st</span>
                   </div>
                   <input
                     type="range"
@@ -573,8 +601,8 @@ export default function LinksAndResourcesPage() {
 
                 <div>
                   <div className="flex justify-between font-semibold text-slate-300 mb-1">
-                    <span>Nuvarande CAC (Meta/Google):</span>
-                    <span className="text-indigo-300 font-bold">{currentCAC} kr</span>
+                    <span>{isEnglish ? 'Current CAC (Meta/Google):' : 'Nuvarande CAC (Meta/Google):'}</span>
+                    <span className="text-indigo-300 font-bold">{currentCAC} {isEnglish ? 'SEK / EUR' : 'kr'}</span>
                   </div>
                   <input
                     type="range"
@@ -589,7 +617,7 @@ export default function LinksAndResourcesPage() {
 
                 <div>
                   <div className="flex justify-between font-semibold text-slate-300 mb-1">
-                    <span>Andel via ambassadörer:</span>
+                    <span>{isEnglish ? 'Share via ambassadors:' : 'Andel via ambassadörer:'}</span>
                     <span className="text-emerald-400 font-bold">{ambassadorShare} %</span>
                   </div>
                   <input
@@ -607,25 +635,25 @@ export default function LinksAndResourcesPage() {
               {/* RESULTATRAD */}
               <div className="mt-5 pt-4 border-t border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                 <div className="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Ambassadörsordrar</span>
-                  <span className="text-lg font-black text-white">{calculatedSavings.ordersViaAmbassador} st/mån</span>
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">{isEnglish ? 'Ambassador Orders' : 'Ambassadörsordrar'}</span>
+                  <span className="text-lg font-black text-white">{calculatedSavings.ordersViaAmbassador} {isEnglish ? 'orders/mo' : 'st/mån'}</span>
                 </div>
                 <div className="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Minskad CAC-kostnad</span>
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">{isEnglish ? 'Reduced CAC Spend' : 'Minskad CAC-kostnad'}</span>
                   <span className="text-lg font-black text-emerald-400">
-                    {Math.round(calculatedSavings.monthlyCostReduction).toLocaleString('sv-SE')} kr/mån
+                    {Math.round(calculatedSavings.monthlyCostReduction).toLocaleString(isEnglish ? 'en-US' : 'sv-SE')} {isEnglish ? 'SEK/mo' : 'kr/mån'}
                   </span>
                 </div>
                 <div className="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Besparing per år</span>
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">{isEnglish ? 'Annual Savings' : 'Besparing per år'}</span>
                   <span className="text-lg font-black text-emerald-400">
-                    {Math.round(calculatedSavings.yearlyCostReduction).toLocaleString('sv-SE')} kr
+                    {Math.round(calculatedSavings.yearlyCostReduction).toLocaleString(isEnglish ? 'en-US' : 'sv-SE')} {isEnglish ? 'SEK' : 'kr'}
                   </span>
                 </div>
                 <div className="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Ny Blended CAC</span>
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">{isEnglish ? 'New Blended CAC' : 'Ny Blended CAC'}</span>
                   <span className="text-lg font-black text-indigo-300">
-                    {Math.round(calculatedSavings.blendedCAC)} kr <span className="text-xs text-slate-400 font-normal">(-{Math.round(((currentCAC - calculatedSavings.blendedCAC) / currentCAC) * 100)}%)</span>
+                    {Math.round(calculatedSavings.blendedCAC)} {isEnglish ? 'SEK' : 'kr'} <span className="text-xs text-slate-400 font-normal">(-{Math.round(((currentCAC - calculatedSavings.blendedCAC) / currentCAC) * 100)}%)</span>
                   </span>
                 </div>
               </div>
@@ -633,7 +661,9 @@ export default function LinksAndResourcesPage() {
 
             <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
               <span className="text-xs text-indigo-200">
-                Läs mer om hur AmbassadorFlow integreras på Shopify, WooCommerce, Centra eller headless på deras officiella webbplats.
+                {isEnglish
+                  ? 'Learn more about how AmbassadorFlow integrates on Shopify, WooCommerce, Centra, or Headless on their official website.'
+                  : 'Läs mer om hur AmbassadorFlow integreras på Shopify, WooCommerce, Centra eller headless på deras officiella webbplats.'}
               </span>
               <a
                 href="https://ambassadorflow.com"
@@ -641,7 +671,7 @@ export default function LinksAndResourcesPage() {
                 rel="noopener noreferrer"
                 className="text-xs font-bold text-indigo-300 hover:text-white flex items-center gap-1.5 underline underline-offset-4"
               >
-                Kom igång med AmbassadorFlow &rarr;
+                {isEnglish ? 'Get started with AmbassadorFlow →' : 'Kom igång med AmbassadorFlow →'}
               </a>
             </div>
           </div>

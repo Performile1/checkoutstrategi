@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowRight, ExternalLink, Shield, Star } from 'lucide-react';
 import type { Player, Review } from '@/lib/players';
+import { useLanguage } from '@/lib/i18n/context';
 
 function getAverageRating(reviews: Review[]): number {
   if (reviews.length === 0) return 0;
@@ -12,6 +13,8 @@ function getAverageRating(reviews: Review[]): number {
 }
 
 export function PlayerCard({ player, index = 0 }: { player: Player; index?: number }) {
+  const { isEnglish } = useLanguage();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -50,7 +53,7 @@ export function PlayerCard({ player, index = 0 }: { player: Player; index?: numb
         <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
           <Star size={14} className="fill-yellow-400 text-yellow-400" />
           <span>
-            {player.reviews.length} recension{player.reviews.length > 1 ? 'er' : ''}
+            {player.reviews.length} {isEnglish ? (player.reviews.length > 1 ? 'reviews' : 'review') : (player.reviews.length > 1 ? 'recensioner' : 'recension')}
             {' '}· {getAverageRating(player.reviews).toFixed(1)}/5
           </span>
         </div>
@@ -66,7 +69,7 @@ export function PlayerCard({ player, index = 0 }: { player: Player; index?: numb
 
       <div className="mt-6 flex items-center justify-between gap-3">
         <Link href={`/players/${player.slug}`} className="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 group-hover:gap-2 transition-all">
-          Läs analys <ArrowRight size={14} />
+          {isEnglish ? 'Read analysis' : 'Läs analys'} <ArrowRight size={14} />
         </Link>
         <a
           href={player.websiteUrl}
@@ -74,7 +77,7 @@ export function PlayerCard({ player, index = 0 }: { player: Player; index?: numb
           rel="noopener"
           className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-brand-600"
         >
-          Webbplats <ExternalLink size={11} />
+          {isEnglish ? 'Website' : 'Webbplats'} <ExternalLink size={11} />
         </a>
       </div>
     </motion.div>

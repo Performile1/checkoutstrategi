@@ -13,7 +13,7 @@ import {
   UsersRound, PackageCheck, Info, ArrowRight, Calculator,
   Search, Layers, ChevronRight, ChevronLeft, Sparkles,
   Store, ChevronDown, ChevronUp, Check, X, ExternalLink,
-  Sliders, Scale, UserCheck, BarChart3, Plus, Trash2, Eye, Compass
+  Sliders, Scale, UserCheck, BarChart3, Plus, Trash2, Eye, Compass, Scissors
 } from 'lucide-react';
 import { CheckoutBenchmarks } from '@/components/CheckoutBenchmarks';
 import { CheckoutStepBuilder, StepBuilderConfig, DEFAULT_PRESETS, StepDefinition, CheckoutStepMode } from '@/components/CheckoutStepBuilder';
@@ -26,6 +26,7 @@ import {
   SavedCheckoutVariant,
   MockCustomer
 } from '@/lib/checkout-config';
+import { useLanguage } from '@/lib/i18n/context';
 
 // --- TYPER OCH DATA ---
 type CheckoutSection = { id: string; title: string; icon: React.ReactNode; description: string; };
@@ -120,10 +121,12 @@ const FallbackImage = ({ src, alt, className }: { src?: string, alt: string, cla
 };
 
 export default function TestCheckoutPage() {
+  const { isEnglish, domain } = useLanguage();
   const [layoutOrder, setLayoutOrder] = useState(['expressWallets', 'customer', 'guest', 'coupon', 'shipping', 'payment', 'review']);
   const [activeTab, setActiveTab] = useState('settings');
   const [activeView, setActiveView] = useState<'checkout' | 'orderConfirmation' | 'return' | 'export'>('checkout');
   const [deviceView, setDeviceView] = useState<'mobile' | 'desktop'>('desktop');
+  const [showFoldLine, setShowFoldLine] = useState<boolean>(true);
 
   // -- STATE STEG-KASSA (Step Architecture) --
   const [stepConfig, setStepConfig] = useState<StepBuilderConfig>({
@@ -969,13 +972,15 @@ mobil konvertering enligt nordisk best practice.
         <div className="mb-8">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 mb-3">
-              <Sliders size={14} /> Interactive Lab &amp; Optimeringsfaktorer 2026
+              <Sliders size={14} /> {isEnglish ? 'Interactive Lab & 12 Optimization Levers' : 'Interactive Lab & Optimeringsfaktorer 2026'}
             </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
               Checkout Lab
             </h1>
             <p className="mt-4 text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-              Experimentera med e-handelspsykologi längs hela kundresan och se hur de 12 optimeringsfaktorerna och 4 leveransvariablerna påverkar din konverteringsgrad.
+              {isEnglish
+                ? 'Experiment with consumer checkout psychology across the full purchase funnel and observe how 12 optimization levers and 4 delivery variables impact your conversion rate.'
+                : 'Experimentera med e-handelspsykologi längs hela kundresan och se hur de 12 optimeringsfaktorerna och 4 leveransvariablerna påverkar din konverteringsgrad.'}
             </p>
           </div>
 
@@ -985,7 +990,7 @@ mobil konvertering enligt nordisk best practice.
             <div className="flex flex-wrap items-center gap-2.5">
               <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs shadow-inner">
                 <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px]">
-                  Aktiv Kassa:
+                  {isEnglish ? 'Active Checkout:' : 'Aktiv Kassa:'}
                 </span>
                 <select
                   value={activeVariantId}
@@ -1006,16 +1011,20 @@ mobil konvertering enligt nordisk best practice.
               <button
                 type="button"
                 onClick={() => {
-                  const name = prompt('Namnge din nya kassa-variant:', `Variant ${String.fromCharCode(65 + savedVariants.length)}: Min Testkassa`);
+                  const promptTitle = isEnglish ? 'Name your new checkout variant:' : 'Namnge din nya kassa-variant:';
+                  const defaultName = isEnglish ? `Variant ${String.fromCharCode(65 + savedVariants.length)}: My Test Checkout` : `Variant ${String.fromCharCode(65 + savedVariants.length)}: Min Testkassa`;
+                  const name = prompt(promptTitle, defaultName);
                   if (name) {
-                    const desc = prompt('Kort beskrivning (valfritt):', 'Optimerad kassa sparad från Checkout Lab') || '';
+                    const descPrompt = isEnglish ? 'Short description (optional):' : 'Kort beskrivning (valfritt):';
+                    const defaultDesc = isEnglish ? 'Optimized checkout variant saved from Checkout Lab' : 'Optimerad kassa sparad från Checkout Lab';
+                    const desc = prompt(descPrompt, defaultDesc) || '';
                     handleSaveNewVariant(name, desc);
                   }
                 }}
                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/60 hover:bg-brand-100 dark:hover:bg-brand-900 border border-brand-200 dark:border-brand-800 px-3 py-2 rounded-xl transition shadow-sm"
               >
                 <Plus size={13} />
-                <span>Spara som ny variant</span>
+                <span>{isEnglish ? 'Save as new variant' : 'Spara som ny variant'}</span>
               </button>
 
               {adminSettingsActive && (
@@ -1025,7 +1034,7 @@ mobil konvertering enligt nordisk best practice.
                   title="Admin-inställningar styr baslinje och de 12 faktorerna"
                 >
                   <Sliders size={13} />
-                  <span>Admin: {adminBaseRate?.toFixed(1) ?? '52.0'}% baslinje</span>
+                  <span>Admin: {adminBaseRate?.toFixed(1) ?? '52.0'}% {isEnglish ? 'baseline' : 'baslinje'}</span>
                 </Link>
               )}
             </div>
@@ -1038,7 +1047,7 @@ mobil konvertering enligt nordisk best practice.
                 className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-700/80 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition"
               >
                 <Scale size={15} className="text-brand-600 dark:text-brand-400" />
-                <span>Jämför Kassor (A/B)</span>
+                <span>{isEnglish ? 'Compare Checkouts (A/B)' : 'Jämför Kassor (A/B)'}</span>
                 <span className="text-[10px] bg-brand-100 dark:bg-brand-900/60 text-brand-700 dark:text-brand-300 font-bold px-1.5 py-0.5 rounded">
                   {savedVariants.length} st
                 </span>
@@ -1050,7 +1059,7 @@ mobil konvertering enligt nordisk best practice.
                 className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-700/80 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition"
               >
                 <BarChart3 size={15} className="text-emerald-500" />
-                <span>LIFT &amp; 12 Faktorer</span>
+                <span>{isEnglish ? 'LIFT & 12 Levers' : 'LIFT & 12 Faktorer'}</span>
               </button>
 
               <Link
@@ -1058,7 +1067,7 @@ mobil konvertering enligt nordisk best practice.
                 className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-indigo-400 bg-indigo-950/60 hover:bg-indigo-900/80 px-3.5 py-2 rounded-xl border border-indigo-800/60 shadow-sm transition"
               >
                 <Sparkles size={14} />
-                <span>Vinn Kunden (Spel)</span>
+                <span>{isEnglish ? 'Game: Win Customer' : 'Vinn Kunden (Spel)'}</span>
               </Link>
 
               <Link
@@ -1066,7 +1075,7 @@ mobil konvertering enligt nordisk best practice.
                 className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 dark:bg-brand-600 dark:hover:bg-brand-500 px-3.5 py-2 rounded-xl shadow-sm transition"
               >
                 <Search size={14} />
-                <span>Forskningsdata</span>
+                <span>{isEnglish ? 'Research Data' : 'Forskningsdata'}</span>
               </Link>
 
               <Link
@@ -1075,7 +1084,7 @@ mobil konvertering enligt nordisk best practice.
                 title="Forskningsinstitut, AmbassadorFlow och ekosystem"
               >
                 <Compass size={14} className="text-indigo-500" />
-                <span>Resurser &amp; Länkar</span>
+                <span>{isEnglish ? 'Resources & Links' : 'Resurser & Länkar'}</span>
               </Link>
             </div>
           </div>
@@ -1085,22 +1094,40 @@ mobil konvertering enligt nordisk best practice.
           
           {/* VÄNSTER PANEL (Live Preview) */}
           <div className="space-y-6 lg:col-span-7">
-            <div className="flex items-center justify-between mb-4 bg-white dark:bg-slate-800 p-2 pl-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
+            <div className="flex flex-wrap items-center justify-between gap-2.5 mb-4 bg-white dark:bg-slate-800 p-2 sm:p-2.5 sm:pl-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap hidden sm:block">Live Preview</h2>
-              <div className="flex items-center gap-4 w-full sm:w-auto">
+              <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
                 
                 <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg shrink-0">
-                  <button onClick={() => setDeviceView('desktop')} className={`p-1.5 rounded-md transition-colors ${deviceView === 'desktop' ? 'bg-white dark:bg-slate-700 shadow-sm text-brand-600' : 'text-slate-400 hover:text-slate-600'}`}>
+                  <button onClick={() => setDeviceView('desktop')} className={`p-1.5 rounded-md transition-colors ${deviceView === 'desktop' ? 'bg-white dark:bg-slate-700 shadow-sm text-brand-600' : 'text-slate-400 hover:text-slate-600'}`} title="Desktop viewport">
                     <Monitor size={18} />
                   </button>
-                  <button onClick={() => setDeviceView('mobile')} className={`p-1.5 rounded-md transition-colors ${deviceView === 'mobile' ? 'bg-white dark:bg-slate-700 shadow-sm text-brand-600' : 'text-slate-400 hover:text-slate-600'}`}>
+                  <button onClick={() => setDeviceView('mobile')} className={`p-1.5 rounded-md transition-colors ${deviceView === 'mobile' ? 'bg-white dark:bg-slate-700 shadow-sm text-brand-600' : 'text-slate-400 hover:text-slate-600'}`} title="Mobil viewport">
                     <Smartphone size={18} />
                   </button>
                 </div>
 
+                {/* FOLD-LINJE KNAPP */}
+                <button
+                  type="button"
+                  onClick={() => setShowFoldLine(!showFoldLine)}
+                  className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition flex items-center justify-center gap-1.5 shrink-0 ${
+                    showFoldLine
+                      ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
+                      : 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-700'
+                  }`}
+                  title={isEnglish ? 'Toggle Fold Marker (Above vs Under Fold)' : 'Visa/dölj vikningslinje (Ovanför vs Under Fold)'}
+                >
+                  <Scissors size={12} />
+                  <span>
+                    {isEnglish ? 'Fold Line:' : 'Vikningslinje:'}{' '}
+                    {showFoldLine ? (isEnglish ? 'ON' : 'PÅ') : isEnglish ? 'OFF' : 'AV'}
+                  </span>
+                </button>
+
                 <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 hidden sm:block" />
 
-                <div className="flex gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-lg w-full sm:w-auto overflow-x-auto hide-scrollbar">
+                <div className="flex flex-wrap gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-lg w-full sm:w-auto justify-center">
                   {(['checkout', 'orderConfirmation', 'return', 'export'] as const).map(view => (
                     <button
                       key={view}
@@ -1108,18 +1135,22 @@ mobil konvertering enligt nordisk best practice.
                         setActiveView(view);
                         if (view === 'checkout') setActiveTab('settings');
                       }}
-                      className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 whitespace-nowrap ${
+                      className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 whitespace-nowrap ${
                         activeView === view ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                       }`}
                     >
-                      {view === 'checkout' ? 'Kassa' : view === 'orderConfirmation' ? 'Tacksida' : view === 'return' ? 'Retur' : 'Exportera'}
+                      {view === 'checkout' ? (isEnglish ? 'Checkout' : 'Kassa') : view === 'orderConfirmation' ? (isEnglish ? 'Thank You' : 'Tacksida') : view === 'return' ? (isEnglish ? 'Return' : 'Retur') : (isEnglish ? 'Export' : 'Exportera')}
                     </button>
                   ))}
                 </div>
               </div>
             </div>
 
-            <div className={`transition-all duration-500 mx-auto bg-slate-950 ${deviceView === 'mobile' ? 'w-[375px] rounded-[3rem] border-[14px] border-slate-900 shadow-2xl overflow-hidden ring-1 ring-slate-800' : 'w-full max-w-[1020px] rounded-2xl shadow-2xl border border-slate-300 dark:border-slate-700 overflow-hidden'}`}>
+            <div className={`transition-all duration-500 mx-auto bg-slate-950 ${
+              deviceView === 'mobile'
+                ? 'w-full max-w-[375px] rounded-[2.5rem] sm:rounded-[3rem] border-[10px] sm:border-[12px] border-slate-900 shadow-2xl overflow-hidden ring-1 ring-slate-800 flex flex-col'
+                : 'w-full max-w-[1020px] rounded-2xl shadow-2xl border border-slate-300 dark:border-slate-700 overflow-hidden'
+            }`}>
               {/* DESKTOP BROWSER CHROME HEADER */}
               {deviceView === 'desktop' && (
                 <div className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-2 flex items-center justify-between text-xs select-none">
@@ -1147,7 +1178,47 @@ mobil konvertering enligt nordisk best practice.
                   </div>
                 </div>
               )}
-              <div className="bg-white dark:bg-slate-800 h-full w-full relative">
+
+              {/* MOBIL IPHONE STATUS BAR */}
+              {deviceView === 'mobile' && (
+                <div className="bg-slate-950 pt-2 pb-1.5 px-6 flex items-center justify-between text-[11px] text-white/90 font-medium select-none shrink-0 border-b border-slate-900">
+                  <span>9:41</span>
+                  <div className="w-20 h-4 bg-black rounded-full mx-auto ring-1 ring-slate-800 flex items-center justify-end px-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/70 inline-block" />
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[10px]">
+                    <span className="font-bold">5G</span>
+                    <div className="w-4 h-2 border border-white/80 rounded-xs p-0.5 flex items-center">
+                      <div className="w-full h-full bg-white rounded-2xs" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className={`bg-white dark:bg-slate-800 w-full relative overflow-y-auto overflow-x-hidden ios-scrollbar ${
+                deviceView === 'mobile'
+                  ? 'h-[580px] sm:h-[620px] max-h-[630px]'
+                  : 'max-h-[740px] sm:max-h-[820px]'
+              }`}>
+                
+                {/* VIKNINGSLINJE (THE FOLD) - STRECKAD LINJE PÅ BÅDE DESKTOP OCH MOBIL */}
+                {showFoldLine && (
+                  <div
+                    className="absolute left-0 right-0 z-40 pointer-events-none transition-all duration-300 select-none"
+                    style={{ top: deviceView === 'mobile' ? '460px' : '620px' }}
+                  >
+                    <div className="relative w-full border-t-2 border-dashed border-rose-500/90 dark:border-rose-400 drop-shadow-sm">
+                      <div className="absolute left-1/2 -translate-x-1/2 -top-3 bg-rose-600 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-lg flex items-center gap-1.5 whitespace-nowrap">
+                        <span>✂ {isEnglish ? 'THE FOLD (Vikningslinje)' : 'THE FOLD (Vikningslinje)'}</span>
+                        <span className="hidden sm:inline opacity-85 font-normal">
+                          {isEnglish
+                            ? '↑ Above Fold (80% attention) | ↓ Below Fold (Requires scroll)'
+                            : '↑ Ovanför fold (80% fokus) | ↓ Under fold (Kräver scroll)'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 
                 {/* --- VY: CHECKOUT --- */}
                 {activeView === 'checkout' && (
@@ -2210,25 +2281,25 @@ mobil konvertering enligt nordisk best practice.
                       </Droppable>
                     </DragDropContext>
 
-                    <div className="p-4 sm:p-6 bg-slate-50/50 dark:bg-slate-900/20 border-t border-slate-200 dark:border-slate-700 sticky bottom-0 z-50">
+                    <div className="p-3 sm:p-5 bg-slate-50/50 dark:bg-slate-900/20 border-t border-slate-200 dark:border-slate-700 sticky bottom-0 z-50">
                       {stepConfig.mode !== '1-steg' && stepPreviewMode === 'step-by-step' && currentCheckoutStep < stepConfig.steps.length ? (
                         <div className="flex gap-2">
                           {currentCheckoutStep > 1 && (
                             <button
                               type="button"
                               onClick={() => setCurrentCheckoutStep((prev) => Math.max(1, prev - 1))}
-                              className="px-4 py-3.5 rounded-xl border border-slate-300 dark:border-slate-600 font-semibold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                              className="px-3 sm:px-4 py-3 sm:py-3.5 rounded-xl border border-slate-300 dark:border-slate-600 font-semibold text-xs sm:text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition shrink-0"
                             >
-                              &larr; Föregående
+                              &larr; {isEnglish ? 'Back' : 'Föregående'}
                             </button>
                           )}
                           <button
                             type="button"
                             onClick={() => setCurrentCheckoutStep((prev) => Math.min(stepConfig.steps.length, prev + 1))}
-                            className="flex-1 py-4 px-6 rounded-xl font-bold text-base bg-brand-600 hover:bg-brand-500 text-white transition-all shadow-lg shadow-brand-600/25 flex items-center justify-center gap-2 hover:-translate-y-0.5"
+                            className="flex-1 py-3.5 sm:py-4 px-3 sm:px-6 rounded-xl font-bold text-xs sm:text-sm md:text-base bg-brand-600 hover:bg-brand-500 text-white transition-all shadow-lg shadow-brand-600/25 flex items-center justify-center gap-1.5 sm:gap-2 hover:-translate-y-0.5"
                           >
-                            <span>Fortsätt till {stepConfig.steps[currentCheckoutStep]?.title.replace(/^Steg \d+:\s*/, '') || 'nästa steg'}</span>
-                            <ArrowRight size={18} />
+                            <span className="truncate">{isEnglish ? 'Continue to ' : 'Fortsätt till '}{stepConfig.steps[currentCheckoutStep]?.title.replace(/^Steg \d+:\s*/, '') || (isEnglish ? 'next step' : 'nästa steg')}</span>
+                            <ArrowRight size={16} className="shrink-0" />
                           </button>
                         </div>
                       ) : (
@@ -2237,28 +2308,28 @@ mobil konvertering enligt nordisk best practice.
                             <button
                               type="button"
                               onClick={() => setCurrentCheckoutStep((prev) => Math.max(1, prev - 1))}
-                              className="px-4 py-3.5 rounded-xl border border-slate-300 dark:border-slate-600 font-semibold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                              className="px-3 sm:px-4 py-3 sm:py-3.5 rounded-xl border border-slate-300 dark:border-slate-600 font-semibold text-xs sm:text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition shrink-0"
                             >
-                              &larr; Föregående
+                              &larr; {isEnglish ? 'Back' : 'Föregående'}
                             </button>
                           )}
                           <button
                             onClick={() => setActiveView('orderConfirmation')}
-                            className={`flex-1 py-4 px-6 rounded-xl font-bold text-lg transition-all shadow-lg hover:-translate-y-0.5 ${
+                            className={`flex-1 py-3.5 sm:py-4 px-4 sm:px-6 rounded-xl font-bold text-sm sm:text-base md:text-lg transition-all shadow-lg hover:-translate-y-0.5 ${
                               ctaColor === 'green' ? 'bg-green-600 hover:bg-green-500 text-white shadow-green-600/20' 
                               : ctaColor === 'orange' ? 'bg-orange-500 hover:bg-orange-400 text-white shadow-orange-500/20' 
                               : ctaColor === 'red' ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-600/20' 
                               : 'bg-slate-300 hover:bg-slate-400 text-slate-800 shadow-none'
                             }`}
                           >
-                            {ctaText === 'complete' && 'Slutför köp'}
-                            {ctaText === 'pay' && 'Betala säkert'}
-                            {ctaText === 'confirm' && 'Bekräfta order'}
+                            {ctaText === 'complete' && (isEnglish ? 'Complete Purchase' : 'Slutför köp')}
+                            {ctaText === 'pay' && (isEnglish ? 'Pay Securely' : 'Betala säkert')}
+                            {ctaText === 'confirm' && (isEnglish ? 'Confirm Order' : 'Bekräfta order')}
                           </button>
                         </div>
                       )}
-                      <div className="text-center text-xs font-medium text-slate-400 dark:text-slate-500 mt-3 flex items-center justify-center gap-2">
-                        <Lock size={12} /> Säker krypterad betalning
+                      <div className="text-center text-[11px] sm:text-xs font-medium text-slate-400 dark:text-slate-500 mt-2.5 flex items-center justify-center gap-1.5">
+                        <Lock size={12} /> {isEnglish ? 'Encrypted 256-bit Secure Checkout' : 'Säker krypterad betalning'}
                       </div>
                     </div>
                   </>
@@ -2570,6 +2641,13 @@ mobil konvertering enligt nordisk best practice.
                   </div>
                 )}
               </div>
+
+              {/* MOBIL IPHONE HOME INDICATOR */}
+              {deviceView === 'mobile' && (
+                <div className="bg-slate-950 py-2.5 flex justify-center shrink-0 border-t border-slate-900 select-none">
+                  <div className="w-28 h-1 bg-white/40 rounded-full" />
+                </div>
+              )}
             </div>
           </div>
 
@@ -2776,7 +2854,7 @@ mobil konvertering enligt nordisk best practice.
                             activeTab === tab ? 'border-brand-500 text-brand-600 dark:text-brand-400 bg-white dark:bg-slate-800' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
                           }`}
                         >
-                          {tab === 'settings' ? 'Upplevelse' : tab === 'steps' ? 'Steg & Kassa' : tab === 'shipping' ? 'Logistik' : tab === 'account' ? 'Medlem vs Gäst' : tab === 'product' ? 'Produkt' : 'Betalning'}
+                          {tab === 'settings' ? (isEnglish ? 'Experience' : 'Upplevelse') : tab === 'steps' ? (isEnglish ? 'Steps & Funnel' : 'Steg & Kassa') : tab === 'shipping' ? (isEnglish ? 'Logistics' : 'Logistik') : tab === 'account' ? (isEnglish ? 'Member vs Guest' : 'Medlem vs Gäst') : tab === 'product' ? (isEnglish ? 'Product' : 'Produkt') : (isEnglish ? 'Payment' : 'Betalning')}
                         </button>
                       ))}
                     </div>
@@ -2808,11 +2886,11 @@ mobil konvertering enligt nordisk best practice.
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
                           
                           <div>
-                            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500" /> Affärsmodell & Målgrupp</h3>
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500" /> {isEnglish ? 'Business Model & Audience' : 'Affärsmodell & Målgrupp'}</h3>
                             <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-xl border border-slate-100 dark:border-slate-700/50">
                               <div className="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-lg">
-                                <button onClick={() => setCheckoutType('B2C')} className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors ${checkoutType === 'B2C' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500'}`}>Konsument (B2C)</button>
-                                <button onClick={() => setCheckoutType('B2B')} className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors ${checkoutType === 'B2B' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500'}`}>Företag (B2B)</button>
+                                <button onClick={() => setCheckoutType('B2C')} className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors ${checkoutType === 'B2C' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500'}`}>{isEnglish ? 'Consumer (B2C)' : 'Konsument (B2C)'}</button>
+                                <button onClick={() => setCheckoutType('B2B')} className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors ${checkoutType === 'B2B' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500'}`}>{isEnglish ? 'Business (B2B)' : 'Företag (B2B)'}</button>
                               </div>
                             </div>
                           </div>

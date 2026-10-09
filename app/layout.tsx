@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
 import './globals.css';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { LanguageProvider } from '@/lib/i18n/context';
 import { siteConfig } from '@/lib/site';
-import { Locale } from '@/lib/i18n/types';
+import type { Locale } from '@/lib/i18n/types';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -42,15 +41,13 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const headersList = headers();
-  const rawLocale = headersList.get('x-locale');
-  const initialLocale: Locale = rawLocale === 'en' ? 'en' : 'sv';
+  const initialLocale: Locale = 'sv';
 
   const orgJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: initialLocale === 'en' ? 'Checkout Strategy' : 'Checkoutstrategi',
-    url: initialLocale === 'en' ? 'https://checkoutstrategy.com' : 'https://checkoutstrategi.se',
+    name: siteConfig.name,
+    url: siteConfig.url,
     description: siteConfig.description,
     sameAs: [],
   };

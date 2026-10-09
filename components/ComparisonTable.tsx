@@ -4,10 +4,12 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Check, X, ExternalLink } from 'lucide-react';
 import { players, type Player, type Category } from '@/lib/players';
+import { useLanguage } from '@/lib/i18n/context';
 
 const CATEGORIES: Category[] = ['Checkout', 'Betallösning', 'Transportör', 'E-handelsplattform', 'Plugin'];
 
 export function ComparisonTable({ initial }: { initial?: string[] }) {
+  const { isEnglish } = useLanguage();
   const [selected, setSelected] = useState<string[]>(initial || players.map((p) => p.slug));
 
   const toggle = (slug: string) => {
@@ -29,6 +31,18 @@ export function ComparisonTable({ initial }: { initial?: string[] }) {
     });
     return groups;
   }, [compared]);
+
+  const getCategoryTitle = (cat: Category) => {
+    if (!isEnglish) return cat;
+    switch (cat) {
+      case 'Checkout': return 'Checkout Providers';
+      case 'Betallösning': return 'Payment Gateways';
+      case 'Transportör': return 'Carriers & Logistics';
+      case 'E-handelsplattform': return 'E-commerce Platforms';
+      case 'Plugin': return 'Plugins & Addons';
+      default: return cat;
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -57,12 +71,14 @@ export function ComparisonTable({ initial }: { initial?: string[] }) {
 
         return (
           <div key={category} className="space-y-4">
-            <h3 className="font-semibold text-lg">{category}</h3>
-            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-              <table className="w-full text-sm">
+            <h3 className="font-semibold text-lg">{getCategoryTitle(category)}</h3>
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-x-auto custom-scrollbar">
+              <table className="w-full text-sm min-w-[580px]">
                 <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                   <tr>
-                    <th className="p-4 text-left font-semibold w-40">Attribut</th>
+                    <th className="p-4 text-left font-semibold w-40">
+                      {isEnglish ? 'Attribute' : 'Attribut'}
+                    </th>
                     {categoryPlayers.map((p) => (
                       <th key={p.slug} className="p-4 text-left font-semibold">{p.name}</th>
                     ))}
@@ -71,13 +87,17 @@ export function ComparisonTable({ initial }: { initial?: string[] }) {
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                   {/* Översikt */}
                   <tr>
-                    <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">Trust angle</td>
+                    <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">
+                      {isEnglish ? 'Trust Angle' : 'Trust angle'}
+                    </td>
                     {categoryPlayers.map((p) => (
                       <td key={p.slug} className="p-4 align-top">{p.trustAngle}</td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">Målmarknad</td>
+                    <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">
+                      {isEnglish ? 'Target Market' : 'Målmarknad'}
+                    </td>
                     {categoryPlayers.map((p) => (
                       <td key={p.slug} className="p-4 align-top">{p.targetMarket}</td>
                     ))}
@@ -85,7 +105,9 @@ export function ComparisonTable({ initial }: { initial?: string[] }) {
 
                   {/* Konvertering & Pris */}
                   <tr>
-                    <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">Konverteringsimpact</td>
+                    <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">
+                      {isEnglish ? 'Conversion Impact' : 'Konverteringsimpact'}
+                    </td>
                     {categoryPlayers.map((p) => (
                       <td key={p.slug} className="p-4 align-top">
                         <span className="inline-flex items-center gap-2">
@@ -98,7 +120,9 @@ export function ComparisonTable({ initial }: { initial?: string[] }) {
                     ))}
                   </tr>
                   <tr>
-                    <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">Pris</td>
+                    <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">
+                      {isEnglish ? 'Pricing Model' : 'Pris'}
+                    </td>
                     {categoryPlayers.map((p) => (
                       <td key={p.slug} className="p-4 align-top">{p.pricing}</td>
                     ))}
@@ -106,7 +130,9 @@ export function ComparisonTable({ initial }: { initial?: string[] }) {
 
                   {/* Marknad */}
                   <tr>
-                    <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">Länder</td>
+                    <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">
+                      {isEnglish ? 'Supported Countries' : 'Länder'}
+                    </td>
                     {categoryPlayers.map((p) => (
                       <td key={p.slug} className="p-4 align-top">{p.countries.join(', ')}</td>
                     ))}
@@ -114,7 +140,9 @@ export function ComparisonTable({ initial }: { initial?: string[] }) {
 
                   {/* Nyckelfunktioner */}
                   <tr>
-                    <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">Nyckelfunktioner</td>
+                    <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">
+                      {isEnglish ? 'Key Features' : 'Nyckelfunktioner'}
+                    </td>
                     {categoryPlayers.map((p) => (
                       <td key={p.slug} className="p-4 align-top">
                         <ul className="list-disc pl-4 space-y-1 text-slate-600 dark:text-slate-400">
@@ -126,7 +154,9 @@ export function ComparisonTable({ initial }: { initial?: string[] }) {
 
                   {/* Länkar */}
                   <tr>
-                    <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">Affiliate</td>
+                    <td className="p-4 align-top font-medium text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-900/40">
+                      {isEnglish ? 'Official Link' : 'Affiliate'}
+                    </td>
                     {categoryPlayers.map((p) => (
                       <td key={p.slug} className="p-4 align-top">
                         <a
@@ -135,7 +165,7 @@ export function ComparisonTable({ initial }: { initial?: string[] }) {
                           rel="sponsored noopener"
                           className="inline-flex items-center gap-1 text-brand-600 hover:underline"
                         >
-                          Besök <ExternalLink size={12} />
+                          {isEnglish ? 'Visit Site' : 'Besök'} <ExternalLink size={12} />
                         </a>
                       </td>
                     ))}

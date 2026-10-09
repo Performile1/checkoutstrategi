@@ -1,4 +1,6 @@
-import type { Metadata } from 'next';
+'use client';
+
+import React from 'react';
 import Link from 'next/link';
 import {
   BookOpen,
@@ -9,63 +11,89 @@ import {
   Search,
   ExternalLink,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Compass
 } from 'lucide-react';
-
-export const metadata: Metadata = {
-  title: 'Strategiguider & Empirisk forskning – CRO, leverans & checkout-steg',
-  description: 'Konkreta playbooks och empirisk forskningsdata från Baymard Institute, NN/g och CXL för konvertering och checkout-steg.',
-  alternates: { canonical: '/guides' },
-};
-
-const guides = [
-  {
-    slug: 'empirisk-data',
-    title: 'Empirisk forskningsdata: Vad säger forskningen om checkout-steg?',
-    summary: 'Genomgång av 50+ vetenskapliga studier från Baymard Institute, NN/g och CXL om 1-steg vs flerstegskassor, formulärfriktion och konvertering.',
-    icon: Search,
-    featured: true,
-  },
-  {
-    slug: 'cro-checkout',
-    title: 'CRO i kassan – 12 optimeringsfaktorer som lyfter konvertering',
-    summary: 'Från LIFT-modellen till BNPL-ordning och formulärergonomi. Vad som faktiskt rör nålen i svenska kassaflöden.',
-    icon: TrendingUp,
-  },
-  {
-    slug: 'fraktvaljaren-kassans-flaskhals',
-    title: 'Fraktväljaren: Kassans verkliga flaskhals – Så lyfter du konverteringen 5–15%',
-    summary: 'Varför kassan läcker vid fraktvalet och de 4 optimeringsfaktorerna med direkt bevisad effekt på konverteringsgraden.',
-    icon: Truck,
-  },
-  {
-    slug: 'delivery-experience',
-    title: 'Delivery Experience: konvertering genom leverans',
-    summary: 'Hur Ingrid och nShift flyttar konvertering och hur du väljer rätt leveransval i kassan.',
-    icon: Truck,
-  },
-  {
-    slug: 'one-click-future',
-    title: 'Framtiden för one-click checkout',
-    summary: 'Wallet-konvergens, passkeys och vad Apple/Google Pay betyder för svensk e-handel.',
-    icon: MousePointerClick,
-  },
-  {
-    slug: 'checkout-analys-2026',
-    title: 'Checkoutanalys 2026: Micro-conversions, EU-regler och Benchmarks',
-    summary: 'Komplett guide till modern checkoutanalys med detaljerade mätpunkter, nya EU-regler för 2026 och uppdaterade branschbenchmarks.',
-    icon: BarChart3,
-  },
-];
+import { useLanguage } from '@/lib/i18n/context';
 
 export default function GuidesPage() {
+  const { isEnglish } = useLanguage();
+
+  const guides = [
+    {
+      slug: 'empirisk-data',
+      title: isEnglish
+        ? 'Empirical Research Data: What Does Science Say About Checkout Steps?'
+        : 'Empirisk forskningsdata: Vad säger forskningen om checkout-steg?',
+      summary: isEnglish
+        ? 'Synthesis of 50+ peer-reviewed studies from Baymard Institute, NN/g, and CXL on single-page vs multi-step checkouts, form friction, and drop-off.'
+        : 'Genomgång av 50+ vetenskapliga studier från Baymard Institute, NN/g och CXL om 1-steg vs flerstegskassor, formulärfriktion och konvertering.',
+      icon: Search,
+      featured: true,
+    },
+    {
+      slug: 'cro-checkout',
+      title: isEnglish
+        ? 'CRO in Checkout – 12 Optimization Levers That Lift Conversion'
+        : 'CRO i kassan – 12 optimeringsfaktorer som lyfter konvertering',
+      summary: isEnglish
+        ? 'From the LIFT model to BNPL sequencing and mobile keyboard ergonomics. What truly moves the needle in high-intent checkouts.'
+        : 'Från LIFT-modellen till BNPL-ordning och formulärergonomi. Vad som faktiskt rör nålen i svenska kassaflöden.',
+      icon: TrendingUp,
+    },
+    {
+      slug: 'fraktvaljaren-kassans-flaskhals',
+      title: isEnglish
+        ? 'The Shipping Selector: The Real Checkout Bottleneck – Lift CVR by 5–15%'
+        : 'Fraktväljaren: Kassans verkliga flaskhals – Så lyfter du konverteringen 5–15%',
+      summary: isEnglish
+        ? 'Why checkout funnels leak at the shipping step and the 4 tactical levers with proven impact on conversion rate.'
+        : 'Varför kassan läcker vid fraktvalet och de 4 optimeringsfaktorerna med direkt bevisad effekt på konverteringsgraden.',
+      icon: Truck,
+    },
+    {
+      slug: 'delivery-experience',
+      title: isEnglish
+        ? 'Delivery Experience: Conversion Through Seamless Shipping Options'
+        : 'Delivery Experience: konvertering genom leverans',
+      summary: isEnglish
+        ? 'How dynamic delivery management platforms move conversion and how to design smart parcel locker and home courier options.'
+        : 'Hur Ingrid och nShift flyttar konvertering och hur du väljer rätt leveransval i kassan.',
+      icon: Truck,
+    },
+    {
+      slug: 'one-click-future',
+      title: isEnglish
+        ? 'The Future of One-Click Checkout & Mobile Wallets'
+        : 'Framtiden för one-click checkout',
+      summary: isEnglish
+        ? 'Digital wallet convergence, passkeys, biometric authentication, and what Apple/Google Pay mean for e-commerce conversion.'
+        : 'Wallet-konvergens, passkeys och vad Apple/Google Pay betyder för svensk e-handel.',
+      icon: MousePointerClick,
+    },
+    {
+      slug: 'checkout-analys-2026',
+      title: isEnglish
+        ? 'Checkout Analysis 2026: Micro-conversions, EU Regulations & Benchmarks'
+        : 'Checkoutanalys 2026: Micro-conversions, EU-regler och Benchmarks',
+      summary: isEnglish
+        ? 'Complete guide to modern checkout performance audits with comprehensive metrics, updated regulations, and conversion benchmarks.'
+        : 'Komplett guide till modern checkoutanalys med detaljerade mätpunkter, nya EU-regler för 2026 och uppdaterade branschbenchmarks.',
+      icon: BarChart3,
+    },
+  ];
+
   return (
     <section className="container-prose py-16 space-y-12">
       <div className="max-w-3xl">
-        <p className="badge">Strategy & Research</p>
-        <h1 className="mt-3 text-4xl md:text-5xl font-black tracking-tight">Strategiguider & Forskningsdata</h1>
+        <p className="badge">{isEnglish ? 'Strategy & Research' : 'Strategy & Research'}</p>
+        <h1 className="mt-3 text-4xl md:text-5xl font-black tracking-tight">
+          {isEnglish ? 'Strategy Guides & Research Data' : 'Strategiguider & Forskningsdata'}
+        </h1>
         <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
-          Djupguider och empiriska studier för e-handelschefer och CRO-ansvariga. Verkliga siffror, inga buzzwords.
+          {isEnglish
+            ? 'In-depth playbooks and empirical studies for E-commerce Directors and CRO leaders. Real numbers, zero buzzwords.'
+            : 'Djupguider och empiriska studier för e-handelschefer och CRO-ansvariga. Verkliga siffror, inga buzzwords.'}
         </p>
       </div>
 
@@ -76,19 +104,32 @@ export default function GuidesPage() {
         <div className="relative z-10 max-w-3xl space-y-5">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-300 border border-brand-500/30">
             <Sparkles size={14} />
-            <span>Kvantitativ databas & Källor</span>
+            <span>{isEnglish ? 'Quantitative Research Database & Sources' : 'Kvantitativ databas & Källor'}</span>
           </div>
 
           <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white leading-tight">
-            Empirisk forskningsdata: Hur påverkar steg och formulär konverteringen?
+            {isEnglish
+              ? 'Empirical Research Data: How Steps & Forms Impact Checkout Conversion'
+              : 'Empirisk forskningsdata: Hur påverkar steg och formulär konverteringen?'}
           </h2>
 
           <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-            Vi har sammanställt den samlade forskningen från <strong className="text-white font-semibold">Baymard Institute</strong>,{' '}
-            <strong className="text-white font-semibold">Nielsen Norman Group (NN/g)</strong>,{' '}
-            <strong className="text-white font-semibold">CXL</strong>,{' '}
-            <strong className="text-white font-semibold">Stripe</strong> och{' '}
-            <strong className="text-white font-semibold">PostNord E-barometern</strong>. Sök fritt bland studier, jämför 1-steg vs 3-steg och se exakta drop-off-siffror per moment.
+            {isEnglish ? (
+              <>
+                We synthesized findings from <strong className="text-white font-semibold">Baymard Institute</strong>,{' '}
+                <strong className="text-white font-semibold">Nielsen Norman Group (NN/g)</strong>,{' '}
+                <strong className="text-white font-semibold">CXL</strong>,{' '}
+                <strong className="text-white font-semibold">Stripe</strong>, and leading logistics benchmarks. Compare single-step vs multi-step checkouts and inspect exact drop-off data per step.
+              </>
+            ) : (
+              <>
+                Vi har sammanställt den samlade forskningen från <strong className="text-white font-semibold">Baymard Institute</strong>,{' '}
+                <strong className="text-white font-semibold">Nielsen Norman Group (NN/g)</strong>,{' '}
+                <strong className="text-white font-semibold">CXL</strong>,{' '}
+                <strong className="text-white font-semibold">Stripe</strong> och{' '}
+                <strong className="text-white font-semibold">PostNord E-barometern</strong>. Sök fritt bland studier, jämför 1-steg vs 3-steg och se exakta drop-off-siffror per moment.
+              </>
+            )}
           </p>
 
           <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -96,50 +137,20 @@ export default function GuidesPage() {
               href="/guides/empirisk-data"
               className="btn-primary text-sm font-bold px-6 py-3 shadow-lg"
             >
-              Utforska all forskningsdata & källor <ArrowRight size={16} />
+              {isEnglish ? 'Explore Research Database & Studies' : 'Utforska all forskningsdata & källor'} <ArrowRight size={16} />
             </Link>
-
-            <a
-              href="https://baymard.com/checkout-usability"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-4 py-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition"
-            >
-              <span>Baymard Institute</span>
-              <ExternalLink size={12} />
-            </a>
-
-            <a
-              href="https://www.nngroup.com/articles/checkout-process/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-4 py-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition"
-            >
-              <span>Nielsen Norman Group</span>
-              <ExternalLink size={12} />
-            </a>
-
-            <a
-              href="https://cxl.com/blog/single-page-vs-multi-step-checkout/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-4 py-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition"
-            >
-              <span>CXL Checkout Study</span>
-              <ExternalLink size={12} />
-            </a>
-
             <Link
               href="/links"
-              className="inline-flex items-center gap-1.5 px-4 py-3 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/80 text-indigo-200 hover:text-white text-xs font-semibold transition"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-white font-semibold text-sm border border-slate-700 transition"
             >
-              <span>Resurser &amp; Länkar (AmbassadorFlow m.fl.)</span>
-              <ArrowRight size={12} />
+              <Compass size={16} />
+              <span>{isEnglish ? 'Resources & Partners' : 'Resurser & Länkar'}</span>
             </Link>
           </div>
         </div>
       </div>
 
+      {/* GUIDES GRID */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {guides.map((g) => {
           const Icon = g.icon;
@@ -147,23 +158,24 @@ export default function GuidesPage() {
             <Link
               key={g.slug}
               href={`/guides/${g.slug}`}
-              className={`card group block ${g.featured ? 'border-brand-500/50 bg-brand-50/20 dark:bg-brand-950/20 ring-1 ring-brand-500/30' : ''}`}
+              className="card group flex flex-col justify-between hover:border-brand-500 hover:shadow-lg transition-all"
             >
-              <div className="flex items-center justify-between">
-                <div className="grid h-10 w-10 place-items-center rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300">
-                  <Icon size={18} />
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950 flex items-center justify-center text-brand-600 dark:text-brand-400 group-hover:bg-brand-600 group-hover:text-white transition-colors">
+                  <Icon size={20} />
                 </div>
-                {g.featured && (
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 bg-brand-100 dark:bg-brand-950 px-2 py-0.5 rounded">
-                    Nyckelresurs
-                  </span>
-                )}
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors leading-snug">
+                  {g.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                  {g.summary}
+                </p>
               </div>
-              <h2 className="mt-4 text-lg font-semibold group-hover:text-brand-600 transition">{g.title}</h2>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{g.summary}</p>
-              <p className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-600">
-                <BookOpen size={14} /> Läs guiden
-              </p>
+
+              <div className="pt-4 mt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-semibold text-brand-600 dark:text-brand-400">
+                <span>{isEnglish ? 'Read guide' : 'Läs guiden'}</span>
+                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              </div>
             </Link>
           );
         })}

@@ -49,14 +49,14 @@ export default function HomePage() {
             {t.home.heroDescription}
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/players" className="btn-primary text-lg px-8 py-4">
+          <div className="mt-8 flex flex-wrap gap-2.5 sm:gap-3">
+            <Link href="/players" className="btn-primary text-sm sm:text-base md:text-lg px-5 sm:px-8 py-3 sm:py-4">
               {t.home.heroExploreCta} <ArrowRight size={16} />
             </Link>
-            <Link href="/comparison" className="btn-secondary text-lg px-8 py-4">
+            <Link href="/comparison" className="btn-secondary text-sm sm:text-base md:text-lg px-5 sm:px-8 py-3 sm:py-4">
               {t.home.heroCompareCta}
             </Link>
-            <Link href="/testcheckout" className="inline-flex items-center gap-2 px-6 py-4 rounded-xl bg-slate-900 dark:bg-slate-800 text-white font-bold hover:bg-slate-800 transition text-base">
+            <Link href="/testcheckout" className="inline-flex items-center gap-2 px-4 sm:px-6 py-3 sm:py-4 rounded-xl bg-slate-900 dark:bg-slate-800 text-white font-bold hover:bg-slate-800 transition text-sm sm:text-base">
               <Sliders size={18} className="text-emerald-400" />
               <span>Checkout Lab</span>
             </Link>
@@ -84,6 +84,15 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* VIKNINGSLINJE (THE FOLD) PÅ BÅDE DESKTOP OCH MOBIL */}
+      <div className="container-prose relative py-3 select-none pointer-events-none">
+        <div className="relative w-full border-t-2 border-dashed border-rose-500/70 dark:border-rose-400/70">
+          <div className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-rose-600 text-white text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow flex items-center gap-1 whitespace-nowrap">
+            <span>✂ {isEnglish ? 'THE FOLD (Vikningslinje) • 80% Attention Above Fold' : 'VIKNINGSLINJE (The Fold) • 80% Av Blickfånget Ligger Ovanför'}</span>
+          </div>
+        </div>
+      </div>
 
       {/* INTERAKTIVA VERKTYG & LAB SECTION */}
       <section className="bg-slate-900 text-white py-20 border-y border-slate-800 relative overflow-hidden">

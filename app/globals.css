@@ -15,6 +15,47 @@
 html, body {
   background-color: var(--bg);
   color: var(--fg);
+  overflow-x: hidden !important;
+  max-width: 100vw;
+  width: 100%;
+}
+
+/* iOS Phone-standard discreet scrollbar: Vertical only, thin, no horizontal scroll */
+.custom-scrollbar,
+.ios-scrollbar,
+.phone-viewport {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar,
+.ios-scrollbar::-webkit-scrollbar,
+.phone-viewport::-webkit-scrollbar {
+  width: 3.5px !important;
+  height: 0px !important; /* Force no horizontal scrollbar */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track,
+.ios-scrollbar::-webkit-scrollbar-track,
+.phone-viewport::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb,
+.ios-scrollbar::-webkit-scrollbar-thumb,
+.phone-viewport::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25) !important;
+  border-radius: 9999px !important;
+  transition: background-color 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.ios-scrollbar::-webkit-scrollbar-thumb:hover,
+.phone-viewport::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.5) !important;
 }
 
 @layer components {
