@@ -2,7 +2,7 @@ export const siteConfig = {
   name: 'Checkoutstrategi',
   url: process.env.SITE_URL || 'https://checkoutstrategi.se',
   description:
-    'Sveriges oberoende analystjänst för checkout-leverantörer. Djupgående jämförelser, konverterings­data och AI-driven nyhetsbevakning för e-handel.',
+    'Sveriges oberoende analystjänst för checkout-leverantörer. Djupgående jämförelser, konverteringsdata och AI-driven nyhetsbevakning för e-handel.',
   ogImage: '/og.png',
   nav: [
     { href: '/players', label: 'Aktörer' },
@@ -39,5 +39,19 @@ export const siteConfig = {
   ],
   contactEmail: 'hej@checkoutstrategi.se',
 };
+
+export function getSiteConfig(locale: 'sv' | 'en' = 'sv') {
+  if (locale === 'en') {
+    return {
+      name: 'Checkout Strategy',
+      url: 'https://checkoutstrategy.com',
+      description:
+        'Independent checkout intelligence, CRO benchmarks, and post-purchase strategy for modern e-commerce leaders.',
+      ogImage: '/og.png',
+      contactEmail: 'hello@checkoutstrategy.com',
+    };
+  }
+  return siteConfig;
+}
 
 export type SiteConfig = typeof siteConfig;

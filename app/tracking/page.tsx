@@ -34,8 +34,11 @@ import {
   Smartphone,
   Compass
 } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/context';
 
 export default function TrackingCROPage() {
+  const { t, isEnglish, domain } = useLanguage();
+
   // Simuleringstillstånd för Live Demo (Optimerad vs Traditionell)
   const [trackingViewMode, setTrackingViewMode] = useState<'optimized' | 'traditional'>('optimized');
   const [selectedDemoCarrier, setSelectedDemoCarrier] = useState<'instabox' | 'budbee' | 'postnord'>('instabox');
@@ -89,13 +92,13 @@ export default function TrackingCROPage() {
         {/* ========================================================================= */}
         <div className="max-w-4xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-            <Truck size={14} /> Efterköps-CRO, Retention &amp; Post-Purchase CLV
+            <Truck size={14} /> {t.tracking.badge}
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 dark:text-slate-100">
-            CRO i Tracking: Så förvandlar du spårningssidan till en intäktsmaskin
+            {t.tracking.title}
           </h1>
           <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
-            De flesta e-handlare skickar kunden till PostNords eller Budbees generiska externa spårningssida och slänger bort e-handelns mest besökta efterköpskanal. Lär dig hur en varumärkesägd tracking-upplevelse sänker WISMO, lyfter <strong>Customer Lifetime Value (CLV)</strong> och driver lojala återkommande kunder.
+            {t.tracking.description}
           </p>
 
           <div className="pt-2 flex flex-wrap items-center gap-3">
@@ -103,7 +106,7 @@ export default function TrackingCROPage() {
               href="#simulator"
               className="px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-brand-600 hover:bg-slate-800 dark:hover:bg-brand-500 text-white font-bold text-sm shadow-md transition flex items-center gap-2"
             >
-              <span>Se Optimerad vs Traditionell Tracking</span>
+              <span>{t.tracking.btnSimulator}</span>
               <ArrowRight size={15} />
             </a>
             <a
@@ -111,7 +114,7 @@ export default function TrackingCROPage() {
               className="px-5 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-sm shadow-sm transition flex items-center gap-2"
             >
               <Calculator size={15} className="text-emerald-500" />
-              <span>Beräkna din CLV-potential</span>
+              <span>{t.tracking.btnCalculator}</span>
             </a>
           </div>
         </div>
@@ -121,34 +124,36 @@ export default function TrackingCROPage() {
         {/* ========================================================================= */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-            <span className="text-3xl sm:text-4xl font-black text-brand-600 dark:text-brand-400">4.6 ggr</span>
-            <h4 className="text-sm font-bold text-slate-900 dark:text-white">Besök per order</h4>
+            <span className="text-3xl sm:text-4xl font-black text-brand-600 dark:text-brand-400">
+              {isEnglish ? '4.6x' : '4.6 ggr'}
+            </span>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white">{t.tracking.statVisitsTitle}</h4>
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              En genomsnittlig kund kollar sändningsstatus 3–5 gånger mellan köp och utlämning.
+              {t.tracking.statVisitsDesc}
             </p>
           </div>
 
           <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
             <span className="text-3xl sm:text-4xl font-black text-emerald-500">78 %</span>
-            <h4 className="text-sm font-bold text-slate-900 dark:text-white">Öppningsgrad på avisering</h4>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white">{t.tracking.statOpenRateTitle}</h4>
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Leveransnotiser har 3–4x högre engagement än traditionella nyhetsbrev (18–22%).
+              {t.tracking.statOpenRateDesc}
             </p>
           </div>
 
           <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
             <span className="text-3xl sm:text-4xl font-black text-indigo-500">+28 %</span>
-            <h4 className="text-sm font-bold text-slate-900 dark:text-white">Högre återköpsgrad</h4>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white">{t.tracking.statRepeatTitle}</h4>
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Kunder som möts av rekommenderade tillbehör och personlig tracking köper snabbare igen.
+              {t.tracking.statRepeatDesc}
             </p>
           </div>
 
           <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
             <span className="text-3xl sm:text-4xl font-black text-rose-500">-52 %</span>
-            <h4 className="text-sm font-bold text-slate-900 dark:text-white">Minskad WISMO-support</h4>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white">{t.tracking.statWismoTitle}</h4>
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              &quot;Where Is My Order&quot;-frågor halveras när kunden ser exakta tidsfönster och PIN-koder.
+              {t.tracking.statWismoDesc}
             </p>
           </div>
         </div>
@@ -160,10 +165,10 @@ export default function TrackingCROPage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <span className="text-xs font-bold uppercase tracking-widest text-brand-600 dark:text-brand-400">
-                Interaktiv Jämförelse
+                {t.tracking.simulatorBadge}
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-0.5">
-                Traditionell extern tracking vs. Varumärkesägd CRO-tracking
+                {t.tracking.simulatorTitle}
               </h2>
             </div>
 
@@ -179,7 +184,7 @@ export default function TrackingCROPage() {
                 }`}
               >
                 <AlertTriangle size={14} />
-                <span>Traditionell (Hur 90% gör fel)</span>
+                <span>{t.tracking.btnTraditional}</span>
               </button>
               <button
                 type="button"
@@ -191,7 +196,7 @@ export default function TrackingCROPage() {
                 }`}
               >
                 <Sparkles size={14} />
-                <span>Optimerad CRO-Tracking (Best Practice)</span>
+                <span>{t.tracking.btnOptimized}</span>
               </button>
             </div>
           </div>
@@ -205,7 +210,9 @@ export default function TrackingCROPage() {
                 <span className="w-3 h-3 rounded-full bg-amber-500 inline-block" />
                 <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />
                 <span className="hidden sm:inline font-mono text-[11px] text-slate-400 ml-2">
-                  {trackingViewMode === 'traditional' ? 'postnord.se/tracking/SE-98124' : 'dinbutik.se/tracking/ORD-98214'}
+                  {trackingViewMode === 'traditional'
+                    ? (isEnglish ? 'fedex.com/tracking/US-98124' : 'postnord.se/tracking/SE-98124')
+                    : (isEnglish ? 'yourstore.com/tracking/ORD-98214' : 'dinbutik.se/tracking/ORD-98214')}
                 </span>
               </div>
               <div className="flex items-center gap-3">
@@ -214,7 +221,7 @@ export default function TrackingCROPage() {
                     ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
                     : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
                 }`}>
-                  {trackingViewMode === 'traditional' ? '⚠️ Tappad kundrelation & 0 kr merförsäljning' : '✅ 100% Varumärkesägt & Högkonverterande'}
+                  {trackingViewMode === 'traditional' ? t.tracking.traditionalWarning : t.tracking.optimizedSuccess}
                 </span>
               </div>
             </div>
@@ -576,13 +583,13 @@ export default function TrackingCROPage() {
         <div id="kalkylator" className="bg-slate-900 text-white rounded-3xl p-6 sm:p-10 shadow-2xl border border-slate-800 space-y-8">
           <div className="max-w-3xl space-y-2">
             <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
-              <Calculator size={16} /> ROI-Kalkylator
+              <Calculator size={16} /> {isEnglish ? 'ROI Calculator' : 'ROI-Kalkylator'}
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white">
-              Hur mycket ökar ditt CLV och dina återkommande kunder?
+              {t.tracking.calcTitle}
             </h2>
             <p className="text-sm text-slate-300 leading-relaxed">
-              Dra i reglagen nedan för att simulera den finansiella effekten av att optimera din spårningsupplevelse baserat på din butiks faktiska siffror.
+              {t.tracking.calcDesc}
             </p>
           </div>
 
@@ -590,8 +597,8 @@ export default function TrackingCROPage() {
             {/* Input 1 */}
             <div className="space-y-2">
               <div className="flex justify-between font-semibold text-slate-300">
-                <span>Månatliga ordrar:</span>
-                <span className="text-brand-400 font-bold">{calcMonthlyOrders.toLocaleString('sv-SE')} st</span>
+                <span>{t.tracking.calcMonthlyOrders}:</span>
+                <span className="text-brand-400 font-bold">{calcMonthlyOrders.toLocaleString(isEnglish ? 'en-US' : 'sv-SE')} st</span>
               </div>
               <input
                 type="range"
@@ -602,14 +609,16 @@ export default function TrackingCROPage() {
                 onChange={(e) => setCalcMonthlyOrders(Number(e.target.value))}
                 className="w-full accent-brand-500 h-2 bg-slate-800 rounded-lg cursor-pointer"
               />
-              <span className="text-[10px] text-slate-500 block">Antal genomförda köp per månad</span>
+              <span className="text-[10px] text-slate-500 block">
+                {isEnglish ? 'Completed orders per month' : 'Antal genomförda köp per månad'}
+              </span>
             </div>
 
             {/* Input 2 */}
             <div className="space-y-2">
               <div className="flex justify-between font-semibold text-slate-300">
-                <span>Snittordervärde (AOV):</span>
-                <span className="text-brand-400 font-bold">{calcAOV} kr</span>
+                <span>{t.tracking.calcAov}:</span>
+                <span className="text-brand-400 font-bold">{calcAOV} {isEnglish ? 'SEK / EUR' : 'kr'}</span>
               </div>
               <input
                 type="range"
@@ -620,13 +629,15 @@ export default function TrackingCROPage() {
                 onChange={(e) => setCalcAOV(Number(e.target.value))}
                 className="w-full accent-brand-500 h-2 bg-slate-800 rounded-lg cursor-pointer"
               />
-              <span className="text-[10px] text-slate-500 block">Genomsnittlig varukorgsstorlek</span>
+              <span className="text-[10px] text-slate-500 block">
+                {isEnglish ? 'Average basket size' : 'Genomsnittlig varukorgsstorlek'}
+              </span>
             </div>
 
             {/* Input 3 */}
             <div className="space-y-2">
               <div className="flex justify-between font-semibold text-slate-300">
-                <span>Nuvarande återköp (Repeat):</span>
+                <span>{t.tracking.calcRepeatRate}:</span>
                 <span className="text-emerald-400 font-bold">{calcCurrentRepeatRate} %</span>
               </div>
               <input
@@ -638,14 +649,16 @@ export default function TrackingCROPage() {
                 onChange={(e) => setCalcCurrentRepeatRate(Number(e.target.value))}
                 className="w-full accent-emerald-500 h-2 bg-slate-800 rounded-lg cursor-pointer"
               />
-              <span className="text-[10px] text-slate-500 block">Andel kunder som köper igen inom 90 dagar</span>
+              <span className="text-[10px] text-slate-500 block">
+                {isEnglish ? 'Customers reordering within 90 days' : 'Andel kunder som köper igen inom 90 dagar'}
+              </span>
             </div>
 
             {/* Input 4 */}
             <div className="space-y-2">
               <div className="flex justify-between font-semibold text-slate-300">
-                <span>Kostnad per supportärende:</span>
-                <span className="text-amber-400 font-bold">{calcWismoCost} kr</span>
+                <span>{t.tracking.calcWismoCost}:</span>
+                <span className="text-amber-400 font-bold">{calcWismoCost} {isEnglish ? 'SEK' : 'kr'}</span>
               </div>
               <input
                 type="range"
@@ -656,7 +669,9 @@ export default function TrackingCROPage() {
                 onChange={(e) => setCalcWismoCost(Number(e.target.value))}
                 className="w-full accent-amber-500 h-2 bg-slate-800 rounded-lg cursor-pointer"
               />
-              <span className="text-[10px] text-slate-500 block">Genomsnittlig hanteringskostnad (WISMO)</span>
+              <span className="text-[10px] text-slate-500 block">
+                {isEnglish ? 'Support cost per WISMO ticket' : 'Genomsnittlig hanteringskostnad (WISMO)'}
+              </span>
             </div>
           </div>
 
@@ -664,42 +679,50 @@ export default function TrackingCROPage() {
           <div className="pt-6 border-t border-slate-800 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div className="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80 space-y-1">
               <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">
-                Extra återköpsordrar
+                {t.tracking.calcResultExtraOrders}
               </span>
               <span className="text-2xl sm:text-3xl font-black text-emerald-400">
                 +{calculatedMetrics.extraRepeatOrdersMonthly} st
               </span>
-              <span className="text-[10px] text-slate-400 block">per månad</span>
+              <span className="text-[10px] text-slate-400 block">
+                {isEnglish ? 'per month' : 'per månad'}
+              </span>
             </div>
 
             <div className="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80 space-y-1">
               <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">
-                Ny återköpsgrad (Retention)
+                {t.tracking.calcResultNewRepeat}
               </span>
               <span className="text-2xl sm:text-3xl font-black text-indigo-400">
                 {calculatedMetrics.newRepeatRate.toFixed(1)} %
               </span>
-              <span className="text-[10px] text-emerald-400 font-semibold block">+5.5 procentenheter</span>
+              <span className="text-[10px] text-emerald-400 font-semibold block">
+                {isEnglish ? '+5.5 percentage points' : '+5.5 procentenheter'}
+              </span>
             </div>
 
             <div className="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80 space-y-1">
               <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">
-                Sparad support (WISMO)
+                {t.tracking.calcResultSavedWismo}
               </span>
               <span className="text-2xl sm:text-3xl font-black text-amber-400">
-                {Math.round(calculatedMetrics.yearlySupportSavings).toLocaleString('sv-SE')} kr
+                {Math.round(calculatedMetrics.yearlySupportSavings).toLocaleString(isEnglish ? 'en-US' : 'sv-SE')} kr
               </span>
-              <span className="text-[10px] text-slate-400 block">besparing per år</span>
+              <span className="text-[10px] text-slate-400 block">
+                {isEnglish ? 'annual support savings' : 'besparing per år'}
+              </span>
             </div>
 
             <div className="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80 space-y-1">
               <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">
-                Årlig merintäkt från tracking
+                {t.tracking.calcResultYearlyRevenue}
               </span>
               <span className="text-2xl sm:text-3xl font-black text-emerald-400">
-                +{Math.round(calculatedMetrics.extraRevenueYearly).toLocaleString('sv-SE')} kr
+                +{Math.round(calculatedMetrics.extraRevenueYearly).toLocaleString(isEnglish ? 'en-US' : 'sv-SE')} kr
               </span>
-              <span className="text-[10px] text-emerald-300 font-semibold block">direkt tillväxt per år</span>
+              <span className="text-[10px] text-emerald-300 font-semibold block">
+                {isEnglish ? 'direct recurring revenue' : 'direkt tillväxt per år'}
+              </span>
             </div>
           </div>
         </div>

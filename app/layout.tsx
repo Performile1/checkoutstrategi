@@ -1,22 +1,24 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import './globals.css';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { LanguageProvider } from '@/lib/i18n/context';
 import { siteConfig } from '@/lib/site';
-
-const Analytics = () => null;
+import { Locale } from '@/lib/i18n/types';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} – Sveriges checkout-analystjänst`,
+    default: `${siteConfig.name} – Sveriges checkout-analystjänst | Checkout Strategy`,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
   keywords: [
     'checkout', 'klarna', 'walley', 'qliro', 'kustom', 'ingrid', 'nshift',
-    'konvertering', 'CRO', 'e-handel', 'one-click checkout',
+    'konvertering', 'CRO', 'e-handel', 'one-click checkout', 'checkout strategy',
+    'conversion rate optimization', 'post-purchase', 'ambassadorflow'
   ],
   openGraph: {
     title: siteConfig.name,
@@ -40,28 +42,33 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const headersList = headers();
+  const rawLocale = headersList.get('x-locale');
+  const initialLocale: Locale = rawLocale === 'en' ? 'en' : 'sv';
+
   const orgJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: siteConfig.name,
-    url: siteConfig.url,
+    name: initialLocale === 'en' ? 'Checkout Strategy' : 'Checkoutstrategi',
+    url: initialLocale === 'en' ? 'https://checkoutstrategy.com' : 'https://checkoutstrategi.se',
     description: siteConfig.description,
     sameAs: [],
   };
 
   return (
-    <html lang="sv" suppressHydrationWarning>
+    <html lang={initialLocale} suppressHydrationWarning>
       <body className="min-h-screen flex flex-col antialiased">
-        <ThemeProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </ThemeProvider>
+        <LanguageProvider initialLocale={initialLocale}>
+          <ThemeProvider>
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </ThemeProvider>
+        </LanguageProvider>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
         />
-        <Analytics />
       </body>
     </html>
   );

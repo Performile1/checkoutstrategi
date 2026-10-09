@@ -25,6 +25,7 @@ import {
   Calculator,
   Compass
 } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/context';
 
 interface ResourceItem {
   id: string;
@@ -320,6 +321,7 @@ const RESOURCES: ResourceItem[] = [
 ];
 
 export default function LinksAndResourcesPage() {
+  const { t, isEnglish } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -366,12 +368,12 @@ export default function LinksAndResourcesPage() {
   }, [selectedCategory, searchQuery]);
 
   const categories = [
-    { id: 'all', label: 'Alla resurser', count: RESOURCES.length },
-    { id: 'referral', label: 'Referral, Ambassadörer & Tillväxt', count: RESOURCES.filter(r => r.category === 'referral').length },
-    { id: 'institutes', label: 'Forskningsinstitut & Benchmark', count: RESOURCES.filter(r => r.category === 'institutes').length },
-    { id: 'delivery', label: 'Logistik & Leveranscheckout', count: RESOURCES.filter(r => r.category === 'delivery').length },
-    { id: 'payments', label: 'Kassa & Betallösningar', count: RESOURCES.filter(r => r.category === 'payments').length },
-    { id: 'analytics', label: 'Analys, Heatmaps & A/B-testning', count: RESOURCES.filter(r => r.category === 'analytics').length },
+    { id: 'all', label: isEnglish ? 'All Resources' : 'Alla resurser', count: RESOURCES.length },
+    { id: 'referral', label: isEnglish ? 'Referral, Ambassadors & Growth' : 'Referral, Ambassadörer & Tillväxt', count: RESOURCES.filter(r => r.category === 'referral').length },
+    { id: 'institutes', label: isEnglish ? 'Research Institutes & Benchmarks' : 'Forskningsinstitut & Benchmark', count: RESOURCES.filter(r => r.category === 'institutes').length },
+    { id: 'delivery', label: isEnglish ? 'Logistics & Delivery Checkout' : 'Logistik & Leveranscheckout', count: RESOURCES.filter(r => r.category === 'delivery').length },
+    { id: 'payments', label: isEnglish ? 'Checkout & Payment Solutions' : 'Kassa & Betallösningar', count: RESOURCES.filter(r => r.category === 'payments').length },
+    { id: 'analytics', label: isEnglish ? 'Analytics, Heatmaps & A/B Testing' : 'Analys, Heatmaps & A/B-testning', count: RESOURCES.filter(r => r.category === 'analytics').length },
   ];
 
   return (
@@ -381,13 +383,13 @@ export default function LinksAndResourcesPage() {
         {/* --- HEADER --- */}
         <div className="max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 mb-3">
-            <Compass size={14} /> Ekosystem, Forskningsinstitut &amp; Tillväxtverktyg
+            <Compass size={14} /> {t.links.badge}
           </div>
           <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-slate-100">
-            Resurser &amp; Länkar
+            {t.links.title}
           </h1>
           <p className="mt-4 text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-            Handplockade länkar till världens tyngsta forskningsinstitut, konverteringsvetenskap, e-handelskassor och tillväxtplattformar som flyttar dina viktigaste nyckeltal: <strong>CRO, CAC och CLV</strong>.
+            {t.links.description}
           </p>
         </div>
 
@@ -408,14 +410,14 @@ export default function LinksAndResourcesPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs uppercase font-bold tracking-widest text-indigo-300">
-                      Utvald Tillväxtpartner
+                      {t.links.spotlightBadge}
                     </span>
                     <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      Högsta betyg för CAC &amp; CLV
+                      {t.links.spotlightRating}
                     </span>
                   </div>
                   <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white mt-0.5">
-                    AmbassadorFlow
+                    {t.links.spotlightTitle}
                   </h2>
                 </div>
               </div>
@@ -426,7 +428,7 @@ export default function LinksAndResourcesPage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-sm shadow-lg hover:shadow-indigo-500/25 transition-all transform hover:-translate-y-0.5"
               >
-                <span>Besök AmbassadorFlow.com</span>
+                <span>{t.links.spotlightVisitBtn}</span>
                 <ExternalLink size={16} />
               </a>
             </div>
@@ -434,10 +436,10 @@ export default function LinksAndResourcesPage() {
             {/* Ingress om vad AmbassadorFlow gör */}
             <div className="max-w-4xl space-y-3">
               <p className="text-base sm:text-lg text-indigo-100 font-medium leading-relaxed">
-                Vad gör <strong>AmbassadorFlow</strong> och varför är det en avgörande hävstång för modern e-handelsekonomi?
+                {t.links.spotlightIntro1}
               </p>
               <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-                I en marknad där auktionspriserna på Meta och Google stiger och tredjepartscookies begränsas har traditionell annonsering blivit olönsam för många e-handlare. <strong>AmbassadorFlow</strong> är Skandinaviens ledande mjukvara för att bygga automatiserade ambassadörsprogram, mikro-influencer loops och referral-system direkt integrerat i din e-handel.
+                {t.links.spotlightIntro2}
               </p>
             </div>
 
@@ -451,10 +453,10 @@ export default function LinksAndResourcesPage() {
                     <TrendingUp size={20} />
                   </div>
                   <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                    Vad det gör för CRO
+                    {t.links.spotlightCroTitle}
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    <strong>Konverteringsgrad (2.5x–4x högre):</strong> Trafik som kommer via en betrodd vän eller influencer konverterar radikalt högre än kalla annonser.
+                    {t.links.spotlightCroDesc}
                   </p>
                   <ul className="text-xs text-slate-400 space-y-2 pt-1">
                     <li className="flex items-start gap-2">
@@ -653,10 +655,10 @@ export default function LinksAndResourcesPage() {
             <div>
               <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <Microscope size={24} className="text-brand-600 dark:text-brand-400" />
-                <span>Forskningsinstitut &amp; E-handelsekosystem</span>
+                <span>{t.links.catalogTitle}</span>
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                Katalog över verifierade källor som Baymard Institute, NN/g, transportörer och betaljättar.
+                {t.links.catalogDesc}
               </p>
             </div>
 
@@ -665,7 +667,7 @@ export default function LinksAndResourcesPage() {
               <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
-                placeholder="Sök institut, verktyg eller nyckelord..."
+                placeholder={t.links.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-brand-500 shadow-sm"
